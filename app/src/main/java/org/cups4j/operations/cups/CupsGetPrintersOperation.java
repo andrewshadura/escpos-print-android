@@ -34,7 +34,7 @@ import java.util.Map;
 import ch.ethz.vppserver.ippclient.IppResult;
 import ch.ethz.vppserver.schema.ippclient.Attribute;
 import ch.ethz.vppserver.schema.ippclient.AttributeGroup;
-import io.github.benoitduffez.cupsprint.L;
+import me.shadura.escposprint.L;
 
 public class CupsGetPrintersOperation extends IppOperation {
     public CupsGetPrintersOperation() {

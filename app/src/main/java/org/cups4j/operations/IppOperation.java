@@ -42,9 +42,9 @@ import ch.ethz.vppserver.ippclient.IppResponse;
 import ch.ethz.vppserver.ippclient.IppResult;
 import ch.ethz.vppserver.ippclient.IppTag;
 import ch.ethz.vppserver.schema.ippclient.Attribute;
-import io.github.benoitduffez.cupsprint.HttpConnectionManagement;
-import io.github.benoitduffez.cupsprint.L;
-import io.github.benoitduffez.cupsprint.ssl.AdditionalKeyStoresSSLSocketFactory;
+import me.shadura.escposprint.HttpConnectionManagement;
+import me.shadura.escposprint.L;
+import me.shadura.escposprint.ssl.AdditionalKeyStoresSSLSocketFactory;
 
 public abstract class IppOperation {
     private final static String IPP_MIME_TYPE = "application/ipp";

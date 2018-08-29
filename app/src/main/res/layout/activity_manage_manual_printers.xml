@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="io.github.benoitduffez.cupsprint.app.ManageManualPrintersActivity">
+    tools:context="me.shadura.escposprint.app.ManageManualPrintersActivity">
 
     <TextView
         android:id="@+id/manage_printers_help"
