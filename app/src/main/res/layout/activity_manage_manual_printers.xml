@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -10,6 +11,8 @@
         android:id="@+id/manage_printers_help"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
         android:padding="16dp"
         android:text="@string/manage_printers_help"/>
 
@@ -19,15 +22,16 @@
         android:layout_height="match_parent"
         android:layout_below="@+id/manage_printers_help"/>
 
-    <TextView
-        android:id="@+id/manage_printers_empty"
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/find_printers"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:drawableStart="@drawable/ic_no_printers"
-        android:gravity="center"
-        android:paddingLeft="50dp"
-        android:paddingRight="50dp"
-        android:text="@string/manage_printers_none"/>
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_gravity="end|bottom"
+        android:layout_margin="16dp"
+        android:clickable="true"
+        app:srcCompat="@drawable/ic_action_add" />
+
 
 </RelativeLayout>

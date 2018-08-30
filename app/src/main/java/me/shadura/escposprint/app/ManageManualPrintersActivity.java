@@ -27,7 +27,6 @@ public class ManageManualPrintersActivity extends AppCompatActivity {
         setContentView(R.layout.activity_manage_manual_printers);
 
         ListView printersList = (ListView) findViewById(R.id.manage_printers_list);
-        View emptyView = findViewById(R.id.manage_printers_empty);
 
         // Build adapter
         final SharedPreferences prefs = getSharedPreferences(AddPrintersActivity.SHARED_PREFS_MANUAL_PRINTERS, Context.MODE_PRIVATE);
@@ -49,8 +48,6 @@ public class ManageManualPrintersActivity extends AppCompatActivity {
                 adapter.removeItem(position);
             }
         });
-
-        emptyView.setVisibility(numPrinters <= 0 ? View.VISIBLE : View.GONE);
     }
 
     @NonNull
