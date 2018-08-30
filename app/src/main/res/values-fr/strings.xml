@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Impression Android CUPS </string>
-    <string name="activity_add_label">Ajouter une imprimante CUPS</string>
     <string name="add_autodetect">Vous pouvez soit détecter automatiquement les imprimantes de votre serveur en entrant son IP ou nom d\'hôte ci-dessous</string>
     <string name="add_full_manual">Soit, vous pouvez renseigner l\'URI complète de l\'imprimante dans les champs ci-dessous</string>
     <string name="add_button">Ajouter l\'imprimante</string>

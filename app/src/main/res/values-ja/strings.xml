@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">Android CUPS Print</string>
     <string name="add_url">http://server.tld:631/printers/Printer_Name</string>
     <string name="add_name">プリンター名</string>
     <string name="add_button">プリンターを追加</string>
     <string name="add_search_button">プリンターの検索</string>
-    <string name="activity_add_label">CUPS プリンターを追加</string>
     <string name="add_full_manual">または、以下のフィールドに完全な URI とプリンター名を入力することもできます</string>
     <string name="add_server_ip">サーバー IP またはホスト名</string>
     <string name="add_autodetect">以下の IP またはホスト名を入力して、サーバーからプリンターを自動検出することができます</string>

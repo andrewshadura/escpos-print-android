@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">Android CUPS Print</string>
     <string name="add_url">http://cups-server.mit.domäne:631/printers/Drucker_Name</string>
     <string name="add_name">Bezeichnung des Druckers</string>
     <string name="add_button">Drucker hinzufügen</string>
     <string name="add_search_button">Nach Druckern suchen</string>
-    <string name="activity_add_label">CUPS-Drucker hinzufügen</string>
     <string name="add_full_manual">Wahlweise können Sie auch die komplette URI des Druckers in den folgenden Feldern eingeben.</string>
     <string name="add_server_ip">IP-Adresse oder Hostname</string>
     <string name="add_autodetect">Sie können die Drucker eines Servers auflisten lassen, indem Sie die IP-Adresse oder den Hostnamen des Servers angeben.</string>
