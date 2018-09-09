@@ -35,7 +35,6 @@ public class ManageManualPrintersActivity extends AppCompatActivity {
     private static final int REQUEST_FIND_DEVICE = 1;
     private static final int REQUEST_ENABLE_BLUETOOTH = 2;
 
-    private static final int PERMISSION_REQUEST_BLUETOOTH = 1;
     private static final int PERMISSION_REQUEST_COARSE_LOCATION = 2;
 
     @Override
@@ -43,7 +42,7 @@ public class ManageManualPrintersActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_manage_manual_printers);
 
-        ListView printersList = (ListView) findViewById(R.id.manage_printers_list);
+        ListView printersList = findViewById(R.id.manage_printers_list);
 
         // Build adapter
         final SharedPreferences prefs = getSharedPreferences(AddPrintersActivity.SHARED_PREFS_MANUAL_PRINTERS, Context.MODE_PRIVATE);
@@ -71,9 +70,9 @@ public class ManageManualPrintersActivity extends AppCompatActivity {
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
         if (mBluetoothAdapter == null) {
-            ListView printersList = (ListView) findViewById(R.id.manage_printers_list);
+            ListView printersList = findViewById(R.id.manage_printers_list);
 
-            Snackbar.make((View) printersList, "Bluetooth is not available", Snackbar.LENGTH_LONG)
+            Snackbar.make(printersList, "Bluetooth is not available", Snackbar.LENGTH_LONG)
                     .setAction("Action", null).show();
             return;
         }
@@ -96,7 +95,7 @@ public class ManageManualPrintersActivity extends AppCompatActivity {
                                 PackageManager.PERMISSION_GRANTED) {
                         if (ActivityCompat.shouldShowRequestPermissionRationale(this,
                                 Manifest.permission.ACCESS_COARSE_LOCATION)) {
-                            /* */
+                            /* TODO: Add an explainer */
                         } else {
                             ActivityCompat.requestPermissions(this,
                                     new String[]{
@@ -139,7 +138,7 @@ public class ManageManualPrintersActivity extends AppCompatActivity {
     private static class ManualPrinterInfo {
         String url, name;
 
-        public ManualPrinterInfo(String name, String url) {
+        private ManualPrinterInfo(String name, String url) {
             this.name = name;
             this.url = url;
         }
@@ -155,7 +154,7 @@ public class ManageManualPrintersActivity extends AppCompatActivity {
     }
 
     private static class ManualPrintersAdapter extends ArrayAdapter<ManualPrinterInfo> {
-        public ManualPrintersAdapter(@NonNull Context context, @LayoutRes int resource, @NonNull List<ManualPrinterInfo> objects) {
+        private ManualPrintersAdapter(@NonNull Context context, @LayoutRes int resource, @NonNull List<ManualPrinterInfo> objects) {
             super(context, resource, objects);
         }
 

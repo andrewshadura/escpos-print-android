@@ -38,7 +38,6 @@ import me.shadura.escposprint.printservice.BluetoothService;
 
 public class DeviceListActivity extends AppCompatActivity {
     private BluetoothAdapter mBluetoothAdapter = null;
-    private BluetoothService mService = null;
     private BluetoothDevicesAdapter mDiscoveredDevicesArrayAdapter;
     private Snackbar mSnackbar;
     private SwipeRefreshLayout mRefreshLayout;
