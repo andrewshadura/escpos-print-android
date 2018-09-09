@@ -16,7 +16,6 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v4.widget.SwipeRefreshLayout.OnRefreshListener;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -37,8 +36,6 @@ import me.shadura.escposprint.R;
 import me.shadura.escposprint.printservice.BluetoothService;
 
 public class DeviceListActivity extends AppCompatActivity {
-    private static final String TAG = "DeviceListActivity";
-
     private BluetoothAdapter mBluetoothAdapter = null;
     private BluetoothService mService = null;
     private BluetoothDevicesAdapter mDiscoveredDevicesArrayAdapter;
@@ -131,7 +128,6 @@ public class DeviceListActivity extends AppCompatActivity {
             addPairedDevices();
             discoveredDevices.clear();
             mBluetoothAdapter.startDiscovery();
-            Log.d(TAG, "startDiscovery");
         }
     }
 
