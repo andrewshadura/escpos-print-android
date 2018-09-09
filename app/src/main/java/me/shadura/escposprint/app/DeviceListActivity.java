@@ -116,8 +116,6 @@ public class DeviceListActivity extends AppCompatActivity {
                     if (discoveredDevices.contains(device)) {
                         return;
                     }
-                    String name = device.getName() != null ? device.getName() : "(unnamed)";
-                    Log.d(TAG, "found: " + device.getName() + "\n" + device.getAddress());
                     discoveredDevices.add(device);
                     mDiscoveredDevicesArrayAdapter.add(device);
                 }
@@ -142,7 +140,6 @@ public class DeviceListActivity extends AppCompatActivity {
         Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
         if (pairedDevices.size() > 0) {
             for (BluetoothDevice device : pairedDevices) {
-                String name = device.getName() != null ? device.getName() : "(unnamed)";
                 mDiscoveredDevicesArrayAdapter.add(device);
             }
         }
