@@ -1,5 +1,6 @@
 package me.shadura.escposprint.app;
 
+import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
@@ -43,10 +44,15 @@ public class DeviceListActivity extends AppCompatActivity {
     private SwipeRefreshLayout mRefreshLayout;
     private HashSet<BluetoothDevice> discoveredDevices = new HashSet<BluetoothDevice>();
 
+    public static String EXTRA_DEVICE_ADDRESS = "device_address";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_device_list);
+
+        setResult(Activity.RESULT_CANCELED);
+
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -96,9 +102,14 @@ public class DeviceListActivity extends AppCompatActivity {
 
     private OnItemClickListener mDiscoveredDevicesClickListener = new OnItemClickListener() {
         @Override
-        public void onItemClick(AdapterView<?> av, View v, int arg2, long arg3) {
+        public void onItemClick(AdapterView<?> av, View v, int position, long id) {
             mBluetoothAdapter.cancelDiscovery();
-            /* TODO: actual work */
+
+            Intent intent = new Intent();
+            intent.putExtra(EXTRA_DEVICE_ADDRESS,
+                mDiscoveredDevicesArrayAdapter.getItem(position).getAddress());
+            setResult(Activity.RESULT_OK, intent);
+            finish();
         }
     };
 
