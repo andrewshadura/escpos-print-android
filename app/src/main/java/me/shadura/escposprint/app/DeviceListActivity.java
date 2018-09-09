@@ -164,6 +164,9 @@ public class DeviceListActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
 
+        if (mBluetoothAdapter != null) {
+            mBluetoothAdapter.cancelDiscovery();
+        }
         unregisterReceiver(mReceiver);
     }
 
