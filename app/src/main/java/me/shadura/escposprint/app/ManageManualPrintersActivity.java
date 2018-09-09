@@ -52,9 +52,9 @@ public class ManageManualPrintersActivity extends AppCompatActivity {
 
         // Setup adapter with click to remove
         printersList.setAdapter(adapter);
-        printersList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        printersList.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
                 final SharedPreferences.Editor editor = prefs.edit();
                 int numPrinters = prefs.getInt(AddPrintersActivity.PREF_NUM_PRINTERS, 0);
                 editor.putInt(AddPrintersActivity.PREF_NUM_PRINTERS, numPrinters - 1);
@@ -62,6 +62,7 @@ public class ManageManualPrintersActivity extends AppCompatActivity {
                 editor.remove(AddPrintersActivity.PREF_ADDRESS + position);
                 editor.apply();
                 adapter.removeItem(position);
+                return true;
             }
         });
     }
