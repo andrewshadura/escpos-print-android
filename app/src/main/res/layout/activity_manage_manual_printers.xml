@@ -10,8 +10,7 @@
     <ListView
         android:id="@+id/manage_printers_list"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@+id/manage_printers_help"/>
+        android:layout_height="match_parent" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/find_printers"
@@ -22,6 +21,7 @@
         android:layout_gravity="end|bottom"
         android:layout_margin="16dp"
         android:clickable="true"
+        android:onClick="findPrinters"
         app:srcCompat="@drawable/ic_action_add" />
 
 

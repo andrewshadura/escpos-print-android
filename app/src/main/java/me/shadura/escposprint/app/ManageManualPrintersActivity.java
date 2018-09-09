@@ -1,11 +1,19 @@
 package me.shadura.escposprint.app;
 
+import android.Manifest;
+import android.app.Activity;
+import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,6 +29,15 @@ import java.util.List;
 import me.shadura.escposprint.R;
 
 public class ManageManualPrintersActivity extends AppCompatActivity {
+    private BluetoothAdapter mBluetoothAdapter = null;
+
+    /* Intent request codes */
+    private static final int REQUEST_FIND_DEVICE = 1;
+    private static final int REQUEST_ENABLE_BLUETOOTH = 2;
+
+    private static final int PERMISSION_REQUEST_BLUETOOTH = 1;
+    private static final int PERMISSION_REQUEST_COARSE_LOCATION = 2;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -50,7 +67,64 @@ public class ManageManualPrintersActivity extends AppCompatActivity {
         });
     }
 
-    @NonNull
+    public void findPrinters(View button) {
+        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+
+        if (mBluetoothAdapter == null) {
+            ListView printersList = (ListView) findViewById(R.id.manage_printers_list);
+
+            Snackbar.make((View) printersList, "Bluetooth is not available", Snackbar.LENGTH_LONG)
+                    .setAction("Action", null).show();
+            return;
+        }
+
+        if (!mBluetoothAdapter.isEnabled()) {
+            mBluetoothAdapter.enable();
+        }
+
+        Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+        startActivityForResult(enableIntent, REQUEST_ENABLE_BLUETOOTH);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch (requestCode) {
+            case REQUEST_ENABLE_BLUETOOTH: {
+                if (resultCode == Activity.RESULT_OK) {
+                    if (ContextCompat.checkSelfPermission(this,
+                            Manifest.permission.ACCESS_COARSE_LOCATION) !=
+                                PackageManager.PERMISSION_GRANTED) {
+                        if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                                Manifest.permission.ACCESS_COARSE_LOCATION)) {
+                            /* */
+                        } else {
+                            ActivityCompat.requestPermissions(this,
+                                    new String[]{
+                                        Manifest.permission.ACCESS_COARSE_LOCATION
+                                    }, PERMISSION_REQUEST_COARSE_LOCATION);
+                        }
+                    } else {
+                        Intent serverIntent = new Intent(ManageManualPrintersActivity.this, DeviceListActivity.class);
+                        startActivityForResult(serverIntent, REQUEST_FIND_DEVICE);
+                    }
+                }
+                break;
+            }
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+        String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case PERMISSION_REQUEST_COARSE_LOCATION: {
+                Intent serverIntent = new Intent(ManageManualPrintersActivity.this, DeviceListActivity.class);
+                startActivityForResult(serverIntent, REQUEST_FIND_DEVICE);
+            }
+        }
+    }
+
+        @NonNull
     private List<ManualPrinterInfo> getPrinters(SharedPreferences prefs, int numPrinters) {
         List<ManualPrinterInfo> printers = new ArrayList<>(numPrinters);
         String url, name;
