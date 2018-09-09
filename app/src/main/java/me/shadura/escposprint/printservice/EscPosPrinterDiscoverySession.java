@@ -354,7 +354,7 @@ class EscPosPrinterDiscoverySession extends PrinterDiscoverySession {
         final SharedPreferences prefs = mPrintService.getSharedPreferences(AddPrintersActivity.SHARED_PREFS_MANUAL_PRINTERS, Context.MODE_PRIVATE);
         final int numPrinters = prefs.getInt(AddPrintersActivity.PREF_NUM_PRINTERS, 0);
         for (int i = 0; i < numPrinters; i++) {
-            url = prefs.getString(AddPrintersActivity.PREF_URL + i, null);
+            url = prefs.getString(AddPrintersActivity.PREF_ADDRESS + i, null);
             name = prefs.getString(AddPrintersActivity.PREF_NAME + i, null);
             if (url != null && name != null && url.trim().length() > 0 && name.trim().length() > 0) {
                 // Ensure a port is set, and set it to 631 if unset

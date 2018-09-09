@@ -60,7 +60,7 @@ public class ManageManualPrintersActivity extends AppCompatActivity {
                 int numPrinters = prefs.getInt(AddPrintersActivity.PREF_NUM_PRINTERS, 0);
                 editor.putInt(AddPrintersActivity.PREF_NUM_PRINTERS, numPrinters - 1);
                 editor.remove(AddPrintersActivity.PREF_NAME + position);
-                editor.remove(AddPrintersActivity.PREF_URL + position);
+                editor.remove(AddPrintersActivity.PREF_ADDRESS + position);
                 editor.apply();
                 adapter.removeItem(position);
             }
@@ -130,7 +130,7 @@ public class ManageManualPrintersActivity extends AppCompatActivity {
         String url, name;
         for (int i = 0; i < numPrinters; i++) {
             name = prefs.getString(AddPrintersActivity.PREF_NAME + i, null);
-            url = prefs.getString(AddPrintersActivity.PREF_URL + i, null);
+            url = prefs.getString(AddPrintersActivity.PREF_ADDRESS + i, null);
             printers.add(new ManualPrinterInfo(name, url));
         }
         return printers;

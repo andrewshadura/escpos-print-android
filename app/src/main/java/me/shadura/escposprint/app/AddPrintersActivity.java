@@ -36,7 +36,7 @@ public class AddPrintersActivity extends Activity {
     /**
      * Will be suffixed by the printer ID. Contains the URL.
      */
-    public static final String PREF_URL = "url";
+    public static final String PREF_ADDRESS = "address";
 
     /**
      * Will be suffixed by the printer ID. Contains the name.
@@ -75,7 +75,7 @@ public class AddPrintersActivity extends Activity {
         SharedPreferences prefs = getSharedPreferences(SHARED_PREFS_MANUAL_PRINTERS, MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
         int id = prefs.getInt(PREF_NUM_PRINTERS, 0);
-        editor.putString(PREF_URL + id, url);
+        editor.putString(PREF_ADDRESS + id, url);
         editor.putString(PREF_NAME + id, name);
         editor.putInt(PREF_NUM_PRINTERS, id + 1);
         editor.apply();
@@ -151,7 +151,7 @@ public class AddPrintersActivity extends Activity {
         while (matcher.find()) {
             url = (baseUrl + matcher.group(1)).replace("//", "/");
             name = matcher.group(3);
-            editor.putString(PREF_URL + id, url);
+            editor.putString(PREF_ADDRESS + id, url);
             editor.putString(PREF_NAME + id, name);
             id++;
         }
