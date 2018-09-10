@@ -79,11 +79,12 @@ public class ManageManualPrintersActivity extends AppCompatActivity {
         }
 
         if (!mBluetoothAdapter.isEnabled()) {
-            mBluetoothAdapter.enable();
+            Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            startActivityForResult(enableIntent, REQUEST_ENABLE_BLUETOOTH);
+        } else {
+            Intent serverIntent = new Intent(ManageManualPrintersActivity.this, DeviceListActivity.class);
+            startActivityForResult(serverIntent, REQUEST_FIND_DEVICE);
         }
-
-        Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-        startActivityForResult(enableIntent, REQUEST_ENABLE_BLUETOOTH);
     }
 
     @Override
@@ -107,6 +108,11 @@ public class ManageManualPrintersActivity extends AppCompatActivity {
                         Intent serverIntent = new Intent(ManageManualPrintersActivity.this, DeviceListActivity.class);
                         startActivityForResult(serverIntent, REQUEST_FIND_DEVICE);
                     }
+                } else {
+                    ListView printersList = findViewById(R.id.manage_printers_list);
+
+                    Snackbar.make(printersList, "This app needs Bluetooth to add new printers", Snackbar.LENGTH_LONG)
+                            .setAction("Action", null).show();
                 }
                 break;
             }
