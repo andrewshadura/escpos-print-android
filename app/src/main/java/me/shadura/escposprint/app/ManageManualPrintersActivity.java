@@ -3,11 +3,14 @@ package me.shadura.escposprint.app;
 import android.Manifest;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -27,9 +30,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import me.shadura.escposprint.R;
+import me.shadura.escposprint.printservice.BluetoothService;
 
 public class ManageManualPrintersActivity extends AppCompatActivity {
     private BluetoothAdapter mBluetoothAdapter = null;
+
+    private BluetoothService mService = null;
 
     /* Intent request codes */
     private static final int REQUEST_FIND_DEVICE = 1;
@@ -49,6 +55,32 @@ public class ManageManualPrintersActivity extends AppCompatActivity {
         int numPrinters = prefs.getInt(AddPrintersActivity.PREF_NUM_PRINTERS, 0);
         List<ManualPrinterInfo> printers = getPrinters(prefs, numPrinters);
         final ManualPrintersAdapter adapter = new ManualPrintersAdapter(this, R.layout.manage_printers_list_item, printers);
+
+        mService = new BluetoothService(this, new Handler() {
+            @Override
+            public void handleMessage(Message msg) {
+                switch (msg.what) {
+                    case BluetoothService.MESSAGE_STATE_CHANGE: {
+                        break;
+                    }
+                    case BluetoothService.MESSAGE_DEVICE_NAME: {
+                        break;
+                    }
+                    case BluetoothService.MESSAGE_READ: {
+                        break;
+                    }
+                    case BluetoothService.MESSAGE_WRITE: {
+                        break;
+                    }
+                    case BluetoothService.MESSAGE_CONNECTION_LOST: {
+                        break;
+                    }
+                    case BluetoothService.MESSAGE_CONNECTION_FAILURE: {
+                        break;
+                    }
+                }
+            }
+        });
 
         // Setup adapter with click to remove
         printersList.setAdapter(adapter);
@@ -115,6 +147,16 @@ public class ManageManualPrintersActivity extends AppCompatActivity {
                             .setAction("Action", null).show();
                 }
                 break;
+            }
+            case REQUEST_FIND_DEVICE: {
+                if (resultCode == Activity.RESULT_OK) {
+                    String address = data.getExtras().getString(DeviceListActivity.Companion.getEXTRA_DEVICE_ADDRESS());
+
+                    if (BluetoothAdapter.checkBluetoothAddress(address)) {
+                        BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(address);
+                        mService.connect(device);
+                    }
+                }
             }
         }
     }
