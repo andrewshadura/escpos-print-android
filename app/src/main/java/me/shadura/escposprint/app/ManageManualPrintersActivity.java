@@ -150,7 +150,7 @@ public class ManageManualPrintersActivity extends AppCompatActivity {
             }
             case REQUEST_FIND_DEVICE: {
                 if (resultCode == Activity.RESULT_OK) {
-                    String address = data.getExtras().getString(DeviceListActivity.Companion.getEXTRA_DEVICE_ADDRESS());
+                    String address = data.getExtras().getString(DeviceListActivity.EXTRA_DEVICE_ADDRESS);
 
                     if (BluetoothAdapter.checkBluetoothAddress(address)) {
                         BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(address);

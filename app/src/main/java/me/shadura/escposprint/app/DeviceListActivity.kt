@@ -52,7 +52,7 @@ class DeviceListActivity : AppCompatActivity() {
     private var refreshLayout: SwipeRefreshLayout? = null
     private val discoveredDevices = HashSet<BluetoothDevice>()
 
-    private val discoveredDevicesClickListener = OnItemClickListener { _, _, position, id ->
+    private val discoveredDevicesClickListener = OnItemClickListener { _, _, position, _ ->
         bluetoothAdapter!!.cancelDiscovery()
 
         val intent = Intent()
@@ -196,6 +196,6 @@ class DeviceListActivity : AppCompatActivity() {
 
     companion object {
 
-        var EXTRA_DEVICE_ADDRESS = "device_address"
+        const val EXTRA_DEVICE_ADDRESS = "device_address"
     }
 }
