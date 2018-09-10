@@ -37,7 +37,7 @@ class BluetoothService
  */
 (context: Context, private val mHandler: Handler) {
 
-    private val mAdapter: BluetoothAdapter
+    private val mAdapter: BluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
     private var mConnectThread: ConnectThread? = null
     private var mConnectedThread: ConnectedThread? = null
 
@@ -64,10 +64,6 @@ class BluetoothService
         STATE_NONE, // we're doing nothing
         STATE_CONNECTING, // now initiating an outgoing connection
         STATE_CONNECTED  // now connected to a remote device
-    }
-
-    init {
-        mAdapter = BluetoothAdapter.getDefaultAdapter()
     }
 
     /**
@@ -191,6 +187,8 @@ class BluetoothService
         private val mmSocket: BluetoothSocket?
 
         init {
+            this.name = "ConnectThread"
+            Log.d(TAG, "create $name")
             // Get a BluetoothSocket for a connection with the
             // given BluetoothDevice
             mmSocket = try {
@@ -202,7 +200,6 @@ class BluetoothService
         }
 
         override fun run() {
-            name = "ConnectThread"
             Log.i(TAG, "BEGIN $name")
 
             // Always cancel discovery because it will slow down a connection
@@ -255,7 +252,8 @@ class BluetoothService
         private val mmOutStream: OutputStream?
 
         init {
-            Log.d(TAG, "create ConnectedThread")
+            this.name = "ConnectThread"
+            Log.d(TAG, "create $name")
             var tmpIn: InputStream? = null
             var tmpOut: OutputStream? = null
 
@@ -273,7 +271,7 @@ class BluetoothService
         }
 
         override fun run() {
-            Log.i(TAG, "BEGIN mConnectedThread")
+            Log.i(TAG, "BEGIN $name")
             var bytes: Int
 
             // Keep listening to the InputStream while connected
