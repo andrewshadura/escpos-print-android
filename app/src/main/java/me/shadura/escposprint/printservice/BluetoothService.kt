@@ -105,7 +105,7 @@ class BluetoothService
         mConnectedThread!!.start()
 
         // Send the name of the connected device back to the UI Activity
-        val msg = handler.obtainMessage(MESSAGE_DEVICE_NAME)
+        val msg = handler.obtainMessage(MESSAGE_CONNECTED)
         val bundle = Bundle()
         bundle.putString("DEVICE_NAME", device.name)
         msg.data = bundle
@@ -151,7 +151,7 @@ class BluetoothService
         state = State.STATE_NONE
 
         // Send a failure message back to the Activity
-        val msg = handler.obtainMessage(MESSAGE_TOAST)
+        val msg = handler.obtainMessage(MESSAGE_CONNECTION_FAILURE)
         val bundle = Bundle()
         bundle.putString("MESSAGE_TOAST", "Unable to connect device")
         msg.data = bundle
@@ -166,7 +166,7 @@ class BluetoothService
         state = State.STATE_NONE
 
         // Send a failure message back to the Activity
-        val msg = handler.obtainMessage(MESSAGE_TOAST)
+        val msg = handler.obtainMessage(MESSAGE_CONNECTION_LOST)
         val bundle = Bundle()
         bundle.putString("MESSAGE_TOAST", "Device connection was lost")
         msg.data = bundle
@@ -326,7 +326,7 @@ class BluetoothService
         const val MESSAGE_STATE_CHANGE = 1
         const val MESSAGE_READ = 2
         const val MESSAGE_WRITE = 3
-        const val MESSAGE_DEVICE_NAME = 4
+        const val MESSAGE_CONNECTED = 4
         const val MESSAGE_TOAST = 5
         const val MESSAGE_CONNECTION_LOST = 6
         const val MESSAGE_CONNECTION_FAILURE = 7

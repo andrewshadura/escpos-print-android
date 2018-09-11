@@ -18,7 +18,9 @@ package me.shadura.escposprint.app
 
 import android.app.Activity
 import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothAdapter.*
 import android.bluetooth.BluetoothDevice
+import android.bluetooth.BluetoothDevice.*
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -34,7 +36,6 @@ import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.view.View.OnClickListener
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.ListView
@@ -46,14 +47,14 @@ import java.util.HashSet
 import me.shadura.escposprint.R
 
 class DeviceListActivity : AppCompatActivity() {
-    private var bluetoothAdapter: BluetoothAdapter? = null
+    private var bluetoothAdapter: BluetoothAdapter = getDefaultAdapter()
     private var discoveredDevicesArrayAdapter: BluetoothDevicesAdapter? = null
     private var snackbar: Snackbar? = null
     private var refreshLayout: SwipeRefreshLayout? = null
     private val discoveredDevices = HashSet<BluetoothDevice>()
 
     private val discoveredDevicesClickListener = OnItemClickListener { _, _, position, _ ->
-        bluetoothAdapter!!.cancelDiscovery()
+        bluetoothAdapter.cancelDiscovery()
 
         val intent = Intent()
         intent.putExtra(EXTRA_DEVICE_ADDRESS,
@@ -67,9 +68,9 @@ class DeviceListActivity : AppCompatActivity() {
             val action = intent.action
 
             when (action) {
-                BluetoothDevice.ACTION_FOUND -> {
-                    val device = intent.getParcelableExtra<BluetoothDevice>(BluetoothDevice.EXTRA_DEVICE)
-                    if (device.bondState != BluetoothDevice.BOND_BONDED) {
+                ACTION_FOUND -> {
+                    val device = intent.getParcelableExtra<BluetoothDevice>(EXTRA_DEVICE)
+                    if (device.bondState != BOND_BONDED) {
                         if (discoveredDevices.contains(device)) {
                             return
                         }
@@ -77,7 +78,13 @@ class DeviceListActivity : AppCompatActivity() {
                         discoveredDevicesArrayAdapter!!.add(device)
                     }
                 }
-                BluetoothAdapter.ACTION_DISCOVERY_FINISHED -> {
+                ACTION_NAME_CHANGED -> {
+                    val device = intent.getParcelableExtra<BluetoothDevice>(EXTRA_DEVICE)
+                    if (discoveredDevices.contains(device)) {
+                        discoveredDevicesArrayAdapter!!.notifyDataSetChanged()
+                    }
+                }
+                ACTION_DISCOVERY_FINISHED -> {
                     refreshLayout!!.isRefreshing = false
                 }
             }
@@ -93,27 +100,23 @@ class DeviceListActivity : AppCompatActivity() {
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
 
-        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
-
         discoveredDevicesArrayAdapter = BluetoothDevicesAdapter(this, R.layout.device_list_item)
         val discoveredListView = findViewById<View>(R.id.discovered_devices) as ListView
         discoveredListView.adapter = discoveredDevicesArrayAdapter
         discoveredListView.onItemClickListener = discoveredDevicesClickListener
 
-        var filter = IntentFilter(BluetoothDevice.ACTION_FOUND)
-        this.registerReceiver(receiver, filter)
-
-        filter = IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_FINISHED)
-        this.registerReceiver(receiver, filter)
+        this.registerReceiver(receiver, IntentFilter(ACTION_FOUND))
+        this.registerReceiver(receiver, IntentFilter(ACTION_NAME_CHANGED))
+        this.registerReceiver(receiver, IntentFilter(ACTION_DISCOVERY_FINISHED))
 
         addPairedDevices()
 
         val refreshDevices = findViewById<FloatingActionButton>(R.id.refresh_devices)
 
-        val mCancelListener = OnClickListener { bluetoothAdapter!!.cancelDiscovery() }
-
         snackbar = Snackbar.make(discoveredListView, "Searching for new Bluetooth devices", Snackbar.LENGTH_LONG)
-                .setAction("Cancel", mCancelListener)
+                .setAction("Cancel") {
+                    bluetoothAdapter.cancelDiscovery()
+                }
 
         refreshLayout = findViewById(R.id.discovered_refresh_layout)
         refreshLayout!!.setOnRefreshListener { discoverDevices() }
@@ -125,17 +128,17 @@ class DeviceListActivity : AppCompatActivity() {
     }
 
     private fun discoverDevices() {
-        if (!bluetoothAdapter!!.isDiscovering) {
+        if (!bluetoothAdapter.isDiscovering) {
             snackbar!!.show()
             addPairedDevices()
             discoveredDevices.clear()
-            bluetoothAdapter!!.startDiscovery()
+            bluetoothAdapter.startDiscovery()
         }
     }
 
     private fun addPairedDevices() {
         discoveredDevicesArrayAdapter!!.clear()
-        val pairedDevices = bluetoothAdapter!!.bondedDevices
+        val pairedDevices = bluetoothAdapter.bondedDevices
         if (pairedDevices.size > 0) {
             for (device in pairedDevices) {
                 discoveredDevicesArrayAdapter!!.add(device)
@@ -164,7 +167,7 @@ class DeviceListActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
 
-        bluetoothAdapter?.cancelDiscovery()
+        bluetoothAdapter.cancelDiscovery()
         unregisterReceiver(receiver)
     }
 

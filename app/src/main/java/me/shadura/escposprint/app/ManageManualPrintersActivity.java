@@ -141,16 +141,17 @@ public class ManageManualPrintersActivity extends AppCompatActivity {
                             public void handleMessage(Message msg) {
                                 switch (msg.what) {
                                     case BluetoothService.MESSAGE_STATE_CHANGE: {
-                                        if (msg.arg1 == BluetoothService.State.STATE_CONNECTED.ordinal()) {
-                                            final long position = adapter.getPosition(printerInfo);
-                                            printerInfo.connecting = false;
-                                            adapter.notifyDataSetChanged();
-                                            mService.stop();
-                                            mService = null;
-                                        }
                                         break;
                                     }
-                                    case BluetoothService.MESSAGE_DEVICE_NAME: {
+                                    case BluetoothService.MESSAGE_CONNECTED: {
+                                        printerInfo.connecting = false;
+                                        adapter.notifyDataSetChanged();
+                                        mService.stop();
+                                        mService = null;
+
+                                        ListView printersList = findViewById(R.id.manage_printers_list);
+                                        Snackbar.make(printersList, "Printer connected and enabled", Snackbar.LENGTH_SHORT)
+                                                .setAction("Action", null).show();
                                         break;
                                     }
                                     case BluetoothService.MESSAGE_READ: {
@@ -163,6 +164,15 @@ public class ManageManualPrintersActivity extends AppCompatActivity {
                                         break;
                                     }
                                     case BluetoothService.MESSAGE_CONNECTION_FAILURE: {
+                                        printerInfo.connecting = false;
+                                        printerInfo.enabled = false;
+                                        adapter.notifyDataSetChanged();
+                                        mService.stop();
+                                        mService = null;
+
+                                        ListView printersList = findViewById(R.id.manage_printers_list);
+                                        Snackbar.make(printersList, "Failed to connect to the printer", Snackbar.LENGTH_SHORT)
+                                                .setAction("Action", null).show();
                                         break;
                                     }
                                 }
