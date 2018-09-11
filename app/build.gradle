@@ -12,7 +12,6 @@ try {
 
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
-apply plugin: 'io.fabric'
 apply plugin: 'com.github.triplet.play'
 
 repositories {
@@ -63,10 +62,6 @@ android {
 dependencies {
     implementation 'javax.jmdns:jmdns:3.4.1'
     implementation 'com.android.support:appcompat-v7:27.1.1'
-
-    implementation('com.crashlytics.sdk.android:crashlytics:2.6.5@aar') {
-        transitive = true
-    }
 
     androidTestImplementation('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
