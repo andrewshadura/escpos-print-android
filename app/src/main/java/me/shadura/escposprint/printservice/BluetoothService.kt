@@ -35,7 +35,7 @@ class BluetoothService
  * @param context  The UI Activity Context
  * @param handler  A Handler to send messages back to the UI Activity
  */
-(context: Context, private val mHandler: Handler) {
+(context: Context, private val handler: Handler) {
 
     private val mAdapter: BluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
     private var mConnectThread: ConnectThread? = null
@@ -43,20 +43,13 @@ class BluetoothService
 
     private var mState: State = State.STATE_NONE
 
-    /**
-     * Return the current connection state.
-     */
-    /**
-     * Set the current state of the connection
-     * @param state  An integer defining the current connection state
-     */
     // Give the new state to the Handler so the UI Activity can update
     var state: State
         @Synchronized get() = mState
         @Synchronized private set(state: State) {
             if (DEBUG) Log.d(TAG, "setState() $mState -> $state")
             mState = state
-            mHandler.obtainMessage(MESSAGE_STATE_CHANGE, state.ordinal, -1).sendToTarget()
+            handler.obtainMessage(MESSAGE_STATE_CHANGE, state.ordinal, -1).sendToTarget()
         }
 
     // Constants that indicate the current connection state
@@ -75,7 +68,7 @@ class BluetoothService
         if (DEBUG) Log.d(TAG, "connect to: $device")
 
         // Cancel any thread attempting to make a connection
-        if (mState == State.STATE_CONNECTING) {
+        if (state == State.STATE_CONNECTING) {
             mConnectThread?.cancel()
             mConnectThread = null
         }
@@ -112,11 +105,11 @@ class BluetoothService
         mConnectedThread!!.start()
 
         // Send the name of the connected device back to the UI Activity
-        val msg = mHandler.obtainMessage(MESSAGE_DEVICE_NAME)
+        val msg = handler.obtainMessage(MESSAGE_DEVICE_NAME)
         val bundle = Bundle()
         bundle.putString("DEVICE_NAME", device.name)
         msg.data = bundle
-        mHandler.sendMessage(msg)
+        handler.sendMessage(msg)
 
         state = State.STATE_CONNECTED
     }
@@ -144,7 +137,7 @@ class BluetoothService
     fun write(out: ByteArray) {
         // Synchronize a copy of the ConnectedThread
         synchronized(this) {
-            if (mState == State.STATE_CONNECTED) {
+            if (state == State.STATE_CONNECTED) {
                 mConnectedThread!!.write(out)
             }
         }
@@ -154,28 +147,30 @@ class BluetoothService
      * Indicate that the connection attempt failed and notify the UI Activity.
      */
     private fun connectionFailed() {
+        if (state == State.STATE_NONE) return
         state = State.STATE_NONE
 
         // Send a failure message back to the Activity
-        val msg = mHandler.obtainMessage(MESSAGE_TOAST)
+        val msg = handler.obtainMessage(MESSAGE_TOAST)
         val bundle = Bundle()
         bundle.putString("MESSAGE_TOAST", "Unable to connect device")
         msg.data = bundle
-        mHandler.sendMessage(msg)
+        handler.sendMessage(msg)
     }
 
     /**
      * Indicate that the connection was lost and notify the UI Activity.
      */
     private fun connectionLost() {
+        if (state == State.STATE_NONE) return
         state = State.STATE_NONE
 
         // Send a failure message back to the Activity
-        val msg = mHandler.obtainMessage(MESSAGE_TOAST)
+        val msg = handler.obtainMessage(MESSAGE_TOAST)
         val bundle = Bundle()
         bundle.putString("MESSAGE_TOAST", "Device connection was lost")
         msg.data = bundle
-        mHandler.sendMessage(msg)
+        handler.sendMessage(msg)
     }
 
     /**
@@ -267,7 +262,6 @@ class BluetoothService
 
             mmInStream = tmpIn
             mmOutStream = tmpOut
-            mState = BluetoothService.State.STATE_CONNECTED
         }
 
         override fun run() {
@@ -282,7 +276,7 @@ class BluetoothService
                     bytes = mmInStream!!.read(buffer)
 
                     // Send the obtained bytes to the UI Activity
-                    mHandler.obtainMessage(MESSAGE_READ, bytes, -1, buffer)
+                    handler.obtainMessage(MESSAGE_READ, bytes, -1, buffer)
                             .sendToTarget()
                 } catch (e: IOException) {
                     Log.e(TAG, "disconnected", e)
@@ -305,7 +299,7 @@ class BluetoothService
                 Log.i(TAG, String(buffer))
 
                 // Share the sent message back to the UI Activity
-                mHandler.obtainMessage(MESSAGE_WRITE, -1, -1, buffer)
+                handler.obtainMessage(MESSAGE_WRITE, -1, -1, buffer)
                         .sendToTarget()
             } catch (e: IOException) {
                 Log.e(TAG, "Exception during write", e)
