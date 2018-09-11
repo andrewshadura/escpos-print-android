@@ -6,17 +6,44 @@
     android:orientation="vertical"
     android:padding="8dp">
 
-    <TextView
-        android:id="@+id/manual_printer_name"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="8dp"
-        android:textAppearance="@style/Base.TextAppearance.AppCompat.Large"/>
+        android:layout_height="wrap_content">
 
-    <TextView
-        android:id="@+id/manual_printer_url"
+        <TextView
+            android:id="@+id/manual_printer_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="9"
+            android:padding="8dp"
+            android:textAppearance="@style/Base.TextAppearance.AppCompat.Large" />
+
+        <Switch
+            android:id="@+id/manual_printer_enabled"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:checked="false" />
+    </LinearLayout>
+
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="8dp"/>
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/manual_printer_address"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="9"
+            android:padding="8dp" />
+
+        <ProgressBar
+            android:id="@+id/manual_printer_progressbar"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:indeterminate="true"
+            android:visibility="visible" />
+    </LinearLayout>
 
 </LinearLayout>

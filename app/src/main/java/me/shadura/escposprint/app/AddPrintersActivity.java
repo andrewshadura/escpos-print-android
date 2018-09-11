@@ -34,7 +34,7 @@ public class AddPrintersActivity extends Activity {
     public static final String PREF_NUM_PRINTERS = "num";
 
     /**
-     * Will be suffixed by the printer ID. Contains the URL.
+     * Will be suffixed by the printer ID. Contains the MAC address.
      */
     public static final String PREF_ADDRESS = "address";
 
@@ -43,14 +43,19 @@ public class AddPrintersActivity extends Activity {
      */
     public static final String PREF_NAME = "name";
 
-    private EditText mUrl, mName, mServerIp;
+    /**
+     * Will be suffixed by the printer ID. Contains true if enabled.
+     */
+    public static final String PREF_ENABLED = "enabled";
+
+    private EditText mAddress, mName, mServerIp;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.add_printers);
         mServerIp = (EditText) findViewById(R.id.add_server_ip);
-        mUrl = (EditText) findViewById(R.id.add_url);
+        mAddress = (EditText) findViewById(R.id.add_address);
         mName = (EditText) findViewById(R.id.add_name);
     }
 
@@ -60,14 +65,14 @@ public class AddPrintersActivity extends Activity {
      * @param button The add button
      */
     public void addPrinter(View button) {
-        String url = mUrl.getText().toString();
+        String address = mAddress.getText().toString();
         String name = mName.getText().toString();
 
         if (TextUtils.isEmpty(name)) {
             Toast.makeText(this, R.string.err_add_printer_empty_name, Toast.LENGTH_LONG).show();
             return;
         }
-        if (TextUtils.isEmpty(url)) {
+        if (TextUtils.isEmpty(address)) {
             Toast.makeText(this, R.string.err_add_printer_empty_url, Toast.LENGTH_LONG).show();
             return;
         }
@@ -75,8 +80,9 @@ public class AddPrintersActivity extends Activity {
         SharedPreferences prefs = getSharedPreferences(SHARED_PREFS_MANUAL_PRINTERS, MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
         int id = prefs.getInt(PREF_NUM_PRINTERS, 0);
-        editor.putString(PREF_ADDRESS + id, url);
+        editor.putString(PREF_ADDRESS + id, address);
         editor.putString(PREF_NAME + id, name);
+        editor.putBoolean(PREF_ENABLED + id, true);
         editor.putInt(PREF_NUM_PRINTERS, id + 1);
         editor.apply();
 
@@ -89,6 +95,20 @@ public class AddPrintersActivity extends Activity {
                 finish();
             }
         }, 200);
+    }
+
+    /**
+     * Add a printer, externally
+     */
+    public void addPrinter(String name, String address, boolean enabled) {
+        SharedPreferences prefs = getSharedPreferences(SHARED_PREFS_MANUAL_PRINTERS, MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        int id = prefs.getInt(PREF_NUM_PRINTERS, 0);
+        editor.putString(PREF_ADDRESS + id, address);
+        editor.putString(PREF_NAME + id, name);
+        editor.putBoolean(PREF_ENABLED + id, true);
+        editor.putInt(PREF_NUM_PRINTERS, id + 1);
+        editor.apply();
     }
 
     public void searchPrinters(View button) {
@@ -153,6 +173,7 @@ public class AddPrintersActivity extends Activity {
             name = matcher.group(3);
             editor.putString(PREF_ADDRESS + id, url);
             editor.putString(PREF_NAME + id, name);
+            editor.putBoolean(PREF_ENABLED + id, true);
             id++;
         }
         editor.putInt(PREF_NUM_PRINTERS, id);

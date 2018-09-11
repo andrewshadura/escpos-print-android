@@ -24,6 +24,8 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.ProgressBar;
+import android.widget.Switch;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -32,10 +34,14 @@ import java.util.List;
 import me.shadura.escposprint.R;
 import me.shadura.escposprint.printservice.BluetoothService;
 
+import static android.view.View.GONE;
+import static android.view.View.VISIBLE;
+
 public class ManageManualPrintersActivity extends AppCompatActivity {
     private BluetoothAdapter mBluetoothAdapter = null;
 
     private BluetoothService mService = null;
+    private ManualPrintersAdapter adapter = null;
 
     /* Intent request codes */
     private static final int REQUEST_FIND_DEVICE = 1;
@@ -54,33 +60,7 @@ public class ManageManualPrintersActivity extends AppCompatActivity {
         final SharedPreferences prefs = getSharedPreferences(AddPrintersActivity.SHARED_PREFS_MANUAL_PRINTERS, Context.MODE_PRIVATE);
         int numPrinters = prefs.getInt(AddPrintersActivity.PREF_NUM_PRINTERS, 0);
         List<ManualPrinterInfo> printers = getPrinters(prefs, numPrinters);
-        final ManualPrintersAdapter adapter = new ManualPrintersAdapter(this, R.layout.manage_printers_list_item, printers);
-
-        mService = new BluetoothService(this, new Handler() {
-            @Override
-            public void handleMessage(Message msg) {
-                switch (msg.what) {
-                    case BluetoothService.MESSAGE_STATE_CHANGE: {
-                        break;
-                    }
-                    case BluetoothService.MESSAGE_DEVICE_NAME: {
-                        break;
-                    }
-                    case BluetoothService.MESSAGE_READ: {
-                        break;
-                    }
-                    case BluetoothService.MESSAGE_WRITE: {
-                        break;
-                    }
-                    case BluetoothService.MESSAGE_CONNECTION_LOST: {
-                        break;
-                    }
-                    case BluetoothService.MESSAGE_CONNECTION_FAILURE: {
-                        break;
-                    }
-                }
-            }
-        });
+        adapter = new ManualPrintersAdapter(this, R.layout.manage_printers_list_item, printers);
 
         // Setup adapter with click to remove
         printersList.setAdapter(adapter);
@@ -153,7 +133,41 @@ public class ManageManualPrintersActivity extends AppCompatActivity {
                     String address = data.getExtras().getString(DeviceListActivity.EXTRA_DEVICE_ADDRESS);
 
                     if (BluetoothAdapter.checkBluetoothAddress(address)) {
-                        BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(address);
+                        final BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(address);
+                        final ManualPrinterInfo printerInfo = new ManualPrinterInfo(device.getName(), address, true, true);
+                        adapter.add(printerInfo);
+                        mService = new BluetoothService(this, new Handler() {
+                            @Override
+                            public void handleMessage(Message msg) {
+                                switch (msg.what) {
+                                    case BluetoothService.MESSAGE_STATE_CHANGE: {
+                                        if (msg.arg1 == BluetoothService.State.STATE_CONNECTED.ordinal()) {
+                                            final long position = adapter.getPosition(printerInfo);
+                                            printerInfo.connecting = false;
+                                            adapter.notifyDataSetChanged();
+                                            mService.stop();
+                                            mService = null;
+                                        }
+                                        break;
+                                    }
+                                    case BluetoothService.MESSAGE_DEVICE_NAME: {
+                                        break;
+                                    }
+                                    case BluetoothService.MESSAGE_READ: {
+                                        break;
+                                    }
+                                    case BluetoothService.MESSAGE_WRITE: {
+                                        break;
+                                    }
+                                    case BluetoothService.MESSAGE_CONNECTION_LOST: {
+                                        break;
+                                    }
+                                    case BluetoothService.MESSAGE_CONNECTION_FAILURE: {
+                                        break;
+                                    }
+                                }
+                            }
+                        });
                         mService.connect(device);
                     }
                 }
@@ -175,30 +189,39 @@ public class ManageManualPrintersActivity extends AppCompatActivity {
         @NonNull
     private List<ManualPrinterInfo> getPrinters(SharedPreferences prefs, int numPrinters) {
         List<ManualPrinterInfo> printers = new ArrayList<>(numPrinters);
-        String url, name;
+        String address, name;
+        boolean enabled;
         for (int i = 0; i < numPrinters; i++) {
             name = prefs.getString(AddPrintersActivity.PREF_NAME + i, null);
-            url = prefs.getString(AddPrintersActivity.PREF_ADDRESS + i, null);
-            printers.add(new ManualPrinterInfo(name, url));
+            address = prefs.getString(AddPrintersActivity.PREF_ADDRESS + i, null);
+            enabled = prefs.getBoolean(AddPrintersActivity.PREF_ENABLED + i, false);
+            printers.add(new ManualPrinterInfo(name, address, enabled, false));
         }
         return printers;
     }
 
     private static class ManualPrinterInfo {
-        String url, name;
+        String address, name;
+        boolean enabled, connecting;
 
-        private ManualPrinterInfo(String name, String url) {
+        private ManualPrinterInfo(String name, String address, boolean enabled, boolean connecting) {
             this.name = name;
-            this.url = url;
+            this.address = address;
+            this.enabled = enabled;
+            this.connecting = connecting;
         }
     }
 
     private static class ManualPrinterInfoViews {
-        TextView url, name;
+        TextView address, name;
+        Switch enabled;
+        ProgressBar connecting;
 
-        ManualPrinterInfoViews(TextView name, TextView url) {
+        ManualPrinterInfoViews(TextView name, TextView address, Switch enabled, ProgressBar connecting) {
             this.name = name;
-            this.url = url;
+            this.address = address;
+            this.enabled = enabled;
+            this.connecting = connecting;
         }
     }
 
@@ -215,7 +238,9 @@ public class ManageManualPrintersActivity extends AppCompatActivity {
                 convertView = LayoutInflater.from(parent.getContext()).inflate(R.layout.manage_printers_list_item, parent, false);
                 views = new ManualPrinterInfoViews(
                         (TextView) convertView.findViewById(R.id.manual_printer_name),
-                        (TextView) convertView.findViewById(R.id.manual_printer_url)
+                        (TextView) convertView.findViewById(R.id.manual_printer_address),
+                        (Switch) convertView.findViewById(R.id.manual_printer_enabled),
+                        (ProgressBar) convertView.findViewById(R.id.manual_printer_progressbar)
                 );
                 convertView.setTag(views);
             } else {
@@ -225,7 +250,10 @@ public class ManageManualPrintersActivity extends AppCompatActivity {
             ManualPrinterInfo info = getItem(position);
             if (info != null) {
                 views.name.setText(info.name);
-                views.url.setText(info.url);
+                views.address.setText(info.address);
+                views.enabled.setChecked(info.enabled);
+                views.enabled.setEnabled(!info.connecting);
+                views.connecting.setVisibility(info.connecting ? VISIBLE : GONE);
             } else {
                 throw new IllegalStateException("Manual printers list can't have invalid items");
             }
