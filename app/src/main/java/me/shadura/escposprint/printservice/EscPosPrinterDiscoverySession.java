@@ -17,8 +17,6 @@ import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.widget.Toast;
 
-import com.crashlytics.android.Crashlytics;
-
 import org.cups4j.CupsClient;
 import org.cups4j.CupsPrinter;
 import org.cups4j.operations.ipp.IppGetPrinterAttributesOperation;
@@ -417,7 +415,7 @@ class EscPosPrinterDiscoverySession extends PrinterDiscoverySession {
                 L.v("HTTP response code: " + mResponseCode);
                 if (mException != null) {
                     if (handlePrinterException(mException, printerId)) {
-                        Crashlytics.logException(mException);
+                        L.e("Couldn't start printer state tracking", mException);
                     }
                 } else {
                     onPrinterChecked(printerId, printerCapabilitiesInfo);
@@ -431,7 +429,7 @@ class EscPosPrinterDiscoverySession extends PrinterDiscoverySession {
      *
      * @param exception The exception that occurred
      * @param printerId The printer on which the exception occurred
-     * @return true if the exception should be reported to Crashlytics, false otherwise
+     * @return true if the exception should be reported for a potential bug, false otherwise
      */
     boolean handlePrinterException(@NonNull Exception exception, @NonNull PrinterId printerId) {
         // Happens when the HTTP response code is in the 4xx range
@@ -465,7 +463,7 @@ class EscPosPrinterDiscoverySession extends PrinterDiscoverySession {
      *
      * @param exception The exception that occurred
      * @param printerId The printer on which the exception occurred
-     * @return true if the exception should be reported to Crashlytics, false otherwise
+     * @return true if the exception should be reported for a potential bug, false otherwise
      */
     private boolean handleHttpError(@NonNull Exception exception, @NonNull PrinterId printerId) {
         switch (mResponseCode) {
