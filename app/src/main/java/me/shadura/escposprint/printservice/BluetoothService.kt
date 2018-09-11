@@ -28,6 +28,7 @@ import android.content.Context
 import android.os.Bundle
 import android.os.Handler
 import android.util.Log
+import me.shadura.escposprint.L
 
 class BluetoothService
 /**
@@ -47,7 +48,7 @@ class BluetoothService
     var state: State
         @Synchronized get() = mState
         @Synchronized private set(state: State) {
-            if (DEBUG) Log.d(TAG, "setState() $mState -> $state")
+            L.d( "setState() $mState -> $state")
             mState = state
             handler.obtainMessage(MESSAGE_STATE_CHANGE, state.ordinal, -1).sendToTarget()
         }
@@ -65,7 +66,7 @@ class BluetoothService
      */
     @Synchronized
     fun connect(device: BluetoothDevice) {
-        if (DEBUG) Log.d(TAG, "connect to: $device")
+        L.d("connect to: $device")
 
         // Cancel any thread attempting to make a connection
         if (state == State.STATE_CONNECTING) {
@@ -90,7 +91,7 @@ class BluetoothService
      */
     @Synchronized
     fun connected(socket: BluetoothSocket, device: BluetoothDevice) {
-        if (DEBUG) Log.d(TAG, "connected")
+        L.d("connected")
 
         // Cancel the thread that completed the connection
         mConnectThread?.cancel()
@@ -119,9 +120,6 @@ class BluetoothService
      */
     @Synchronized
     fun stop() {
-        if (DEBUG) {
-            Log.d(TAG, "stop")
-        }
         state = State.STATE_NONE
         mConnectThread?.cancel()
         mConnectThread = null
@@ -182,8 +180,6 @@ class BluetoothService
         private val mmSocket: BluetoothSocket?
 
         init {
-            this.name = "ConnectThread"
-            Log.d(TAG, "create $name")
             // Get a BluetoothSocket for a connection with the
             // given BluetoothDevice
             mmSocket = try {
@@ -195,8 +191,6 @@ class BluetoothService
         }
 
         override fun run() {
-            Log.i(TAG, "BEGIN $name")
-
             // Always cancel discovery because it will slow down a connection
             mAdapter.cancelDiscovery()
 
@@ -232,7 +226,7 @@ class BluetoothService
             try {
                 mmSocket?.close()
             } catch (e: IOException) {
-                Log.e(TAG, "close() of connect socket failed", e)
+                L.e("close() of connect socket failed", e)
             }
 
         }
@@ -247,8 +241,6 @@ class BluetoothService
         private val mmOutStream: OutputStream?
 
         init {
-            this.name = "ConnectThread"
-            Log.d(TAG, "create $name")
             var tmpIn: InputStream? = null
             var tmpOut: OutputStream? = null
 
@@ -265,7 +257,6 @@ class BluetoothService
         }
 
         override fun run() {
-            Log.i(TAG, "BEGIN $name")
             var bytes: Int
 
             // Keep listening to the InputStream while connected
@@ -279,7 +270,7 @@ class BluetoothService
                     handler.obtainMessage(MESSAGE_READ, bytes, -1, buffer)
                             .sendToTarget()
                 } catch (e: IOException) {
-                    Log.e(TAG, "disconnected", e)
+                    L.e("disconnected", e)
                     connectionLost()
                     break
                 }
@@ -296,13 +287,13 @@ class BluetoothService
                 mmOutStream!!.write(buffer)
                 mmOutStream.flush()
 
-                Log.i(TAG, String(buffer))
+                L.i(String(buffer))
 
                 // Share the sent message back to the UI Activity
                 handler.obtainMessage(MESSAGE_WRITE, -1, -1, buffer)
-                        .sendToTarget()
+                       .sendToTarget()
             } catch (e: IOException) {
-                Log.e(TAG, "Exception during write", e)
+                L.e("Exception during write", e)
             }
 
         }
@@ -311,7 +302,7 @@ class BluetoothService
             try {
                 mmSocket.close()
             } catch (e: IOException) {
-                Log.e(TAG, "close() of connect socket failed", e)
+                L.e("close() of connect socket failed", e)
             }
 
         }
@@ -319,7 +310,6 @@ class BluetoothService
 
     companion object {
         private const val TAG = "BluetoothService"
-        private const val DEBUG = true
 
         private val MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")
 
