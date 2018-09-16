@@ -187,54 +187,65 @@ internal class EscPosPrinterDiscoverySession(private val mPrintService: PrintSer
             var resolutionSet = false
             for (attributeGroup in attributes) {
                 for (attribute in attributeGroup.attribute) {
-                    if ("media-default" == attribute.name) {
-                        val mediaSize = EscPosPrinterDiscoveryUtils.getMediaSizeFromAttributeValue(attribute.attributeValue[0])
-                        if (mediaSize != null) {
-                            mediaSizeSet = true
-                            builder.addMediaSize(mediaSize, true)
-                        }
-                    } else if ("media-supported" == attribute.name) {
-                        for (attributeValue in attribute.attributeValue) {
-                            val mediaSize = EscPosPrinterDiscoveryUtils.getMediaSizeFromAttributeValue(attributeValue)
+                    when (attribute.name) {
+                        "media-default" -> {
+                            val mediaSize = EscPosPrinterDiscoveryUtils.getMediaSizeFromAttributeValue(attribute.attributeValue[0])
                             if (mediaSize != null) {
                                 mediaSizeSet = true
-                                builder.addMediaSize(mediaSize, false)
+                                builder.addMediaSize(mediaSize, true)
                             }
                         }
-                    } else if ("printer-resolution-default" == attribute.name) {
-                        resolutionSet = true
-                        builder.addResolution(EscPosPrinterDiscoveryUtils.getResolutionFromAttributeValue("0", attribute.attributeValue[0]), true)
-                    } else if ("printer-resolution-supported" == attribute.name) {
-                        for (attributeValue in attribute.attributeValue) {
+                        "media-supported" -> {
+                            for (attributeValue in attribute.attributeValue) {
+                                val mediaSize = EscPosPrinterDiscoveryUtils.getMediaSizeFromAttributeValue(attributeValue)
+                                if (mediaSize != null) {
+                                    mediaSizeSet = true
+                                    builder.addMediaSize(mediaSize, false)
+                                }
+                            }
+                        }
+                        "printer-resolution-default" -> {
                             resolutionSet = true
-                            builder.addResolution(EscPosPrinterDiscoveryUtils.getResolutionFromAttributeValue(attributeValue.tag, attributeValue), false)
+                            builder.addResolution(EscPosPrinterDiscoveryUtils.getResolutionFromAttributeValue("0", attribute.attributeValue[0]), true)
                         }
-                    } else if ("print-color-mode-supported" == attribute.name) {
-                        for (attributeValue in attribute.attributeValue) {
-                            if ("monochrome" == attributeValue.value) {
-                                colorMode = colorMode or PrintAttributes.COLOR_MODE_MONOCHROME
-                            } else if ("color" == attributeValue.value) {
-                                colorMode = colorMode or PrintAttributes.COLOR_MODE_COLOR
+                        "printer-resolution-supported" -> {
+                            for (attributeValue in attribute.attributeValue) {
+                                resolutionSet = true
+                                builder.addResolution(EscPosPrinterDiscoveryUtils.getResolutionFromAttributeValue(attributeValue.tag, attributeValue), false)
                             }
                         }
-                    } else if ("print-color-mode-default" == attribute.name) {
-                        var attributeValue: AttributeValue? = null
-                        if (!attribute.attributeValue.isEmpty()) {
-                            attributeValue = attribute.attributeValue[0]
+                        "print-color-mode-supported" -> {
+                            for (attributeValue in attribute.attributeValue) {
+                                if ("monochrome" == attributeValue.value) {
+                                    colorMode = colorMode or PrintAttributes.COLOR_MODE_MONOCHROME
+                                } else if ("color" == attributeValue.value) {
+                                    colorMode = colorMode or PrintAttributes.COLOR_MODE_COLOR
+                                }
+                            }
                         }
-                        if (attributeValue != null && "color" == attributeValue.value) {
-                            colorDefault = PrintAttributes.COLOR_MODE_COLOR
-                        } else {
-                            colorDefault = PrintAttributes.COLOR_MODE_MONOCHROME
+                        "print-color-mode-default" -> {
+                            var attributeValue: AttributeValue? = null
+                            if (!attribute.attributeValue.isEmpty()) {
+                                attributeValue = attribute.attributeValue[0]
+                            }
+                            if (attributeValue != null && "color" == attributeValue.value) {
+                                colorDefault = PrintAttributes.COLOR_MODE_COLOR
+                            } else {
+                                colorDefault = PrintAttributes.COLOR_MODE_MONOCHROME
+                            }
                         }
-                    } else if ("media-left-margin-supported" == attribute.name) {
-                        marginMilsLeft = determineMarginFromAttribute(attribute)
-                    } else if ("media-right-margin-supported" == attribute.name) {
-                        marginMilsRight = determineMarginFromAttribute(attribute)
-                    } else if ("media-top-margin-supported" == attribute.name) {
-                        marginMilsTop = determineMarginFromAttribute(attribute)
-                    } else if ("media-bottom-margin-supported" == attribute.name) {
-                        marginMilsBottom = determineMarginFromAttribute(attribute)
+                        "media-left-margin-supported" -> {
+                            marginMilsLeft = determineMarginFromAttribute(attribute)
+                        }
+                        "media-right-margin-supported" -> {
+                            marginMilsRight = determineMarginFromAttribute(attribute)
+                        }
+                        "media-top-margin-supported" -> {
+                            marginMilsTop = determineMarginFromAttribute(attribute)
+                        }
+                        "media-bottom-margin-supported" -> {
+                            marginMilsBottom = determineMarginFromAttribute(attribute)
+                        }
                     }
                 }
             }
