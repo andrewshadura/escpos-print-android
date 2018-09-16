@@ -423,26 +423,34 @@ internal class EscPosPrinterDiscoverySession(private val mPrintService: PrintSer
      */
     fun handlePrinterException(exception: Exception, printerId: PrinterId): Boolean {
         // Happens when the HTTP response code is in the 4xx range
-        if (exception is FileNotFoundException) {
-            return handleHttpError(exception, printerId)
-        } else if (exception is SSLPeerUnverifiedException || exception is IOException && exception.message != null && exception.message!!.contains("not verified")) {
-            val dialog = Intent(mPrintService, HostNotVerifiedActivity::class.java)
-            dialog.putExtra(HostNotVerifiedActivity.KEY_HOST, mUnverifiedHost)
-            dialog.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            mPrintService.startActivity(dialog)
-        } else if (exception is SSLException && mServerCerts != null) {
-            val dialog = Intent(mPrintService, UntrustedCertActivity::class.java)
-            dialog.putExtra(UntrustedCertActivity.KEY_CERT, mServerCerts!![0])
-            dialog.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            mPrintService.startActivity(dialog)
-        } else if (exception is SocketTimeoutException) {
-            Toast.makeText(mPrintService, R.string.err_printer_socket_timeout, Toast.LENGTH_LONG).show()
-        } else if (exception is UnknownHostException) {
-            Toast.makeText(mPrintService, R.string.err_printer_unknown_host, Toast.LENGTH_LONG).show()
-        } else if (exception is ConnectException && exception.getLocalizedMessage().contains("ENETUNREACH")) {
-            Toast.makeText(mPrintService, R.string.err_printer_network_unreachable, Toast.LENGTH_LONG).show()
-        } else {
-            return handleHttpError(exception, printerId)
+        when {
+            exception is FileNotFoundException ->
+                return handleHttpError(exception, printerId)
+            exception is SSLPeerUnverifiedException ||
+                    exception is IOException && (exception.message?.contains("not verified")) == false -> {
+                val dialog = Intent(mPrintService, HostNotVerifiedActivity::class.java)
+                dialog.putExtra(HostNotVerifiedActivity.KEY_HOST, mUnverifiedHost)
+                dialog.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                mPrintService.startActivity(dialog)
+            }
+            exception is SSLException && mServerCerts != null -> {
+                val dialog = Intent(mPrintService, UntrustedCertActivity::class.java)
+                dialog.putExtra(UntrustedCertActivity.KEY_CERT, mServerCerts!![0])
+                dialog.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                mPrintService.startActivity(dialog)
+            }
+            exception is SocketTimeoutException -> {
+                Toast.makeText(mPrintService, R.string.err_printer_socket_timeout, Toast.LENGTH_LONG).show()
+            }
+            exception is UnknownHostException -> {
+                Toast.makeText(mPrintService, R.string.err_printer_unknown_host, Toast.LENGTH_LONG).show()
+            }
+            exception is ConnectException && exception.getLocalizedMessage().contains("ENETUNREACH") -> {
+                Toast.makeText(mPrintService, R.string.err_printer_network_unreachable, Toast.LENGTH_LONG).show()
+            }
+            else -> {
+                return handleHttpError(exception, printerId)
+            }
         }
         return false
     }
