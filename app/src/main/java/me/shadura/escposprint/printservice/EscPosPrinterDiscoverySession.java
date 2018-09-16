@@ -51,7 +51,6 @@ import me.shadura.escposprint.app.AddPrintersActivity;
 import me.shadura.escposprint.app.BasicAuthActivity;
 import me.shadura.escposprint.app.HostNotVerifiedActivity;
 import me.shadura.escposprint.app.UntrustedCertActivity;
-import me.shadura.escposprint.detect.MdnsServices;
 import me.shadura.escposprint.detect.PrinterRec;
 import me.shadura.escposprint.detect.PrinterResult;
 
@@ -335,8 +334,7 @@ class EscPosPrinterDiscoverySession extends PrinterDiscoverySession {
      */
     @NonNull
     Map<String, String> scanPrinters() {
-        final MdnsServices mdns = new MdnsServices();
-        PrinterResult result = mdns.scan();
+        final PrinterResult result = new PrinterResult();
 
         //TODO: check for errors
         Map<String, String> printers = new HashMap<>();
