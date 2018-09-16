@@ -66,7 +66,10 @@ class ManageManualPrintersActivity : AppCompatActivity() {
 
         // Build adapter
         val prefs = getSharedPreferences(AddPrintersActivity.SHARED_PREFS_MANUAL_PRINTERS, Context.MODE_PRIVATE)
-        val numPrinters = prefs.getInt(AddPrintersActivity.PREF_NUM_PRINTERS, 0)
+        var numPrinters = prefs.getInt(AddPrintersActivity.PREF_NUM_PRINTERS, 0)
+        if (numPrinters < 0) {
+            numPrinters = 0
+        }
         val printers = getPrinters(prefs, numPrinters)
         adapter = ManualPrintersAdapter(this, R.layout.manage_printers_list_item, printers)
 
