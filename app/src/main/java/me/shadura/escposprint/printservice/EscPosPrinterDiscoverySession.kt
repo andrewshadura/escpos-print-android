@@ -61,7 +61,6 @@ import me.shadura.escposprint.app.BasicAuthActivity
 import me.shadura.escposprint.app.HostNotVerifiedActivity
 import me.shadura.escposprint.app.UntrustedCertActivity
 import me.shadura.escposprint.detect.PrinterRec
-import me.shadura.escposprint.detect.PrinterResult
 
 /**
  * CUPS printer discovery class
@@ -335,18 +334,12 @@ internal class EscPosPrinterDiscoverySession(private val mPrintService: PrintSer
      * @return The list of printers as [PrinterRec]
      */
     fun scanPrinters(): Map<String, String> {
-        val result = PrinterResult()
-
         //TODO: check for errors
         val printers = HashMap<String, String>()
         var url: String?
         var name: String?
 
-        // Add the printers found by mDNS
-        for ((nickname, protocol, host, port, queue) in result.printers) {
-            url = "$protocol://$host:$port/printers/$queue"
-            printers[url] = nickname
-        }
+        /* TODO: Here, we can detect more printers */
 
         // Add the printers manually added
         val prefs = mPrintService.getSharedPreferences(AddPrintersActivity.SHARED_PREFS_MANUAL_PRINTERS, Context.MODE_PRIVATE)
