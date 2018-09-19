@@ -101,9 +101,9 @@ internal class EscPosPrinterDiscoverySession(private val mPrintService: PrintSer
         Toast.makeText(mPrintService, toast, Toast.LENGTH_SHORT).show()
         L.d("onPrintersDiscovered($printers)")
         val printersInfo = ArrayList<PrinterInfo>(printers.size)
-        for (url in printers.keys) {
-            val printerId = mPrintService.generatePrinterId(url)
-            printersInfo.add(PrinterInfo.Builder(printerId, printers[url], PrinterInfo.STATUS_IDLE).build())
+        for (address in printers.keys) {
+            val printerId = mPrintService.generatePrinterId(address)
+            printersInfo.add(PrinterInfo.Builder(printerId, printers[address], PrinterInfo.STATUS_IDLE).build())
         }
 
         addPrinters(printersInfo)
@@ -115,20 +115,20 @@ internal class EscPosPrinterDiscoverySession(private val mPrintService: PrintSer
      * @return The printer capabilities if the printer is available, null otherwise
      */
     @Throws(Exception::class)
-    fun checkPrinter(url: String?, printerId: PrinterId): PrinterCapabilitiesInfo? {
-        if (url == null || !url.startsWith("http://") && !url.startsWith("https://")) {
+    fun checkPrinter(address: String?, printerId: PrinterId): PrinterCapabilitiesInfo? {
+        if (address == null || !address.startsWith("http://") && !address.startsWith("https://")) {
             return null
         }
-        val printerURL = URL(url)
+        val printerURL = URL(address)
 
-        val tmpUri = URI(url)
+        val tmpUri = URI(address)
         val schemeHostPort = tmpUri.scheme + "://" + tmpUri.host + ":" + tmpUri.port
         val clientURL = URL(schemeHostPort)
 
         // Most servers have URLs like xxx://ip:port/printers/printer_name; however some may have xxx://ip:port/printer_name (see GitHub issue #40)
         var path: String? = null
-        if (url.length > schemeHostPort.length + 1) {
-            path = url.substring(schemeHostPort.length + 1)
+        if (address.length > schemeHostPort.length + 1) {
+            path = address.substring(schemeHostPort.length + 1)
             val pos = path.indexOf('/')
             if (pos > 0) {
                 path = path.substring(0, pos)
@@ -164,7 +164,7 @@ internal class EscPosPrinterDiscoverySession(private val mPrintService: PrintSer
             val builder = PrinterCapabilitiesInfo.Builder(printerId)
             val ippAttributes = op.request(printerURL, propertyMap)
             if (ippAttributes == null) {
-                L.e("Couldn't get 'requested-attributes' from printer: $url")
+                L.e("Couldn't get 'requested-attributes' from printer: $address")
                 return null
             }
 
@@ -176,7 +176,7 @@ internal class EscPosPrinterDiscoverySession(private val mPrintService: PrintSer
             var marginMilsLeft = 0
             val attributes = ippAttributes.attributeGroupList
             if (attributes == null) {
-                L.e("Couldn't get attributes list from printer: $url")
+                L.e("Couldn't get attributes list from printer: $address")
                 return null
             }
 
@@ -321,7 +321,7 @@ internal class EscPosPrinterDiscoverySession(private val mPrintService: PrintSer
                     printers.add(printer)
                 }
             }
-            L.d("onPrinterChecked: we had " + getPrinters().size + "printers, we now have " + printers.size)
+            L.d("onPrinterChecked: we had " + getPrinters().size + " printers, we now have " + printers.size)
             addPrinters(printers)
         }
     }
@@ -334,7 +334,7 @@ internal class EscPosPrinterDiscoverySession(private val mPrintService: PrintSer
     fun scanPrinters(): Map<String, String> {
         //TODO: check for errors
         val printers = HashMap<String, String>()
-        var url: String?
+        var address: String?
         var name: String?
 
         /* TODO: Here, we can detect more printers */
@@ -343,27 +343,10 @@ internal class EscPosPrinterDiscoverySession(private val mPrintService: PrintSer
         val prefs = mPrintService.getSharedPreferences(AddPrintersActivity.SHARED_PREFS_MANUAL_PRINTERS, Context.MODE_PRIVATE)
         val numPrinters = prefs.getInt(AddPrintersActivity.PREF_NUM_PRINTERS, 0)
         for (i in 0 until numPrinters) {
-            url = prefs.getString(AddPrintersActivity.PREF_ADDRESS + i, null)
+            address = prefs.getString(AddPrintersActivity.PREF_ADDRESS + i, null)
             name = prefs.getString(AddPrintersActivity.PREF_NAME + i, null)
-            if (url != null && name != null && url.trim { it <= ' ' }.length > 0 && name.trim { it <= ' ' }.length > 0) {
-                // Ensure a port is set, and set it to 631 if unset
-                try {
-                    val uri = URI(url)
-                    if (uri.port < 0) {
-                        url = uri.scheme + "://" + uri.host + ":" + 631
-                    } else {
-                        url = uri.scheme + "://" + uri.host + ":" + uri.port
-                    }
-                    if (uri.path != null) {
-                        url += uri.path
-                    }
-
-                    // Now, add printer
-                    printers[url] = name
-                } catch (e: URISyntaxException) {
-                    L.e("Unable to parse manually-entered URI: $url", e)
-                }
-
+            if (enabled && address != null && name != null && address.trim { it <= ' ' }.length > 0 && name.trim { it <= ' ' }.length > 0) {
+                printers[address] = name
             }
         }
 
