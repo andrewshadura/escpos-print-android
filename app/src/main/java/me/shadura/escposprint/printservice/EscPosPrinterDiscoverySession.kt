@@ -44,7 +44,6 @@ import java.net.URISyntaxException
 import java.net.URL
 import java.net.UnknownHostException
 import java.security.cert.CertificateException
-import java.security.cert.X509Certificate
 import java.util.ArrayList
 import java.util.HashMap
 
@@ -65,10 +64,6 @@ import me.shadura.escposprint.detect.PrinterRec
 internal class EscPosPrinterDiscoverySession(private val mPrintService: PrintService) : PrinterDiscoverySession() {
 
     var mResponseCode: Int = 0
-
-    private var mServerCerts: Array<X509Certificate>? = null // If the server sends a non-trusted cert, it will be stored here
-
-    private var mUnverifiedHost: String? = null // If the SSL hostname cannot be verified, this will be the hostname
 
     /**
      * Called when the framework wants to find/discover printers
@@ -152,12 +147,8 @@ internal class EscPosPrinterDiscoverySession(private val mPrintService: PrintSer
         try {
             testPrinter = client.getPrinter(printerURL)
         } catch (e: SSLException) {
-            mServerCerts = client.serverCerts
-            mUnverifiedHost = client.host
             throw e
         } catch (e: CertificateException) {
-            mServerCerts = client.serverCerts
-            mUnverifiedHost = client.host
             throw e
         } catch (e: FileNotFoundException) { // this one is returned whenever we get a 4xx HTTP response code
             mResponseCode = client.lastResponseCode // it might be an HTTP 401!
@@ -430,10 +421,9 @@ internal class EscPosPrinterDiscoverySession(private val mPrintService: PrintSer
                 mPrintService.startActivity(dialog)
                 */
             }
-            exception is SSLException && mServerCerts != null -> {
+            exception is SSLException -> {
                 /*
                 val dialog = Intent(mPrintService, UntrustedCertActivity::class.java)
-                dialog.putExtra(UntrustedCertActivity.KEY_CERT, mServerCerts!![0])
                 dialog.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 mPrintService.startActivity(dialog)
                 */
