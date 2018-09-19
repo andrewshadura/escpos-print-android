@@ -347,6 +347,7 @@ internal class EscPosPrinterDiscoverySession(private val mPrintService: PrintSer
         val printers = HashMap<String, String>()
         var address: String?
         var name: String?
+        var enabled: Boolean
 
         /* TODO: Here, we can detect more printers */
 
@@ -354,6 +355,7 @@ internal class EscPosPrinterDiscoverySession(private val mPrintService: PrintSer
         val prefs = mPrintService.getSharedPreferences(AddPrintersActivity.SHARED_PREFS_MANUAL_PRINTERS, Context.MODE_PRIVATE)
         val numPrinters = prefs.getInt(AddPrintersActivity.PREF_NUM_PRINTERS, 0)
         for (i in 0 until numPrinters) {
+            enabled = prefs.getBoolean(AddPrintersActivity.PREF_ENABLED + i, false)
             address = prefs.getString(AddPrintersActivity.PREF_ADDRESS + i, null)
             name = prefs.getString(AddPrintersActivity.PREF_NAME + i, null)
             if (enabled && address != null && name != null && address.trim { it <= ' ' }.length > 0 && name.trim { it <= ' ' }.length > 0) {
