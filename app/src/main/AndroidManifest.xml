@@ -32,13 +32,6 @@
             android:label="@string/activity_add_label"/>
 
         <activity
-            android:name=".app.UntrustedCertActivity"
-            android:excludeFromRecents="true"
-            android:exported="false"
-            android:label="@string/untrusted_title"
-            android:theme="@style/AndroidCupsPrint.AlertDialog"/>
-
-        <activity
             android:name=".app.BasicAuthActivity"
             android:excludeFromRecents="true"
             android:exported="false"

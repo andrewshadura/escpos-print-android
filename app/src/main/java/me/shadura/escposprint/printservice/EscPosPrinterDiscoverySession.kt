@@ -59,7 +59,6 @@ import me.shadura.escposprint.R
 import me.shadura.escposprint.app.AddPrintersActivity
 import me.shadura.escposprint.app.BasicAuthActivity
 import me.shadura.escposprint.app.HostNotVerifiedActivity
-import me.shadura.escposprint.app.UntrustedCertActivity
 import me.shadura.escposprint.detect.PrinterRec
 
 /**
@@ -434,10 +433,12 @@ internal class EscPosPrinterDiscoverySession(private val mPrintService: PrintSer
                 mPrintService.startActivity(dialog)
             }
             exception is SSLException && mServerCerts != null -> {
+                /*
                 val dialog = Intent(mPrintService, UntrustedCertActivity::class.java)
                 dialog.putExtra(UntrustedCertActivity.KEY_CERT, mServerCerts!![0])
                 dialog.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 mPrintService.startActivity(dialog)
+                */
             }
             exception is SocketTimeoutException -> {
                 Toast.makeText(mPrintService, R.string.err_printer_socket_timeout, Toast.LENGTH_LONG).show()
