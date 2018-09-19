@@ -151,6 +151,7 @@ class ManageManualPrintersActivity : AppCompatActivity() {
                                         mService = null
 
                                         val printersList = findViewById<ListView>(R.id.manage_printers_list)
+                                        addPrinter(printerInfo.name, printerInfo.address, printerInfo.enabled)
                                         Snackbar.make(printersList, "Printer connected and enabled", Snackbar.LENGTH_SHORT)
                                                 .setAction("Action", null).show()
                                     }
@@ -203,6 +204,17 @@ class ManageManualPrintersActivity : AppCompatActivity() {
             printers.add(ManualPrinterInfo(name, address, enabled, false))
         }
         return printers
+    }
+
+    private fun addPrinter(name: String, address: String, enabled: Boolean) {
+        val prefs = getSharedPreferences(AddPrintersActivity.SHARED_PREFS_MANUAL_PRINTERS, Context.MODE_PRIVATE)
+        val editor = prefs.edit()
+        val id = prefs.getInt(AddPrintersActivity.PREF_NUM_PRINTERS, 0)
+        editor.putString(AddPrintersActivity.PREF_ADDRESS + id, address)
+        editor.putString(AddPrintersActivity.PREF_NAME + id, name)
+        editor.putBoolean(AddPrintersActivity.PREF_ENABLED + id, enabled)
+        editor.putInt(AddPrintersActivity.PREF_NUM_PRINTERS, id + 1)
+        editor.apply()
     }
 
     private data class ManualPrinterInfo(var name: String, val address: String, var enabled: Boolean, var connecting: Boolean)
