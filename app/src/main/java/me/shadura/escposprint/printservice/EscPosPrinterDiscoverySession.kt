@@ -57,7 +57,6 @@ import me.shadura.escposprint.EscPosPrintApp
 import me.shadura.escposprint.L
 import me.shadura.escposprint.R
 import me.shadura.escposprint.app.AddPrintersActivity
-import me.shadura.escposprint.app.HostNotVerifiedActivity
 import me.shadura.escposprint.detect.PrinterRec
 
 /**
@@ -424,10 +423,12 @@ internal class EscPosPrinterDiscoverySession(private val mPrintService: PrintSer
                 return handleHttpError(exception, printerId)
             exception is SSLPeerUnverifiedException ||
                     exception is IOException && (exception.message?.contains("not verified")) == false -> {
+                /*
                 val dialog = Intent(mPrintService, HostNotVerifiedActivity::class.java)
                 dialog.putExtra(HostNotVerifiedActivity.KEY_HOST, mUnverifiedHost)
                 dialog.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 mPrintService.startActivity(dialog)
+                */
             }
             exception is SSLException && mServerCerts != null -> {
                 /*
