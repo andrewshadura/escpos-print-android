@@ -37,9 +37,7 @@ import org.cups4j.PrintRequestResult
 import java.net.MalformedURLException
 import java.net.SocketException
 import java.net.SocketTimeoutException
-import java.net.URI
 import java.net.URISyntaxException
-import java.net.URL
 import java.util.HashMap
 
 import me.shadura.escposprint.L
@@ -79,13 +77,9 @@ class EscPosService : PrintService() {
         }
 
         try {
-            val tmpUri = URI(url)
-            val schemeHostPort = tmpUri.scheme + "://" + tmpUri.host + ":" + tmpUri.port
-
-            val clientURL = URL(schemeHostPort)
             object : AsyncTask<Void, Void, Void>() {
                 override fun doInBackground(vararg params: Void): Void? {
-                    cancelPrintJob(clientURL, jobId)
+                    cancelPrintJob(jobId)
                     return null
                 }
 
@@ -107,10 +101,13 @@ class EscPosService : PrintService() {
      * @param clientURL The printer client URL
      * @param jobId     The printer job ID
      */
-    internal fun cancelPrintJob(clientURL: URL, jobId: Int) {
+    internal fun cancelPrintJob(jobId: Int) {
         try {
+            /*
+            TODO: Real cancellation
             val client = CupsClient(clientURL)
             client.cancelJob(jobId)
+            */
         } catch (e: Exception) {
             L.e("Couldn't cancel job: $jobId", e)
         }
@@ -138,12 +135,6 @@ class EscPosService : PrintService() {
 
         val url = printerId.localId
         try {
-            val tmpUri = URI(url)
-            val schemeHostPort = tmpUri.scheme + "://" + tmpUri.host + ":" + tmpUri.port
-
-            // Prepare job
-            val printerURL = URL(url)
-            val clientURL = URL(schemeHostPort)
             val data = printJob.document.data
             if (data == null) {
                 L.e("Tried to queue a job, but the document data (file descriptor) is null")
@@ -152,6 +143,7 @@ class EscPosService : PrintService() {
             }
             val fd = data.fileDescriptor
             val jobId = printJob.id
+            val info = printJob.info
 
             // Send print job
             object : AsyncTask<Void, Void, Void>() {
@@ -159,7 +151,7 @@ class EscPosService : PrintService() {
 
                 override fun doInBackground(vararg params: Void): Void? {
                     try {
-                        printDocument(jobId, clientURL, printerURL, fd)
+                        printDocument(jobId, info, fd)
                     } catch (e: Exception) {
                         mException = e
                     }
@@ -167,7 +159,7 @@ class EscPosService : PrintService() {
                     return null
                 }
 
-                override fun onPostExecute(result: Void) {
+                override fun onPostExecute(result: Void?) {
                     mException?.let { exception: Exception ->
                         handleJobException(jobId, exception)
                         return
@@ -234,21 +226,7 @@ class EscPosService : PrintService() {
         val url = printerId.localId
 
         // Prepare job
-        val clientURL: URL
-        val jobId: Int
-        try {
-            val tmpUri = URI(url)
-            val schemeHostPort = tmpUri.scheme + "://" + tmpUri.host + ":" + tmpUri.port
-
-            clientURL = URL(schemeHostPort)
-            jobId = mJobs[printJob.id]!!
-        } catch (e: MalformedURLException) {
-            L.e("Couldn't get job: $printJob state", e)
-            return false
-        } catch (e: URISyntaxException) {
-            L.e("Couldn't parse URI: $url", e)
-            return false
-        }
+        val jobId: Int = mJobs[printJob.id]!!
 
         // Send print job
         object : AsyncTask<Void, Void, JobStateEnum>() {
@@ -256,7 +234,7 @@ class EscPosService : PrintService() {
 
             override fun doInBackground(vararg params: Void): JobStateEnum? {
                 try {
-                    return getJobState(jobId, clientURL)
+                    return getJobState(jobId)
                 } catch (e: Exception) {
                     mException = e
                 }
@@ -296,10 +274,8 @@ class EscPosService : PrintService() {
      * @return true if the job is complete/aborted/cancelled, false if it's still processing (printing, paused, etc)
      */
     @Throws(Exception::class)
-    internal fun getJobState(jobId: Int, clientURL: URL): JobStateEnum {
-        val client = CupsClient(clientURL)
-        val attr = client.getJobAttributes(jobId)
-        return attr.jobState
+    internal fun getJobState(jobId: Int): JobStateEnum {
+        return JobStateEnum.COMPLETED
     }
 
     /**
@@ -332,14 +308,10 @@ class EscPosService : PrintService() {
      * @param fd         The document to print, as a [FileDescriptor]
      */
     @Throws(Exception::class)
-    internal fun printDocument(jobId: PrintJobId, clientURL: URL, printerURL: URL, fd: FileDescriptor) {
-        val client = CupsClient(clientURL)
-        val printer = client.getPrinter(printerURL) ?: throw NullPrinterException()
+    internal fun printDocument(jobId: PrintJobId, info: PrintJobInfo, fd: FileDescriptor) {
 
         val inputStream = FileInputStream(fd)
-        val job = org.cups4j.PrintJob.Builder(inputStream).build()
-        val result = printer.print(job)
-        mJobs[jobId] = result.jobId
+        mJobs[jobId] = jobId.hashCode()
     }
 
     /**
