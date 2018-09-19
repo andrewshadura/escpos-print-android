@@ -116,6 +116,17 @@ internal class EscPosPrinterDiscoverySession(private val mPrintService: PrintSer
      */
     @Throws(Exception::class)
     fun checkPrinter(address: String?, printerId: PrinterId): PrinterCapabilitiesInfo? {
+        address?.let {
+            val builder = PrinterCapabilitiesInfo.Builder(printerId)
+            builder.addResolution(PrintAttributes.Resolution("default", "203×203 dpi", 203, 203), true)
+            builder.addMediaSize(PrintAttributes.MediaSize("58x105mm", "58x105mm",
+                    Math.round(58.0f / 25.4f * 1000f), Math.round(105.0f / 25.4f * 1000f)), true)
+            builder.addMediaSize(PrintAttributes.MediaSize("58x210mm", "58x210mm",
+                    Math.round(58.0f / 25.4f * 1000f), Math.round(210.0f / 25.4f * 1000f)), false)
+            builder.setColorModes(PrintAttributes.COLOR_MODE_MONOCHROME, PrintAttributes.COLOR_MODE_MONOCHROME)
+            builder.setMinMargins(PrintAttributes.Margins(0, 0, 0, 0))
+            return builder.build()
+        }
         if (address == null || !address.startsWith("http://") && !address.startsWith("https://")) {
             return null
         }
