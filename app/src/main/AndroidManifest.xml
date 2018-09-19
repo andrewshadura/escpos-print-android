@@ -32,13 +32,6 @@
             android:label="@string/activity_add_label"/>
 
         <activity
-            android:name=".app.BasicAuthActivity"
-            android:excludeFromRecents="true"
-            android:exported="false"
-            android:label="@string/basic_auth_title"
-            android:theme="@style/AndroidCupsPrint.AlertDialog"/>
-
-        <activity
             android:name=".app.HostNotVerifiedActivity"
             android:excludeFromRecents="true"
             android:exported="false"

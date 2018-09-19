@@ -57,7 +57,6 @@ import me.shadura.escposprint.EscPosPrintApp
 import me.shadura.escposprint.L
 import me.shadura.escposprint.R
 import me.shadura.escposprint.app.AddPrintersActivity
-import me.shadura.escposprint.app.BasicAuthActivity
 import me.shadura.escposprint.app.HostNotVerifiedActivity
 import me.shadura.escposprint.detect.PrinterRec
 
@@ -471,12 +470,14 @@ internal class EscPosPrinterDiscoverySession(private val mPrintService: PrintSer
             HttpURLConnection.HTTP_BAD_REQUEST -> Toast.makeText(mPrintService, R.string.err_400, Toast.LENGTH_LONG).show()
 
             HttpURLConnection.HTTP_UNAUTHORIZED -> try {
+                /*
                 val printerUri = URI(printerId.localId)
                 val printersUrl = printerUri.scheme + "://" + printerUri.host + ":" + printerUri.port + "/printers/"
                 val dialog = Intent(mPrintService, BasicAuthActivity::class.java)
                 dialog.putExtra(BasicAuthActivity.KEY_BASIC_AUTH_PRINTERS_URL, printersUrl)
                 dialog.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 mPrintService.startActivity(dialog)
+                */
             } catch (e: URISyntaxException) {
                 L.e("Couldn't parse URI: " + printerId.localId, e)
                 return true
