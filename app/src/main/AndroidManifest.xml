@@ -27,19 +27,8 @@
         </service>
 
         <activity
-            android:name=".app.AddPrintersActivity"
-            android:exported="true"
-            android:label="@string/activity_add_label"/>
-
-        <activity
-            android:name=".app.HostNotVerifiedActivity"
-            android:excludeFromRecents="true"
-            android:exported="false"
-            android:label="@string/host_not_verified_activity_title"
-            android:theme="@style/AndroidCupsPrint.AlertDialog"/>
-
-        <activity
             android:name=".app.ManageManualPrintersActivity"
+            android:exported="true"
             android:theme="@style/AndroidCupsPrint">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>

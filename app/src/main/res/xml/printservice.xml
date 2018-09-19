@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <print-service
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:addPrintersActivity="me.shadura.escposprint.app.AddPrintersActivity"
+    android:addPrintersActivity="me.shadura.escposprint.app.ManageManualPrintersActivity"
     android:vendor="@string/print_service_vendor"/>
