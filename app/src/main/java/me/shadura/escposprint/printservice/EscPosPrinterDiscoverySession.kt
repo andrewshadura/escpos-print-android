@@ -338,7 +338,7 @@ internal class EscPosPrinterDiscoverySession(private val mPrintService: PrintSer
     }
 
     /**
-     * Ran in background thread. Will do an mDNS scan of local printers
+     * Ran in background thread.
      *
      * @return The list of printers as [PrinterRec]
      */
