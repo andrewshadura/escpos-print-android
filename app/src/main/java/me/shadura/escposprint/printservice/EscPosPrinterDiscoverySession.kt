@@ -395,14 +395,16 @@ internal class EscPosPrinterDiscoverySession(private val mPrintService: PrintSer
                 return null
             }
 
-            override fun onPostExecute(printerCapabilitiesInfo: PrinterCapabilitiesInfo) {
+            override fun onPostExecute(printerCapabilitiesInfo: PrinterCapabilitiesInfo?) {
                 L.v("HTTP response code: $mResponseCode")
-                if (mException != null) {
-                    if (handlePrinterException(mException!!, printerId)) {
-                        L.e("Couldn't start printer state tracking", mException)
+                mException?.let { exception: Exception ->
+                    if (handlePrinterException(exception, printerId)) {
+                        L.e("Couldn't start printer state tracking", exception)
                     }
-                } else {
-                    onPrinterChecked(printerId, printerCapabilitiesInfo)
+                    return
+                }
+                printerCapabilitiesInfo?.let {
+                    onPrinterChecked(printerId, it)
                 }
             }
         }.execute()
