@@ -52,7 +52,11 @@ internal object EscPosPrinterDiscoveryUtils {
      * @return media size parsed into a [PrintAttributes.MediaSize]
      */
     fun getMediaSizeFromAttributeValue(attributeValue: AttributeValue): PrintAttributes.MediaSize? {
-        val value = attributeValue.value.toUpperCase(Locale.ENGLISH)
+        return getMediaSizeFromSizeString(attributeValue.value)
+    }
+
+    fun getMediaSizeFromSizeString(sizeString: String): PrintAttributes.MediaSize? {
+        val value = sizeString.toUpperCase(Locale.ENGLISH)
         return when {
             value.startsWith("ISO_A0") -> ISO_A0
             value.startsWith("ISO_A10") -> ISO_A10
