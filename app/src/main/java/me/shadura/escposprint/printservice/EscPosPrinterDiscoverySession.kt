@@ -30,8 +30,6 @@ import android.printservice.PrinterDiscoverySession
 import android.text.TextUtils
 import android.widget.Toast
 
-import org.cups4j.CupsClient
-import org.cups4j.CupsPrinter
 import org.cups4j.operations.ipp.IppGetPrinterAttributesOperation
 
 import java.io.FileNotFoundException
@@ -140,12 +138,12 @@ internal class EscPosPrinterDiscoverySession(private val mPrintService: PrintSer
             }
         }
 
-        val client = CupsClient(clientURL).setPath(path)
-        val testPrinter: CupsPrinter?
+        //val client = CupsClient(clientURL).setPath(path)
+        val testPrinter = null
 
+        /*
         // Check if we need to save the server certs if we don't trust the connection
         try {
-            testPrinter = client.getPrinter(printerURL)
         } catch (e: SSLException) {
             throw e
         } catch (e: CertificateException) {
@@ -154,6 +152,7 @@ internal class EscPosPrinterDiscoverySession(private val mPrintService: PrintSer
             mResponseCode = client.lastResponseCode // it might be an HTTP 401!
             throw e
         }
+        */
 
         if (testPrinter == null) {
             L.e("Printer not responding. Printer on fire?")
