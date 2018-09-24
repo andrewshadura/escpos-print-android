@@ -28,11 +28,7 @@ import android.printservice.PrintService
 import android.printservice.PrinterDiscoverySession
 import android.widget.Toast
 
-import org.cups4j.CupsClient
-import org.cups4j.CupsPrinter
 import org.cups4j.JobStateEnum
-import org.cups4j.PrintJobAttributes
-import org.cups4j.PrintRequestResult
 
 import java.net.MalformedURLException
 import java.net.SocketException
