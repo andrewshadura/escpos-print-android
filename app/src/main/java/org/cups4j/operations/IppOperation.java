@@ -43,7 +43,6 @@ import ch.ethz.vppserver.ippclient.IppResult;
 import ch.ethz.vppserver.ippclient.IppTag;
 import ch.ethz.vppserver.schema.ippclient.Attribute;
 import me.shadura.escposprint.L;
-import me.shadura.escposprint.ssl.AdditionalKeyStoresSSLSocketFactory;
 
 public abstract class IppOperation {
     private final static String IPP_MIME_TYPE = "application/ipp";
@@ -230,12 +229,14 @@ public abstract class IppOperation {
             L.e("Caught exception while connecting to printer " + url + ": " + e.getLocalizedMessage());
             throw e;
         } finally {
+            /*
             if (connection instanceof HttpsURLConnection) {
                 if (((HttpsURLConnection) connection).getSSLSocketFactory() instanceof AdditionalKeyStoresSSLSocketFactory) {
                     final AdditionalKeyStoresSSLSocketFactory socketFactory = (AdditionalKeyStoresSSLSocketFactory) ((HttpsURLConnection) connection).getSSLSocketFactory();
                     mServerCerts = socketFactory.getServerCert();
                 }
             }
+            */
             connection.disconnect();
         }
 
