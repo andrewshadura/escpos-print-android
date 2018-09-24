@@ -42,7 +42,6 @@ import ch.ethz.vppserver.ippclient.IppResponse;
 import ch.ethz.vppserver.ippclient.IppResult;
 import ch.ethz.vppserver.ippclient.IppTag;
 import ch.ethz.vppserver.schema.ippclient.Attribute;
-import me.shadura.escposprint.HttpConnectionManagement;
 import me.shadura.escposprint.L;
 import me.shadura.escposprint.ssl.AdditionalKeyStoresSSLSocketFactory;
 
@@ -198,10 +197,10 @@ public abstract class IppOperation {
             connection.setRequestProperty("Content-Type", IPP_MIME_TYPE);
 
             if (url.getProtocol().equals("https")) {
-                HttpConnectionManagement.handleHttpsUrlConnection((HttpsURLConnection) connection);
+                //HttpConnectionManagement.handleHttpsUrlConnection((HttpsURLConnection) connection);
             }
 
-            HttpConnectionManagement.handleBasicAuth(url, connection);
+            //HttpConnectionManagement.handleBasicAuth(url, connection);
 
             byte[] bytes = new byte[ippBuf.limit()];
             ippBuf.get(bytes);
