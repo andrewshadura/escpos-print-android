@@ -28,8 +28,6 @@ import android.printservice.PrintService
 import android.printservice.PrinterDiscoverySession
 import android.widget.Toast
 
-import org.cups4j.JobStateEnum
-
 import java.net.MalformedURLException
 import java.net.SocketException
 import java.net.SocketTimeoutException
