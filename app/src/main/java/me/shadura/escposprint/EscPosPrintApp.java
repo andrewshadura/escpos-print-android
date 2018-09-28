@@ -1,9 +1,9 @@
 package me.shadura.escposprint;
 
-import android.app.Application;
 import android.content.Context;
+import android.support.multidex.MultiDexApplication;
 
-public class EscPosPrintApp extends Application {
+public class EscPosPrintApp extends MultiDexApplication {
     public static final String LOG_TAG = "ESCPOS";
 
     private static EscPosPrintApp instance;
