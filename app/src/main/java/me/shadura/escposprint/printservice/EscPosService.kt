@@ -122,7 +122,7 @@ class EscPosService : PrintService() {
             return
         }
 
-        val url = printerId.localId
+        val address = printerId.localId
         try {
             val data = printJob.document.data
             if (data == null) {
@@ -140,7 +140,7 @@ class EscPosService : PrintService() {
 
                 override fun doInBackground(vararg params: Void): Void? {
                     try {
-                        printDocument(jobId, info, fd)
+                        printDocument(jobId, address, fd)
                     } catch (e: Exception) {
                         mException = e
                     }
@@ -159,7 +159,7 @@ class EscPosService : PrintService() {
         } catch (e: MalformedURLException) {
             L.e("Couldn't queue print job: $printJob", e)
         } catch (e: URISyntaxException) {
-            L.e("Couldn't parse URI: $url", e)
+            L.e("Couldn't parse URI: $address", e)
         }
 
     }
@@ -210,7 +210,7 @@ class EscPosService : PrintService() {
             L.e("Tried to request a job status, but the printer ID is null")
             return false
         }
-        val url = printerId.localId
+        val address = printerId.localId
 
         // Prepare job
         val jobId: Int = mJobs[printJob.id]!!
@@ -289,10 +289,12 @@ class EscPosService : PrintService() {
     /**
      * Called from a background thread, when the print job has to be sent to the printer.
      *
+     * @param jobId      The job id
+     * @param address    The printer address
      * @param fd         The document to print, as a [FileDescriptor]
      */
     @Throws(Exception::class)
-    internal fun printDocument(jobId: PrintJobId, info: PrintJobInfo, fd: FileDescriptor) {
+    internal fun printDocument(jobId: PrintJobId, address: String, fd: FileDescriptor) {
 
         val inputStream = FileInputStream(fd)
         mJobs[jobId] = jobId.hashCode()
