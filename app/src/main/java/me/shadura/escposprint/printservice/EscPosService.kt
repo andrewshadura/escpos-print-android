@@ -19,10 +19,7 @@ package me.shadura.escposprint.printservice
 
 import android.os.AsyncTask
 import android.os.Handler
-import android.os.ParcelFileDescriptor
 import android.print.PrintJobId
-import android.print.PrintJobInfo
-import android.print.PrinterId
 import android.printservice.PrintJob
 import android.printservice.PrintService
 import android.printservice.PrinterDiscoverySession
@@ -81,8 +78,6 @@ class EscPosService : PrintService() {
                     onPrintJobCancelled(printJob)
                 }
             }.execute()
-        } catch (e: MalformedURLException) {
-            L.e("Couldn't cancel print job: $printJob, jobId: $jobId", e)
         } catch (e: URISyntaxException) {
             L.e("Couldn't parse URI: $url", e)
         }
@@ -179,9 +174,7 @@ class EscPosService : PrintService() {
     internal fun handleJobException(jobId: PrintJobId, e: Exception) {
         when (e) {
             is SocketTimeoutException ->
-                Toast.makeText(this, R.string.err_job_socket_timeout, Toast.LENGTH_LONG).show()
-            is NullPrinterException ->
-                Toast.makeText(this, R.string.err_printer_null_when_printing, Toast.LENGTH_LONG).show()
+                Toast.makeText(this, R.string.err_job_socket_timeout, Toast.LENGTH_LONG).show()                      
             else -> {
                 Toast.makeText(this, getString(R.string.err_job_exception, jobId.toString(), e.localizedMessage), Toast.LENGTH_LONG).show()
                 L.e("Couldn't query job $jobId", e)
@@ -264,7 +257,6 @@ class EscPosService : PrintService() {
      * Called in a background thread, in order to check the job status
      *
      * @param jobId     The printer job ID
-     * @param clientURL The printer client URL
      * @return true if the job is complete/aborted/cancelled, false if it's still processing (printing, paused, etc)
      */
     @Throws(Exception::class)
@@ -297,8 +289,6 @@ class EscPosService : PrintService() {
     /**
      * Called from a background thread, when the print job has to be sent to the printer.
      *
-     * @param clientURL  The client URL
-     * @param printerURL The printer URL
      * @param fd         The document to print, as a [FileDescriptor]
      */
     @Throws(Exception::class)
@@ -316,8 +306,6 @@ class EscPosService : PrintService() {
     internal fun onPrintJobSent(printJob: PrintJob) {
         printJob.start()
     }
-
-    private class NullPrinterException internal constructor() : Exception("Printer is null when trying to print: printer no longer available?")
 
     companion object {
         /**
