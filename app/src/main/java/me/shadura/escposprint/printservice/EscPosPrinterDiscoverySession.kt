@@ -119,6 +119,7 @@ internal class EscPosPrinterDiscoverySession(private val mPrintService: PrintSer
             builder.setMinMargins(PrintAttributes.Margins(0, 0, 0, 0))
             return builder.build()
         }
+        /*
         if (address == null || !address.startsWith("http://") && !address.startsWith("https://")) {
             return null
         }
@@ -141,7 +142,6 @@ internal class EscPosPrinterDiscoverySession(private val mPrintService: PrintSer
         //val client = CupsClient(clientURL).setPath(path)
         val testPrinter = null
 
-        /*
         // Check if we need to save the server certs if we don't trust the connection
         try {
         } catch (e: SSLException) {
@@ -152,7 +152,6 @@ internal class EscPosPrinterDiscoverySession(private val mPrintService: PrintSer
             mResponseCode = client.lastResponseCode // it might be an HTTP 401!
             throw e
         }
-        */
 
         if (testPrinter == null) {
             L.e("Printer not responding. Printer on fire?")
@@ -276,6 +275,7 @@ internal class EscPosPrinterDiscoverySession(private val mPrintService: PrintSer
             builder.setMinMargins(PrintAttributes.Margins(marginMilsLeft, marginMilsTop, marginMilsRight, marginMilsBottom))
             return builder.build()
         }
+        */
         return null
     }
 
