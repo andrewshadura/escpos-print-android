@@ -30,8 +30,6 @@ import android.printservice.PrinterDiscoverySession
 import android.text.TextUtils
 import android.widget.Toast
 
-import org.cups4j.operations.ipp.IppGetPrinterAttributesOperation
-
 import java.io.FileNotFoundException
 import java.io.IOException
 import java.net.ConnectException
