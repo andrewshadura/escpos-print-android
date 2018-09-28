@@ -17,7 +17,6 @@
  */
 package me.shadura.escposprint.printservice
 
-import android.os.AsyncTask
 import android.os.Handler
 import android.print.PrintJobId
 import android.printservice.PrintJob
@@ -26,8 +25,6 @@ import android.printservice.PrinterDiscoverySession
 import android.widget.Toast
 
 import java.net.MalformedURLException
-import java.net.SocketException
-import java.net.SocketTimeoutException
 import java.net.URISyntaxException
 import java.util.HashMap
 
@@ -35,14 +32,25 @@ import me.shadura.escposprint.L
 import me.shadura.escposprint.R
 import com.tom_roush.pdfbox.pdmodel.PDDocument
 import com.tom_roush.pdfbox.text.PDFTextStripper
+import com.tom_roush.pdfbox.util.PDFBoxResourceLoader
+import org.jetbrains.anko.doAsync
+import org.jetbrains.anko.toast
+import org.jetbrains.anko.uiThread
 import java.io.*
+import java.util.concurrent.Future
 
 /**
  * CUPS print service
  */
 class EscPosService : PrintService() {
 
-    private val mJobs = HashMap<PrintJobId, Int>()
+    data class PrintJobTask(var state: JobStateEnum = JobStateEnum.PROCESSING, var task: Future<Unit>?)
+
+    private val mJobs = HashMap<PrintJobId, PrintJobTask>()
+
+    override fun onConnected() {
+        PDFBoxResourceLoader.init(applicationContext)
+    }
 
     override fun onCreatePrinterDiscoverySession(): PrinterDiscoverySession? {
         return EscPosPrinterDiscoverySession(this)
@@ -56,52 +64,20 @@ class EscPosService : PrintService() {
             return
         }
 
-        val url = printerId.localId
-
         val id = printJob.id
         if (id == null) {
             L.e("Tried to cancel a job, but the print job ID is null")
             return
         }
-        val jobId = mJobs[id]
-        if (jobId == null) {
-            L.e("Tried to cancel a job, but the print job ID is null")
+        val job = mJobs[id]!!
+        if (job.task == null) {
+            L.e("Tried to cancel a job, but the print job is null")
             return
         }
+        job.state = JobStateEnum.CANCELED
+        job.task?.cancel(true)
 
-        try {
-            object : AsyncTask<Void, Void, Void>() {
-                override fun doInBackground(vararg params: Void): Void? {
-                    cancelPrintJob(jobId)
-                    return null
-                }
-
-                override fun onPostExecute(v: Void) {
-                    onPrintJobCancelled(printJob)
-                }
-            }.execute()
-        } catch (e: URISyntaxException) {
-            L.e("Couldn't parse URI: $url", e)
-        }
-
-    }
-
-    /**
-     * Called from a background thread, ask the printer to cancel a job by its printer job ID
-     *
-     * @param clientURL The printer client URL
-     * @param jobId     The printer job ID
-     */
-    internal fun cancelPrintJob(jobId: Int) {
-        try {
-            /*
-            TODO: Real cancellation
-            val client = CupsClient(clientURL)
-            client.cancelJob(jobId)
-            */
-        } catch (e: Exception) {
-            L.e("Couldn't cancel job: $jobId", e)
-        }
+        onPrintJobCancelled(printJob)
 
     }
 
@@ -134,54 +110,28 @@ class EscPosService : PrintService() {
             }
             val fd = data.fileDescriptor
             val jobId = printJob.id
-            val info = printJob.info
 
             // Send print job
-            object : AsyncTask<Void, Void, Void>() {
-                var mException: Exception? = null
-
-                override fun doInBackground(vararg params: Void): Void? {
-                    try {
-                        printDocument(jobId, address, fd)
-                    } catch (e: Exception) {
-                        mException = e
+            var task = doAsync {
+                try {
+                    parseDocument(jobId, address, fd)
+                    uiThread {
+                        onPrintJobSent(printJob)
                     }
-
-                    return null
-                }
-
-                override fun onPostExecute(result: Void?) {
-                    mException?.let { exception: Exception ->
-                        handleJobException(jobId, exception)
-                        return
+                } catch (e: Exception) {
+                    uiThread {
+                        toast(getString(R.string.err_job_exception, jobId.toString(), e.localizedMessage))
+                        L.e("Couldn't query job $jobId", e)
                     }
-                    onPrintJobSent(printJob)
                 }
-            }.execute()
+            }
+            mJobs[jobId] = PrintJobTask(task = task)
         } catch (e: MalformedURLException) {
             L.e("Couldn't queue print job: $printJob", e)
         } catch (e: URISyntaxException) {
             L.e("Couldn't parse URI: $address", e)
         }
 
-    }
-
-    /**
-     * Called from the UI thread.
-     * Handle the exception (e.g. log or report it as a bug?), and inform the user of what happened
-     *
-     * @param jobId The print job
-     * @param e     The exception that occurred
-     */
-    internal fun handleJobException(jobId: PrintJobId, e: Exception) {
-        when (e) {
-            is SocketTimeoutException ->
-                Toast.makeText(this, R.string.err_job_socket_timeout, Toast.LENGTH_LONG).show()                      
-            else -> {
-                Toast.makeText(this, getString(R.string.err_job_exception, jobId.toString(), e.localizedMessage), Toast.LENGTH_LONG).show()
-                L.e("Couldn't query job $jobId", e)
-            }
-        }
     }
 
     private fun startPolling(printJob: PrintJob) {
@@ -215,40 +165,16 @@ class EscPosService : PrintService() {
         val address = printerId.localId
 
         // Prepare job
-        val jobId: Int = mJobs[printJob.id]!!
+        val job = mJobs[printJob.id]
 
-        // Send print job
-        object : AsyncTask<Void, Void, JobStateEnum>() {
-            internal var mException: Exception? = null
-
-            override fun doInBackground(vararg params: Void): JobStateEnum? {
-                try {
-                    return getJobState(jobId)
-                } catch (e: Exception) {
-                    mException = e
-                }
-
-                return null
+        try {
+            val state = getJobState(job!!)
+            state?.let {
+                onJobStateUpdate(printJob, state)
             }
-
-            override fun onPostExecute(state: JobStateEnum?) {
-                mException?.let { exception: Exception ->
-                    L.e("Couldn't get job: $jobId state because: $exception")
-
-                    if (exception is SocketException && exception.message!!.contains("ECONNRESET")) {
-                        Toast.makeText(this@EscPosService, getString(R.string.err_job_econnreset, jobId), Toast.LENGTH_LONG).show()
-                    } else if (exception is FileNotFoundException) {
-                        Toast.makeText(this@EscPosService, getString(R.string.err_job_not_found, jobId), Toast.LENGTH_LONG).show()
-                    } else {
-                        L.e("Couldn't get job: $jobId state", exception)
-                    }
-                    return
-                }
-                if (state != null) {
-                    onJobStateUpdate(printJob, state)
-                }
-            }
-        }.execute()
+        } catch (e: Exception) {
+            L.e("Couldn't get job: $job state", e)
+        }
 
         // We want to be called again if the job is still in this map
         // Indeed, when the job is complete, the job is removed from this map.
@@ -262,8 +188,8 @@ class EscPosService : PrintService() {
      * @return true if the job is complete/aborted/cancelled, false if it's still processing (printing, paused, etc)
      */
     @Throws(Exception::class)
-    internal fun getJobState(jobId: Int): JobStateEnum {
-        return JobStateEnum.COMPLETED
+    internal fun getJobState(job: PrintJobTask): JobStateEnum {
+        return job.state
     }
 
     /**
@@ -296,7 +222,7 @@ class EscPosService : PrintService() {
      * @param fd         The document to print, as a [FileDescriptor]
      */
     @Throws(Exception::class)
-    internal fun printDocument(jobId: PrintJobId, address: String, fd: FileDescriptor) {
+    internal fun parseDocument(jobId: PrintJobId, address: String, fd: FileDescriptor) {
 
         val inputStream = FileInputStream(fd)
         val document = PDDocument.load(inputStream)
@@ -304,7 +230,6 @@ class EscPosService : PrintService() {
         val text = pdfStripper.getText(document)
         L.i("$text")
         document.close()
-        mJobs[jobId] = jobId.hashCode()
     }
 
     /**
