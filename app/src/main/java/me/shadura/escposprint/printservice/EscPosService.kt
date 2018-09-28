@@ -33,6 +33,8 @@ import java.util.HashMap
 
 import me.shadura.escposprint.L
 import me.shadura.escposprint.R
+import com.tom_roush.pdfbox.pdmodel.PDDocument
+import com.tom_roush.pdfbox.text.PDFTextStripper
 import java.io.*
 
 /**
@@ -297,6 +299,11 @@ class EscPosService : PrintService() {
     internal fun printDocument(jobId: PrintJobId, address: String, fd: FileDescriptor) {
 
         val inputStream = FileInputStream(fd)
+        val document = PDDocument.load(inputStream)
+        val pdfStripper = PDFTextStripper()
+        val text = pdfStripper.getText(document)
+        L.i("$text")
+        document.close()
         mJobs[jobId] = jobId.hashCode()
     }
 
