@@ -20,14 +20,11 @@ package me.shadura.escposprint.app
 import android.Manifest
 import android.app.Activity
 import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothDevice
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.os.Handler
-import android.os.Message
 import android.support.annotation.LayoutRes
 import android.support.design.widget.Snackbar
 import android.support.v4.app.ActivityCompat
@@ -46,11 +43,17 @@ import android.widget.TextView
 import java.util.ArrayList
 
 import me.shadura.escposprint.R
-import me.shadura.escposprint.printservice.BluetoothService
 
 import android.view.View.GONE
 import android.view.View.VISIBLE
+import kotlinx.coroutines.experimental.CompletableDeferred
+import kotlinx.coroutines.experimental.CoroutineScope
+import kotlinx.coroutines.experimental.android.UI
+import kotlinx.coroutines.experimental.launch
+import kotlinx.coroutines.experimental.withContext
 import me.shadura.escposprint.L
+import me.shadura.escposprint.printservice.*
+import org.jetbrains.anko.design.snackbar
 
 class ManageManualPrintersActivity : AppCompatActivity() {
     private var mBluetoothAdapter: BluetoothAdapter? = null
@@ -139,43 +142,30 @@ class ManageManualPrintersActivity : AppCompatActivity() {
                         val device = mBluetoothAdapter!!.getRemoteDevice(address)
                         var printerInfo = ManualPrinterInfo(device.name, address, true, true)
                         adapter!!.add(printerInfo)
-                        mService = BluetoothService(this, object : Handler() {
-                            override fun handleMessage(msg: Message) {
-                                when (msg.what) {
-                                    BluetoothService.MESSAGE_STATE_CHANGE -> {
-                                    }
-                                    BluetoothService.MESSAGE_CONNECTED -> {
+                        launch {
+                            val bluetoothService = bluetoothServiceActor(device)
+                            val response = CompletableDeferred<State>()
+                            bluetoothService.send(Connect(response))
+                            when (response.await()) {
+                                State.STATE_CONNECTED -> {
+                                    withContext(UI) {
+                                        snackbar(findViewById<ListView>(R.id.manage_printers_list), "Printer connected and enabled")
                                         printerInfo.connecting = false
                                         adapter!!.notifyDataSetChanged()
-                                        mService?.stop()
-                                        mService = null
-
-                                        val printersList = findViewById<ListView>(R.id.manage_printers_list)
                                         addPrinter(printerInfo.name, printerInfo.address, printerInfo.enabled)
-                                        Snackbar.make(printersList, "Printer connected and enabled", Snackbar.LENGTH_SHORT)
-                                                .setAction("Action", null).show()
                                     }
-                                    BluetoothService.MESSAGE_READ -> {
-                                    }
-                                    BluetoothService.MESSAGE_WRITE -> {
-                                    }
-                                    BluetoothService.MESSAGE_CONNECTION_LOST -> {
-                                    }
-                                    BluetoothService.MESSAGE_CONNECTION_FAILURE -> {
+                                }
+                                State.STATE_NONE -> {
+                                    withContext(UI) {
+                                        snackbar(findViewById<ListView>(R.id.manage_printers_list), "Failed to connect to the printer")
                                         printerInfo.connecting = false
                                         printerInfo.enabled = false
                                         adapter!!.notifyDataSetChanged()
-                                        mService?.stop()
-                                        mService = null
-
-                                        val printersList = findViewById<ListView>(R.id.manage_printers_list)
-                                        Snackbar.make(printersList, "Failed to connect to the printer", Snackbar.LENGTH_SHORT)
-                                                .setAction("Action", null).show()
                                     }
                                 }
                             }
-                        })
-                        mService?.connect(device)
+                            bluetoothService.close()
+                        }
                     }
                 }
             }
