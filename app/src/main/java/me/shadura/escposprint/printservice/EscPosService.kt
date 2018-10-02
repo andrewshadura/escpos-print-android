@@ -162,23 +162,20 @@ class EscPosService : PrintService() {
             L.e("Tried to request a job status, but the printer ID is null")
             return false
         }
-        val address = printerId.localId
 
         // Prepare job
-        val job = mJobs[printJob.id]
+        if (mJobs.containsKey(printJob.id)) {
+            val job = mJobs[printJob.id]
 
-        try {
-            val state = getJobState(job!!)
-            state?.let {
-                onJobStateUpdate(printJob, state)
-            }
-        } catch (e: Exception) {
-            L.e("Couldn't get job: $job state", e)
+            val state = job!!.state
+            onJobStateUpdate(printJob, state)
+
+            return true
         }
 
-        // We want to be called again if the job is still in this map
-        // Indeed, when the job is complete, the job is removed from this map.
-        return mJobs.containsKey(printJob.id)
+
+        // We don’t want to be called again if the job has been removed from the map.
+        return false
     }
 
     /**
