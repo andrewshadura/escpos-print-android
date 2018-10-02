@@ -30,8 +30,10 @@ import android.os.Handler
 import android.util.Log
 import kotlinx.coroutines.experimental.CompletableDeferred
 import kotlinx.coroutines.experimental.CoroutineScope
+import kotlinx.coroutines.experimental.channels.SendChannel
 import kotlinx.coroutines.experimental.channels.actor
 import me.shadura.escposprint.L
+import java.lang.Exception
 import kotlin.concurrent.thread
 
 private val PRINTER_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")
@@ -77,6 +79,20 @@ fun bluetoothServiceActor(device: BluetoothDevice) = actor<BluetoothServiceMsg> 
         }
     }
     socket.close()
+}
+
+fun bluetoothServiceActor(address: String): SendChannel<BluetoothServiceMsg> {
+    val adapter = BluetoothAdapter.getDefaultAdapter()
+    if (adapter == null) {
+        throw Exception("Bluetooth is not available")
+    } else {
+        if (BluetoothAdapter.checkBluetoothAddress(address)) {
+            val device = adapter.getRemoteDevice(address)
+            return bluetoothServiceActor(device)
+        } else {
+            throw Exception("Invalid Bluetooth address")
+        }
+    }
 }
 
 object BluetoothService {
