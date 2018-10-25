@@ -5,12 +5,12 @@ buildscript {
     ext.kotlinx_version = '0.25.3'
     ext.anko_version = '0.10.4'
     repositories {
-        jcenter()
         maven {
             url 'https://maven.google.com/'
             name 'Google'
         }
         google()
+        jcenter()
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:3.1.4'
@@ -25,10 +25,10 @@ buildscript {
 
 allprojects {
     repositories {
-        jcenter()
         maven {
             url 'https://maven.google.com/'
             name 'Google'
         }
+        jcenter()
     }
 }
