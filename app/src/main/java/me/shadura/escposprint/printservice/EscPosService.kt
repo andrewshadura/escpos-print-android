@@ -31,7 +31,6 @@ import java.util.HashMap
 import me.shadura.escposprint.L
 import me.shadura.escposprint.R
 import com.tom_roush.pdfbox.pdmodel.PDDocument
-import com.tom_roush.pdfbox.text.PDFTextStripper
 import com.tom_roush.pdfbox.util.PDFBoxResourceLoader
 import kotlinx.coroutines.experimental.CompletableDeferred
 import kotlinx.coroutines.experimental.android.UI
@@ -41,7 +40,6 @@ import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.toast
 import org.jetbrains.anko.uiThread
 import java.io.*
-import java.nio.charset.Charset
 import java.util.concurrent.Future
 
 /**
@@ -230,8 +228,7 @@ class EscPosService : PrintService() {
         val document = PDDocument.load(inputStream)
         val pdfStripper = PDFStyledTextStripper()
         pdfStripper.addMoreFormatting = true
-        val text = pdfStripper.getText(document)
-        L.i("$text")
+        val bytes = pdfStripper.getBytes(document)
         document.close()
 
         launch {
@@ -241,11 +238,11 @@ class EscPosService : PrintService() {
             when (response.await()) {
                 State.STATE_CONNECTED -> {
                     L.i("sending text")
-                    L.i("$text")
+                    bluetoothService.send(Write(byteArrayOf(0x1b, 0x40)))
                     bluetoothService.send(Write(byteArrayOf(0x1c, 0x2e)))
                     bluetoothService.send(Write(byteArrayOf(0xa, 0xa, 0xa)))
                     bluetoothService.send(Write(byteArrayOf(0x1b, 0x74, 0x48)))
-                    bluetoothService.send(Write(text.toByteArray(Charset.forName("windows-1250"))))
+                    bluetoothService.send(Write(bytes))
                     bluetoothService.send(Write(byteArrayOf(0xa, 0xa, 0xa)))
                     bluetoothService.close()
                     L.i("sent text")
