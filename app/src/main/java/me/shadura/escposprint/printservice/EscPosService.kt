@@ -229,6 +229,7 @@ class EscPosService : PrintService() {
         val inputStream = FileInputStream(fd)
         val document = PDDocument.load(inputStream)
         val pdfStripper = PDFStyledTextStripper()
+        pdfStripper.addMoreFormatting = true
         val text = pdfStripper.getText(document)
         L.i("$text")
         document.close()
