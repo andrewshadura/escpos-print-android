@@ -228,7 +228,14 @@ class EscPosService : PrintService() {
         val document = PDDocument.load(inputStream)
         val pdfStripper = PDFStyledTextStripper()
         pdfStripper.addMoreFormatting = true
-        val bytes = pdfStripper.getBytes(document)
+        val bytes = try {
+            pdfStripper.getBytes(document)
+        } catch (e: Exception) {
+            val writer = StringWriter()
+            e.printStackTrace(PrintWriter(writer))
+            L.e(writer.toString())
+            byteArrayOf()
+        }
         document.close()
 
         launch {
