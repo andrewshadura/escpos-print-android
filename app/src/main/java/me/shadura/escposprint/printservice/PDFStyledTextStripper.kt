@@ -31,6 +31,7 @@ import me.shadura.escposprint.L
 import me.shadura.escposprint.printservice.utils.encodeForPrinter
 import java.io.ByteArrayOutputStream
 import java.nio.charset.Charset
+import java.text.Normalizer
 import kotlin.math.abs
 import kotlin.math.floor
 
@@ -69,6 +70,10 @@ fun Iterable<ByteArray>.joinTo(buffer: ByteArrayOutputStream,
     if (limit in 0..(count - 1)) buffer.write(truncated.toString().toByteArray())
     buffer.write(postfix.toString().toByteArray())
     return buffer
+}
+
+fun String.removeAccents(): String {
+    return Normalizer.normalize(this, Normalizer.Form.NFD).replace(Regex("\\p{InCombiningDiacriticalMarks}+"), "")
 }
 
 sealed class LineElement
@@ -130,7 +135,7 @@ class PDFStyledTextStripper : PDFTextStripper() {
     private var sizes = emptyList<Int>()
     private var columns = emptyList<Int>()
 
-    fun lineOffset(): Float {
+    private fun lineOffset(): Float {
         return currentPageNo * currentPage.mediaBox.height
     }
 
@@ -225,6 +230,12 @@ class PDFStyledTextStripper : PDFTextStripper() {
         } else bytes
     }
 
+    private fun smallFont(text: String, small: Boolean): ByteArray {
+        return smallFont((if (small) {
+            text.removeAccents()
+        } else text).toByteArray(Charset.forName("windows-1250")), small)
+    }
+
     private fun smallFont(bytes: ByteArray, small: Boolean): ByteArray {
         return if (small) {
             byteArrayOf(0x1b, 0x4d, 1) + bytes + byteArrayOf(0x1b, 0x4d, 0)
@@ -268,8 +279,8 @@ class PDFStyledTextStripper : PDFTextStripper() {
         col++ /* only count text columns */
         val large = element.size == sizes.last()
         val small = (sizes.size > 2) && (element.size == sizes.first())
-        return smallFont(largeFont(boldFont(paddedText, element.bold),
-                large), small)
+        return largeFont(boldFont(smallFont(paddedText, small), element.bold),
+                large)
     }
 
     fun getBytes(document: PDDocument): ByteArray {
