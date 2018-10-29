@@ -17,6 +17,7 @@
 package me.shadura.escposprint.printservice
 
 import android.graphics.Bitmap
+import android.graphics.PointF
 import com.tom_roush.pdfbox.contentstream.operator.Operator
 import com.tom_roush.pdfbox.cos.COSBase
 import com.tom_roush.pdfbox.cos.COSName
@@ -120,7 +121,9 @@ class PDFStyledTextStripper : PDFTextStripper() {
     private var currentLine: PageElement = NewLine
     val textLines : MutableList<PageElement> = mutableListOf()
     private var currentWidth = 0.0f
-    private var currentX = 0.0f
+    private val noPos = PointF(Float.NaN, Float.NaN)
+    private var fromPos = noPos
+    private var toPos = noPos
 
     override fun processOperator(operator: Operator, operands: List<COSBase>) {
         when (operator.name) {
@@ -145,18 +148,18 @@ class PDFStyledTextStripper : PDFTextStripper() {
                 if (operands.size == 2) {
                     val x = operands[0] as COSNumber
                     val y = operands[1] as COSNumber
-                    val pos = transformedPoint(x.floatValue(), y.floatValue())
-                    currentX = pos.x
+                    fromPos = transformedPoint(x.floatValue(), y.floatValue())
                 }
             }
             "l" -> { /* line to*/
                 if (operands.size == 2) {
                     val x = operands[0] as COSNumber
                     val y = operands[1] as COSNumber
-                    val pos = transformedPoint(x.floatValue(), y.floatValue())
-
-                    val ctm = graphicsState.currentTransformationMatrix
-                    this.drawLine(currentX, pos.x, currentPage.mediaBox.height - pos.y)
+                    toPos = transformedPoint(x.floatValue(), y.floatValue())
+                    if ((fromPos != noPos) && (abs(fromPos.y - toPos.y) < 1.0f) && (currentWidth > 0.1f)) {
+                        val ctm = graphicsState.currentTransformationMatrix
+                        this.drawLine(fromPos.x, toPos.x, currentPage.mediaBox.height - toPos.y)
+                    }
                 }
             }
         }
