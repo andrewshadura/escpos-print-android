@@ -113,6 +113,9 @@ internal class EscPosPrinterDiscoverySession(private val mPrintService: PrintSer
                     Math.round(58.0f / 25.4f * 1000f), Math.round(105.0f / 25.4f * 1000f)), true)
             builder.addMediaSize(PrintAttributes.MediaSize("58x210mm", "58x210mm",
                     Math.round(58.0f / 25.4f * 1000f), Math.round(210.0f / 25.4f * 1000f)), false)
+            builder.addMediaSize(PrintAttributes.MediaSize.ISO_A6, false)
+            builder.addMediaSize(PrintAttributes.MediaSize.ISO_A5, false)
+            builder.addMediaSize(PrintAttributes.MediaSize.ISO_A4, false)
             builder.setColorModes(PrintAttributes.COLOR_MODE_MONOCHROME, PrintAttributes.COLOR_MODE_MONOCHROME)
             builder.setMinMargins(PrintAttributes.Margins(0, 0, 0, 0))
             return builder.build()
