@@ -61,12 +61,12 @@ fun bluetoothServiceActor(device: BluetoothDevice) = actor<BluetoothServiceMsg> 
             is Connect -> {
                 adapter.cancelDiscovery()
                 socket?.let {
-                    try {
+                    state = try {
                         it.connect()
-                        state = State.STATE_CONNECTED
+                        State.STATE_CONNECTED
                     } catch (e: IOException) {
                         L.e("unable to connect", e)
-                        state = State.STATE_FAILED
+                        State.STATE_FAILED
                     }
                 }
                 msg.response.complete(state)
