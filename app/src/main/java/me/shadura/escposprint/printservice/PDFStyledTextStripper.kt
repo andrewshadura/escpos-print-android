@@ -274,21 +274,15 @@ class PDFStyledTextStripper : PDFTextStripper() {
 
     fun getBytes(document: PDDocument): ByteArray {
         this.getText(document)
-        sizes = (textLines.fold(setOf<Int>()) {
-            acc, e ->
-            if (e is TextLine) {
-                acc + e.elements.fold(setOf<Int>()) {
-                    acc, e ->
-                    if (e is TextElement) {
-                        acc + setOf(e.size)
-                    } else {
-                        acc
-                    }
+        sizes = textLines.flatMap { line ->
+            if (line is TextLine) {
+                line.elements.mapNotNull { element ->
+                    if (element is TextElement) {
+                        element.size
+                    } else null
                 }
-            } else {
-                acc
-            }
-        }).asSequence().sorted().toList()
+            } else emptyList()
+        }.distinct().sorted()
         L.i("font sizes: $sizes")
         val bytes = ByteArrayOutputStream()
         for (line in textLines) (line as TextLine).let {
