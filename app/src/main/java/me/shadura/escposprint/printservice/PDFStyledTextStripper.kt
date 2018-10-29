@@ -171,7 +171,6 @@ class PDFStyledTextStripper : PDFTextStripper() {
                     val y = operands[1] as COSNumber
                     toPos = transformedPoint(x.floatValue(), y.floatValue())
                     if ((fromPos != noPos) && (abs(fromPos.y - toPos.y) < 1.0f) && (currentWidth > 0.1f)) {
-                        val ctm = graphicsState.currentTransformationMatrix
                         this.drawLine(fromPos.x, toPos.x, currentPage.mediaBox.height - toPos.y)
                     }
                 }
