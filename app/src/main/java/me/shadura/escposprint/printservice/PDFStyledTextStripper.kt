@@ -74,7 +74,7 @@ fun Iterable<ByteArray>.joinTo(buffer: ByteArrayOutputStream,
 sealed class LineElement
 data class TextElement(var text: String,
                        val bold: Boolean,
-                       val size: Float,
+                       val size: Int,
                        val start: Float,
                        var end: Float) : LineElement() {
     fun appendTextPosition(position: TextPosition) {
@@ -85,7 +85,7 @@ data class TextElement(var text: String,
     constructor(position: TextPosition) :
             this(text = position.unicode,
                  bold = position.font.fontDescriptor.isBold(),
-                 size = position.fontSize,
+                 size = floor(position.fontSize).toInt(),
                  start = position.xDirAdj,
                  end = position.xDirAdj + position.widthDirAdj)
 }
@@ -105,12 +105,14 @@ data class TextLine(override val top: Float, val width: Float, val elements: Mut
             (this.elements.last() as TextElement).let {
                 when {
                     position.font.fontDescriptor.isBold() != it.bold ||
-                    position.fontSize != it.size ||
-                    position.xDirAdj > (it.end + position.widthOfSpace * 3) ->
+                    floor(position.fontSize).toInt() != it.size ||
+                    position.xDirAdj > (it.end + position.widthOfSpace * 3) -> {
                         this.elements.add(TextElement(position))
+                    }
 
-                    else ->
+                    else -> {
                         it.appendTextPosition(position)
+                    }
                 }
             }
         }
@@ -124,6 +126,13 @@ class PDFStyledTextStripper : PDFTextStripper() {
     private val noPos = PointF(Float.NaN, Float.NaN)
     private var fromPos = noPos
     private var toPos = noPos
+    private var col = 0
+    private var sizes = emptyList<Int>()
+    private var columns = emptyList<Int>()
+
+    fun lineOffset(): Float {
+        return currentPageNo * currentPage.mediaBox.height
+    }
 
     override fun processOperator(operator: Operator, operands: List<COSBase>) {
         when (operator.name) {
@@ -168,11 +177,13 @@ class PDFStyledTextStripper : PDFTextStripper() {
 
     private fun drawImage(xObject: PDImageXObject, x: Float, y: Float) {
         val text = "image: ${xObject.width}x${xObject.height}"
-        textLines.add(TextLine(y, currentPage.mediaBox.width, mutableListOf(ImageElement(text, xObject.image))))
+        textLines.add(TextLine(y + lineOffset(), currentPage.mediaBox.width, mutableListOf(ImageElement(text, xObject.image))))
     }
 
     private fun drawLine(start: Float, end: Float, y: Float) {
-        textLines.add(TextLine(y, currentPage.mediaBox.width, mutableListOf(RuleElement(start, end))))
+        if (textLines.isEmpty() || ((textLines.last() as TextLine).elements.last() !is RuleElement)) {
+            textLines.add(TextLine(y + lineOffset(), currentPage.mediaBox.width, mutableListOf(RuleElement(start, end))))
+        }
     }
 
     override fun endDocument(document: PDDocument) {
@@ -186,31 +197,37 @@ class PDFStyledTextStripper : PDFTextStripper() {
 
     override fun writeString(text: String?, textPositions: List<TextPosition>?) {
         textPositions?.forEach { position: TextPosition ->
-            if (currentLine is TextLine && (currentLine as TextLine).top < position.yDirAdj) {
+            if (currentLine is TextLine && (currentLine as TextLine).top != (position.yDirAdj + lineOffset())) {
                 textLines.add(currentLine)
                 currentLine = NewLine
             }
             if (currentLine is NewLine) {
-                currentLine = TextLine(position.yDirAdj, currentPage.mediaBox.width, mutableListOf())
+                currentLine = TextLine(position.yDirAdj + lineOffset(), currentPage.mediaBox.width, mutableListOf())
             }
             (currentLine as TextLine).appendTextPosition(position)
         }
     }
 
-    private fun embolden(text: String, bold: Boolean): ByteArray {
-        return embolden(text.toByteArray(Charset.forName("windows-1250")),
+    private fun boldFont(text: String, bold: Boolean): ByteArray {
+        return boldFont(text.toByteArray(Charset.forName("windows-1250")),
                 bold)
     }
 
-    private fun embolden(bytes: ByteArray, bold: Boolean): ByteArray {
+    private fun boldFont(bytes: ByteArray, bold: Boolean): ByteArray {
         return if (bold) {
             byteArrayOf(0x1b, 0x45, 1) + bytes + byteArrayOf(0x1b, 0x45, 0)
         } else bytes
     }
 
-    private fun enlarge(bytes: ByteArray, large: Boolean): ByteArray {
+    private fun largeFont(bytes: ByteArray, large: Boolean): ByteArray {
         return if (large) {
             byteArrayOf(0x1d, 0x21, 1) + bytes + byteArrayOf(0x1d, 0x21, 0)
+        } else bytes
+    }
+
+    private fun smallFont(bytes: ByteArray, small: Boolean): ByteArray {
+        return if (small) {
+            byteArrayOf(0x1b, 0x4d, 1) + bytes + byteArrayOf(0x1b, 0x4d, 0)
         } else bytes
     }
 
@@ -236,15 +253,34 @@ class PDFStyledTextStripper : PDFTextStripper() {
         }
     }
 
+    private fun printText(line: TextLine, element: TextElement): ByteArray {
+        val centred = isCentred(line, element)
+        val paddedText = when {
+            centred ->
+                element.text.padCentre(columns[col])
+            columns.size > 1 && col >= columns.lastIndex ->
+                element.text.padStart(columns[col])
+            col > columns.lastIndex ->
+                element.text.padEnd(columns.last())
+            else ->
+                element.text.padEnd(columns[col])
+        }
+        col++ /* only count text columns */
+        val large = element.size == sizes.last()
+        val small = (sizes.size > 2) && (element.size == sizes.first())
+        return smallFont(largeFont(boldFont(paddedText, element.bold),
+                large), small)
+    }
+
     fun getBytes(document: PDDocument): ByteArray {
         this.getText(document)
-        val sizes = textLines.fold(setOf<Int>()) {
+        sizes = (textLines.fold(setOf<Int>()) {
             acc, e ->
             if (e is TextLine) {
                 acc + e.elements.fold(setOf<Int>()) {
                     acc, e ->
                     if (e is TextElement) {
-                        acc + setOf(e.size.toInt())
+                        acc + setOf(e.size)
                     } else {
                         acc
                     }
@@ -252,12 +288,27 @@ class PDFStyledTextStripper : PDFTextStripper() {
             } else {
                 acc
             }
-        }
+        }).asSequence().sorted().toList()
         L.i("font sizes: $sizes")
         val bytes = ByteArrayOutputStream()
         for (line in textLines) (line as TextLine).let {
+            col = 0
+            
+            if (line.elements.size == 2) {
+                val textLeft = (line.elements[0] as TextElement).text
+                val textRight = (line.elements[1] as TextElement).text
+                L.d("left = $textLeft, right = $textRight")
+                val padLength = 32 - textLeft.length - textRight.length
+                L.i("will pad $padLength")
+                val text = textLeft +
+                           " ".repeat(if (padLength > 0) padLength else 1) +
+                           textRight
+                (line.elements[0] as TextElement).text = text
+                line.elements.removeAt(1)
+            }
+
             L.i("${line.top} (${line.width}): ${line.elements}")
-            val columns = when (line.elements.count()) {
+            columns = when (line.elements.count()) {
                 1 ->
                     listOf(32)
                 2 ->
@@ -271,23 +322,11 @@ class PDFStyledTextStripper : PDFTextStripper() {
                 else ->
                     listOf(1)
             }
-            var col = 0
+
             line.elements.forEach { element ->
                 bytes.write(when (element) {
                     is TextElement -> {
-                        val centred = isCentred(line, element)
-                        val paddedText = when {
-                            centred ->
-                                element.text.padCentre(columns[col])
-                            columns.size > 1 && col == columns.lastIndex ->
-                                element.text.padStart(columns[col])
-                            else ->
-                                element.text.padEnd(columns[col])
-                        }
-                        col++ /* only count text columns */
-                        val formatted = enlarge(embolden(paddedText, element.bold),
-                                element.size.toInt() > sizes.toList().first())
-                        formatted
+                        printText(line, element)
                     }
                     is ImageElement -> {
                         val scaledBitmap = Bitmap.createScaledBitmap(
