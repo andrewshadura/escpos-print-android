@@ -100,11 +100,11 @@ data class RuleElement(val start: Float, val end: Float) : LineElement()
 data class ImageElement(val name: String, val image: Bitmap) : LineElement()
 
 sealed class PageElement {
-    open val top: Float = Float.NaN
+    open var top: Float = Float.NaN
 }
 
 object NewLine : PageElement()
-data class TextLine(override val top: Float, val width: Float, val elements: MutableList<LineElement>) : PageElement() {
+data class TextLine(override var top: Float, val width: Float, val elements: MutableList<LineElement>) : PageElement() {
     fun appendTextPosition(position: TextPosition) {
         if (this.elements.isEmpty() || (this.elements.last() !is TextElement)) {
             this.elements.add(TextElement(position))
