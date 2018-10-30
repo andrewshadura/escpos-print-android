@@ -84,7 +84,7 @@ data class TextElement(var text: String,
                        var end: Float) : LineElement() {
     fun appendTextPosition(position: TextPosition) {
         this.text += position.unicode
-        this.end += position.widthDirAdj
+        this.end = position.xDirAdj + position.widthDirAdj
     }
 
     constructor(position: TextPosition) :
