@@ -39,6 +39,8 @@ private fun PDFontDescriptor.isBold(): Boolean {
     return this.isForceBold || this.fontName.contains("Bold")
 }
 
+private const val LINEWIDTH = 32
+
 fun String.padCentre(length: Int, padChar: Char = ' '): String {
     if (length < 0)
         throw IllegalArgumentException("Desired length $length is less than zero.")
@@ -303,9 +305,7 @@ class PDFStyledTextStripper : PDFTextStripper() {
             if (line.elements.size == 2) {
                 val textLeft = (line.elements[0] as TextElement).text
                 val textRight = (line.elements[1] as TextElement).text
-                L.d("left = $textLeft, right = $textRight")
-                val padLength = 32 - textLeft.length - textRight.length
-                L.i("will pad $padLength")
+                val padLength = LINEWIDTH - textLeft.length - textRight.length
                 val text = textLeft +
                            " ".repeat(if (padLength > 0) padLength else 1) +
                            textRight
