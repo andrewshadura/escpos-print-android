@@ -328,8 +328,6 @@ class PDFStyledTextStripper : PDFTextStripper() {
             is TextElement -> {
                 val right = line.width - element.end
                 val left = element.start
-                val leftMax = 0.20 * line.width
-                L.i("left = $left, leftMax = $leftMax, right = $right")
                 (abs(left - right) < 1.0) && (left > 0.20 * line.width)
             }
             else -> false
