@@ -200,6 +200,69 @@ class PDFStyledTextStripper : PDFTextStripper() {
             currentLine = NewLine
         }
         textLines.sortBy { it.top }
+
+        /*
+         * Find all elements which overlap lines with other elements
+         * Append those element to the overlapping lines
+         * Remove the original lines
+         *
+         * Effect: "snap to grid"
+         * */
+        do {
+            val toRemove = textLines.filter {
+                it is TextLine && it.elements[0] is TextElement
+            }.zipWithNext().mapNotNull {
+                val (first, second) = it as Pair<TextLine, TextLine>
+                if (first.elements.isEmpty() || second.elements.isEmpty()) {
+                    return@mapNotNull null
+                }
+                val firstElement = first.elements[0] as TextElement
+                val secondElement = second.elements[0] as TextElement
+                val firstTop     = floor(first.top - firstElement.height / 2).toInt()
+                val firstBottom  = floor(first.top + firstElement.height / 2 + firstElement.height).toInt()
+                val secondTop    = floor(second.top - secondElement.height / 2).toInt()
+                val secondBottom = floor(second.top + secondElement.height / 2 + firstElement.height).toInt()
+                when {
+                    firstTop == secondTop -> {
+                        if (secondElement.start < firstElement.start) {
+                            second.elements.addAll(first.elements)
+                            first.elements.clear()
+                            second.elements.sortBy { (it as TextElement).start }
+                            first
+                        } else {
+                            first.elements.addAll(second.elements)
+                            second.elements.clear()
+                            first.elements.sortBy { (it as TextElement).start }
+                            second
+                        }
+                    }
+                    firstBottom > secondTop -> {
+                        if (secondElement.start < firstElement.start) {
+                            second.elements.addAll(first.elements)
+                            first.elements.clear()
+                            second.elements.sortBy { (it as TextElement).start }
+                            first
+                        } else {
+                            null
+                        }
+                    }
+                    secondBottom < firstBottom -> {
+                        if (secondElement.start > firstElement.start) {
+                            first.elements.addAll(second.elements)
+                            second.elements.clear()
+                            first.elements.sortBy { (it as TextElement).start }
+                            second
+                        } else {
+                            null
+                        }
+                    }
+                    else -> {
+                        null
+                    }
+                }
+            }
+            textLines.removeAll(toRemove)
+        } while (toRemove.isNotEmpty())
         super.endDocument(document)
     }
 
