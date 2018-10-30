@@ -80,6 +80,7 @@ sealed class LineElement
 data class TextElement(var text: String,
                        val bold: Boolean,
                        val size: Int,
+                       val height: Int,
                        val start: Float,
                        var end: Float) : LineElement() {
     fun appendTextPosition(position: TextPosition) {
@@ -91,6 +92,7 @@ data class TextElement(var text: String,
             this(text = position.unicode,
                  bold = position.font.fontDescriptor.isBold(),
                  size = floor(position.fontSize).toInt(),
+                 height = floor(position.heightDir).toInt(),
                  start = position.xDirAdj,
                  end = position.xDirAdj + position.widthDirAdj)
 }
