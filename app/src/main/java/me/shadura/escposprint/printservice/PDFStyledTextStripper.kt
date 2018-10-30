@@ -112,11 +112,17 @@ data class TextLine(override var top: Float, val width: Float, val elements: Mut
             this.elements.add(TextElement(position))
         } else {
             (this.elements.last() as TextElement).let {
+                val offset = position.xDirAdj - it.end
+                val wos = position.heightDir / 4
                 when {
                     position.font.fontDescriptor.isBold() != it.bold ||
                     floor(position.fontSize).toInt() != it.size ||
-                    position.xDirAdj > (it.end + position.widthOfSpace * 3) -> {
+                    offset > position.widthOfSpace * 3 -> {
                         this.elements.add(TextElement(position))
+                    }
+                    offset > wos -> {
+                        it.text += " "
+                        it.appendTextPosition(position)
                     }
 
                     else -> {
