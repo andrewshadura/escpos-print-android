@@ -58,7 +58,6 @@ import org.jetbrains.anko.design.snackbar
 class ManageManualPrintersActivity : AppCompatActivity() {
     private var mBluetoothAdapter: BluetoothAdapter? = null
 
-    private var mService: BluetoothService? = null
     private var adapter: ManualPrintersAdapter? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
