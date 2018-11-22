@@ -9,4 +9,6 @@
 
     <!--   a secondary color for controls like checkboxes and text fields -->
     <color name="colorAccent">#3F51B5</color>
+    <color name="colorDelete">#ff0000</color>
+    <color name="colorBackground">@android:color/background_light</color>
 </resources>

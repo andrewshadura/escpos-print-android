@@ -25,46 +25,41 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.support.annotation.LayoutRes
-import android.support.design.widget.Snackbar
+import android.support.constraint.ConstraintLayout
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
+import android.support.v7.widget.LinearLayoutManager
+import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
+import android.view.View.*
 import android.view.ViewGroup
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
-import android.widget.ListView
 import android.widget.ProgressBar
 import android.widget.Switch
 import android.widget.TextView
 
-import java.util.ArrayList
-
 import me.shadura.escposprint.R
 
-import android.view.View.GONE
-import android.view.View.VISIBLE
-import kotlinx.coroutines.experimental.CompletableDeferred
-import kotlinx.coroutines.experimental.CoroutineScope
+import kotlinx.coroutines.experimental.*
 import kotlinx.coroutines.experimental.android.UI
-import kotlinx.coroutines.experimental.launch
-import kotlinx.coroutines.experimental.withContext
 import me.shadura.escposprint.L
 import me.shadura.escposprint.printservice.*
+import org.jetbrains.anko.design.longSnackbar
 import org.jetbrains.anko.design.snackbar
+import java.util.*
 
 class ManageManualPrintersActivity : AppCompatActivity() {
     private var mBluetoothAdapter: BluetoothAdapter? = null
 
-    private var adapter: ManualPrintersAdapter? = null
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var viewAdapter: ManualPrintersRecyclerAdapter
+    private lateinit var viewManager: RecyclerView.LayoutManager
+    private lateinit var printers: MutableList<ManualPrinterInfo>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_manage_manual_printers)
-
-        val printersList = findViewById<ListView>(R.id.manage_printers_list)
 
         // Build adapter
         val prefs = getSharedPreferences(AddPrintersActivity.SHARED_PREFS_MANUAL_PRINTERS, Context.MODE_PRIVATE)
@@ -72,20 +67,19 @@ class ManageManualPrintersActivity : AppCompatActivity() {
         if (numPrinters < 0) {
             numPrinters = 0
         }
-        val printers = getPrinters(prefs, numPrinters)
-        adapter = ManualPrintersAdapter(this, R.layout.manage_printers_list_item, printers)
+        printers = getPrinters(prefs, numPrinters)
 
-        // Setup adapter with click to remove
-        printersList.adapter = adapter
-        printersList.onItemLongClickListener = AdapterView.OnItemLongClickListener { parent, view, position, id ->
-            val editor = prefs.edit()
-            val numPrinters = prefs.getInt(AddPrintersActivity.PREF_NUM_PRINTERS, 0)
-            editor.putInt(AddPrintersActivity.PREF_NUM_PRINTERS, numPrinters - 1)
-            editor.remove(AddPrintersActivity.PREF_NAME + position)
-            editor.remove(AddPrintersActivity.PREF_ADDRESS + position)
-            editor.apply()
-            adapter!!.removeItem(position)
-            true
+        viewManager = LinearLayoutManager(this)
+        viewAdapter = ManualPrintersRecyclerAdapter(printers)
+
+        recyclerView = findViewById<RecyclerView>(R.id.manage_printers_recycler).apply {
+            setHasFixedSize(true)
+            layoutManager = viewManager
+            adapter = viewAdapter
+        }
+
+        viewAdapter.removeCallback = {
+            savePrinters()
         }
     }
 
@@ -93,10 +87,7 @@ class ManageManualPrintersActivity : AppCompatActivity() {
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
 
         if (mBluetoothAdapter == null) {
-            val printersList = findViewById<ListView>(R.id.manage_printers_list)
-
-            Snackbar.make(printersList, "Bluetooth is not available", Snackbar.LENGTH_LONG)
-                    .setAction("Action", null).show()
+            longSnackbar(recyclerView, "Bluetooth is not available")
             return
         }
 
@@ -127,10 +118,7 @@ class ManageManualPrintersActivity : AppCompatActivity() {
                         startActivityForResult(serverIntent, REQUEST_FIND_DEVICE)
                     }
                 } else {
-                    val printersList = findViewById<ListView>(R.id.manage_printers_list)
-
-                    Snackbar.make(printersList, "This app needs Bluetooth to add new printers", Snackbar.LENGTH_LONG)
-                            .setAction("Action", null).show()
+                    longSnackbar(recyclerView, "This app needs Bluetooth to add new printers")
                 }
             }
             REQUEST_FIND_DEVICE -> {
@@ -139,8 +127,8 @@ class ManageManualPrintersActivity : AppCompatActivity() {
 
                     if (BluetoothAdapter.checkBluetoothAddress(address)) {
                         val device = mBluetoothAdapter!!.getRemoteDevice(address)
-                        var printerInfo = ManualPrinterInfo(device.name, address, true, true)
-                        adapter!!.add(printerInfo)
+                        val printerInfo = ManualPrinterInfo(device.name, address, true, true)
+                        printers.add(printerInfo)
                         launch {
                             val bluetoothService = bluetoothServiceActor(device)
                             val response = CompletableDeferred<State>()
@@ -148,18 +136,18 @@ class ManageManualPrintersActivity : AppCompatActivity() {
                             when (response.await()) {
                                 State.STATE_CONNECTED -> {
                                     withContext(UI) {
-                                        snackbar(findViewById<ListView>(R.id.manage_printers_list), "Printer connected and enabled")
+                                        snackbar(recyclerView, "Printer connected and enabled")
                                         printerInfo.connecting = false
-                                        adapter!!.notifyDataSetChanged()
+                                        viewAdapter.notifyDataSetChanged()
                                         addPrinter(printerInfo.name, printerInfo.address, printerInfo.enabled)
                                     }
                                 }
                                 State.STATE_NONE -> {
                                     withContext(UI) {
-                                        snackbar(findViewById<ListView>(R.id.manage_printers_list), "Failed to connect to the printer")
+                                        snackbar(recyclerView, "Failed to connect to the printer")
                                         printerInfo.connecting = false
                                         printerInfo.enabled = false
-                                        adapter!!.notifyDataSetChanged()
+                                        viewAdapter.notifyDataSetChanged()
                                     }
                                 }
                             }
@@ -181,7 +169,7 @@ class ManageManualPrintersActivity : AppCompatActivity() {
         }
     }
 
-    private fun getPrinters(prefs: SharedPreferences, numPrinters: Int): List<ManualPrinterInfo> {
+    private fun getPrinters(prefs: SharedPreferences, numPrinters: Int): MutableList<ManualPrinterInfo> {
         val printers = ArrayList<ManualPrinterInfo>(numPrinters)
         var address: String?
         var name: String?
@@ -195,55 +183,132 @@ class ManageManualPrintersActivity : AppCompatActivity() {
         return printers
     }
 
+    private fun savePrinters() {
+        val prefs = getSharedPreferences(AddPrintersActivity.SHARED_PREFS_MANUAL_PRINTERS, Context.MODE_PRIVATE)
+        with(prefs.edit()) {
+            printers.forEachIndexed { id, printer ->
+                putString(AddPrintersActivity.PREF_ADDRESS + id, printer.address)
+                putString(AddPrintersActivity.PREF_NAME + id, printer.name)
+                putBoolean(AddPrintersActivity.PREF_ENABLED + id, printer.enabled)
+            }
+            putInt(AddPrintersActivity.PREF_NUM_PRINTERS, printers.size)
+            apply()
+        }
+    }
+
     private fun addPrinter(name: String, address: String, enabled: Boolean) {
         val prefs = getSharedPreferences(AddPrintersActivity.SHARED_PREFS_MANUAL_PRINTERS, Context.MODE_PRIVATE)
-        val editor = prefs.edit()
         val id = prefs.getInt(AddPrintersActivity.PREF_NUM_PRINTERS, 0)
-        editor.putString(AddPrintersActivity.PREF_ADDRESS + id, address)
-        editor.putString(AddPrintersActivity.PREF_NAME + id, name)
-        editor.putBoolean(AddPrintersActivity.PREF_ENABLED + id, enabled)
-        editor.putInt(AddPrintersActivity.PREF_NUM_PRINTERS, id + 1)
-        editor.apply()
+        with (prefs.edit()) {
+            putString(AddPrintersActivity.PREF_ADDRESS + id, address)
+            putString(AddPrintersActivity.PREF_NAME + id, name)
+            putBoolean(AddPrintersActivity.PREF_ENABLED + id, enabled)
+            putInt(AddPrintersActivity.PREF_NUM_PRINTERS, id + 1)
+            apply()
+        }
     }
 
     private data class ManualPrinterInfo(var name: String, val address: String, var enabled: Boolean, var connecting: Boolean)
 
-    private data class ManualPrinterInfoViews(val name: TextView, val address: TextView, val enabled: Switch, val connecting: ProgressBar)
+    private data class ManualPrinterInfoViews(val name: TextView,
+                                              val address: TextView,
+                                              val enabled: Switch,
+                                              val connecting: ProgressBar,
+                                              val innerLayout: ConstraintLayout)
 
-    private class ManualPrintersAdapter internal constructor(context: Context, @LayoutRes resource: Int, objects: List<ManualPrinterInfo>) : ArrayAdapter<ManualPrinterInfo>(context, resource, objects) {
+    private class ManualPrintersRecyclerAdapter(val objects: MutableList<ManualPrinterInfo>) :
+            UndoableDeleteAdapter<ManualPrintersRecyclerAdapter.ViewHolder>() {
 
-        override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
-            var convertView = convertView
-            val views: ManualPrinterInfoViews
-            if (convertView == null) {
-                convertView = LayoutInflater.from(parent.context).inflate(R.layout.manage_printers_list_item, parent, false)!!
-                views = ManualPrinterInfoViews(
-                        convertView.findViewById<View>(R.id.manual_printer_name) as TextView,
-                        convertView.findViewById<View>(R.id.manual_printer_address) as TextView,
-                        convertView.findViewById<View>(R.id.manual_printer_enabled) as Switch,
-                        convertView.findViewById<View>(R.id.manual_printer_progressbar) as ProgressBar
-                )
-                convertView.tag = views
-            } else {
-                views = convertView.tag as ManualPrinterInfoViews
-            }
+        private val pendingRemovals = mutableMapOf<ManualPrinterInfo, Job>()
+        var removeCallback: ((position: Int) -> Unit)? = null
 
-            val info = getItem(position)!!
-            views.name.text = info.name
-            views.address.text = info.address
-            views.enabled.isChecked = info.enabled
-            views.enabled.isEnabled = !info.connecting
-            views.enabled.setOnCheckedChangeListener { _, isChecked ->
-                info.enabled = isChecked
-                L.i("item $info -> $isChecked")
-            }
-            views.connecting.visibility = if (info.connecting) VISIBLE else GONE
-
-            return convertView
+        class ViewHolder(v: View) : RecyclerView.ViewHolder(v) {
+            val views: ManualPrinterInfoViews = ManualPrinterInfoViews(
+                    v.findViewById(R.id.manual_printer_name) as TextView,
+                    v.findViewById(R.id.manual_printer_address) as TextView,
+                    v.findViewById(R.id.manual_printer_enabled) as Switch,
+                    v.findViewById(R.id.manual_printer_progressbar) as ProgressBar,
+                    v.findViewById(R.id.inner_layout) as ConstraintLayout)
         }
 
-        fun removeItem(position: Int) {
-            remove(getItem(position))
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+            val listItem = LayoutInflater.from(parent.context).inflate(R.layout.manage_printers_list_item, parent, false)
+
+            return ViewHolder(listItem)
+        }
+
+        override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+            val item = objects[position]
+            item.let { (name, address, enabled, connecting) ->
+                holder.views.name.text = name
+                holder.views.address.text = address
+                holder.views.enabled.isChecked = enabled
+                holder.views.enabled.isEnabled = !connecting
+
+                holder.views.enabled.setOnCheckedChangeListener { _, isChecked ->
+                    item.enabled = isChecked
+                    L.i("$item -> $isChecked")
+                }
+                holder.views.connecting.visibility = if (connecting) VISIBLE else GONE
+            }
+        }
+
+        override fun getItemCount() = objects.size
+
+        override fun isPendingRemoval(position: Int): Boolean {
+            return objects[position] in pendingRemovals
+        }
+
+        fun isPendingRemoval(item: ManualPrinterInfo): Boolean {
+            return item in pendingRemovals
+        }
+
+        override fun postRemoveAt(position: Int) {
+            postRemove(objects[position])
+        }
+
+        override fun postRemove(item: Any) {
+            if (!isPendingRemoval(item as ManualPrinterInfo)) {
+                val undo = launch {
+                    delay(PENDING_REMOVAL_TIMEOUT)
+                    remove(item)
+                }
+                pendingRemovals[item] = undo
+                notifyItemChanged(objects.indexOf(item))
+                L.i("posted removal task for $item: $undo")
+            }
+        }
+
+        override fun undoRemove(item: Any) {
+            if (isPendingRemoval(item as ManualPrinterInfo)) {
+                L.i("cancelling removal task for $item")
+                pendingRemovals[item]?.cancel()
+                val position = objects.indexOf(item)
+                pendingRemovals.remove(item)
+                notifyItemChanged(position)
+            }
+        }
+
+        override fun removeAt(position: Int) {
+            remove(objects[position])
+        }
+
+        override fun remove(item: Any) {
+            if (item in objects) {
+                if (item in pendingRemovals) {
+                    L.i("dropping removal task for $item")
+                    pendingRemovals.remove(item)
+                }
+                L.i("removing $item")
+                val position = objects.indexOf(item)
+                removeCallback?.invoke(position)
+                objects.remove(item)
+                notifyItemRemoved(position)
+            }
+        }
+
+        companion object {
+            private const val PENDING_REMOVAL_TIMEOUT = 3000
         }
     }
 
