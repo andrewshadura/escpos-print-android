@@ -29,7 +29,7 @@
         <activity
             android:name=".app.ManageManualPrintersActivity"
             android:exported="true"
-            android:theme="@style/AndroidCupsPrint">
+            android:theme="@style/EscPosPrint">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>

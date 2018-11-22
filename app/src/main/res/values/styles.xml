@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="AndroidCupsPrint"
+    <style name="EscPosPrint"
            parent="@style/Theme.AppCompat.Light.DarkActionBar">
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
     </style>
-    <style name="AndroidCupsPrint.AlertDialog"
+    <style name="EscPosPrint.AlertDialog"
            parent="@style/Theme.AppCompat.Light.Dialog.Alert"/>
     <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar" />
 
