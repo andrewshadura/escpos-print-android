@@ -84,20 +84,17 @@ class ManageManualPrintersActivity : AppCompatActivity() {
     }
 
     fun findPrinters(button: View) {
-        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
-
-        if (mBluetoothAdapter == null) {
+        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter()?.apply {
+            if (!isEnabled) {
+                val enableIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+                startActivityForResult(enableIntent, REQUEST_ENABLE_BLUETOOTH)
+            } else {
+                val serverIntent = Intent(this@ManageManualPrintersActivity, DeviceListActivity::class.java)
+                startActivityForResult(serverIntent, REQUEST_FIND_DEVICE)
+            }
+        } ?: {
             longSnackbar(recyclerView, "Bluetooth is not available")
-            return
-        }
 
-        if (!mBluetoothAdapter!!.isEnabled) {
-            val enableIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
-            startActivityForResult(enableIntent, REQUEST_ENABLE_BLUETOOTH)
-        } else {
-            val serverIntent = Intent(this@ManageManualPrintersActivity, DeviceListActivity::class.java)
-            startActivityForResult(serverIntent, REQUEST_FIND_DEVICE)
-        }
     }
 
     public override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
