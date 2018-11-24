@@ -95,6 +95,18 @@ class ManageManualPrintersActivity : AppCompatActivity() {
         } ?: {
             longSnackbar(recyclerView, "Bluetooth is not available")
 
+            val debug = false
+            if (debug) {
+                val bytes = byteArrayOf(0, 0, 0, 0, 0, 0)
+                Random().nextBytes(bytes)
+                val mac = bytes.joinToString(separator = ":") { String.format("%02x", it.toInt() and 0xff) }
+                val printerInfo = ManualPrinterInfo("Random device",
+                        "$mac", true, true)
+                printers.add(printerInfo)
+                viewAdapter.notifyDataSetChanged()
+            }
+            null
+        }()
     }
 
     public override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
