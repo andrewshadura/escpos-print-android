@@ -195,7 +195,9 @@ class PDFStyledTextStripper : PDFTextStripper() {
     }
 
     private fun drawLine(start: Float, end: Float, y: Float) {
-        if (textLines.isEmpty() || ((textLines.last() as TextLine).elements.last() !is RuleElement)) {
+        if (textLines.isEmpty() ||
+                (textLines.last().top.toInt() != (y + lineOffset()).toInt()) ||
+                ((textLines.last() as TextLine).elements.last() !is RuleElement)) {
             textLines.add(TextLine(y + lineOffset(), currentPage.mediaBox.width, mutableListOf(RuleElement(start, end))))
         }
     }
