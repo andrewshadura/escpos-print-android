@@ -89,7 +89,7 @@ class EscPosService : PrintService() {
      *
      * @param printJob The print job
      */
-    internal fun onPrintJobCancelled(printJob: PrintJob) {
+    private fun onPrintJobCancelled(printJob: PrintJob) {
         mJobs.remove(printJob.id)
         printJob.cancel()
     }
@@ -115,7 +115,7 @@ class EscPosService : PrintService() {
             val jobId = printJob.id
 
             // Send print job
-            var task = doAsync {
+            val task = doAsync {
                 try {
                     parseDocument(jobId, address, fd)
                     uiThread {
@@ -155,7 +155,7 @@ class EscPosService : PrintService() {
      */
     internal fun updateJobStatus(printJob: PrintJob): Boolean {
         // Check if the job is already gone
-        if (!mJobs.containsKey(printJob.id)) {
+        if (printJob.id !in mJobs) {
             L.e("Tried to request a job status, but the job couldn't be found in the jobs list")
             return false
         }
@@ -167,18 +167,16 @@ class EscPosService : PrintService() {
         }
 
         // Prepare job
-        if (mJobs.containsKey(printJob.id)) {
+        if (printJob.id in mJobs) {
             val job = mJobs[printJob.id]
 
             val state = job!!.state
             onJobStateUpdate(printJob, state)
-
-            return true
         }
 
 
         // We don’t want to be called again if the job has been removed from the map.
-        return false
+        return printJob.id in mJobs
     }
 
     /**
@@ -187,7 +185,6 @@ class EscPosService : PrintService() {
      * @param jobId     The printer job ID
      * @return true if the job is complete/aborted/cancelled, false if it's still processing (printing, paused, etc)
      */
-    @Throws(Exception::class)
     internal fun getJobState(job: PrintJobTask): JobStateEnum {
         return job.state
     }
@@ -198,7 +195,7 @@ class EscPosService : PrintService() {
      * @param printJob The print job
      * @param state    Print job state
      */
-    internal fun onJobStateUpdate(printJob: PrintJob, state: JobStateEnum?) {
+    private fun onJobStateUpdate(printJob: PrintJob, state: JobStateEnum?) {
         // Couldn't check state -- don't do anything
         if (state == null) {
             mJobs.remove(printJob.id)
