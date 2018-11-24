@@ -354,6 +354,15 @@ class PDFStyledTextStripper : PDFTextStripper() {
     }
 
     fun getBytes(document: PDDocument): ByteArray {
+        val bytes = ByteArrayOutputStream()
+        getByteArrays(document).forEach {
+            bytes.write(it)
+            bytes.write("\n".toByteArray())
+        }
+        return bytes.toByteArray()
+    }
+
+    fun getByteArrays(document: PDDocument): List<ByteArray> {
         this.getText(document)
         sizes = textLines.flatMap { line ->
             if (line is TextLine) {
@@ -365,7 +374,7 @@ class PDFStyledTextStripper : PDFTextStripper() {
             } else emptyList()
         }.distinct().sorted()
         L.i("font sizes: $sizes")
-        val bytes = ByteArrayOutputStream()
+        val byteArrays = mutableListOf<ByteArray>()
         for (line in textLines) (line as TextLine).let {
             col = 0
             
@@ -397,7 +406,7 @@ class PDFStyledTextStripper : PDFTextStripper() {
             }
 
             line.elements.forEach { element ->
-                bytes.write(when (element) {
+                byteArrays += (when (element) {
                     is TextElement -> {
                         printText(line, element)
                     }
@@ -416,8 +425,7 @@ class PDFStyledTextStripper : PDFTextStripper() {
                     }
                 })
             }
-            bytes.write("\n".toByteArray())
         }
-        return bytes.toByteArray()
+        return byteArrays
     }
 }

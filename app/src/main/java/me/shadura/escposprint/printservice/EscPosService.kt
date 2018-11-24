@@ -229,12 +229,12 @@ class EscPosService : PrintService() {
         val pdfStripper = PDFStyledTextStripper()
         pdfStripper.addMoreFormatting = true
         val bytes = try {
-            pdfStripper.getBytes(document)
+            pdfStripper.getByteArrays(document)
         } catch (e: Exception) {
             val writer = StringWriter()
             e.printStackTrace(PrintWriter(writer))
             L.e(writer.toString())
-            byteArrayOf()
+            listOf(byteArrayOf())
         }
         document.close()
 
@@ -249,7 +249,10 @@ class EscPosService : PrintService() {
                     bluetoothService.send(Write(byteArrayOf(0x1c, 0x2e)))
                     bluetoothService.send(Write(byteArrayOf(0xa, 0xa, 0xa)))
                     bluetoothService.send(Write(byteArrayOf(0x1b, 0x74, 0x48)))
-                    bluetoothService.send(Write(bytes))
+                    bytes.forEach {
+                        bluetoothService.send(Write(it))
+                        bluetoothService.send(Write("\n".toByteArray()))
+                    }
                     bluetoothService.send(Write(byteArrayOf(0xa, 0xa, 0xa)))
                     bluetoothService.close()
                     L.i("sent text")
