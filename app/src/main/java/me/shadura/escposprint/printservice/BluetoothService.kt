@@ -60,9 +60,10 @@ fun bluetoothServiceActor(device: BluetoothDevice) = actor<BluetoothServiceMsg> 
         when (msg) {
             is Connect -> {
                 adapter.cancelDiscovery()
-                socket?.let {
+                L.i("connecting to $device")
+                socket.run {
                     state = try {
-                        it.connect()
+                        connect()
                         State.STATE_CONNECTED
                     } catch (e: IOException) {
                         L.e("unable to connect", e)
@@ -78,6 +79,7 @@ fun bluetoothServiceActor(device: BluetoothDevice) = actor<BluetoothServiceMsg> 
             }
         }
     }
+    socket.outputStream.flush()
     socket.close()
 }
 
