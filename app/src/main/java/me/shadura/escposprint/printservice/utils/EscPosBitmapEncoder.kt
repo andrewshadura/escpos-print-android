@@ -17,7 +17,6 @@ package me.shadura.escposprint.printservice.utils
 
 import android.graphics.Bitmap
 import android.graphics.Color
-import android.graphics.Color.colorToHSV
 
 import java.io.ByteArrayOutputStream
 import kotlin.experimental.or
@@ -27,10 +26,9 @@ fun Bitmap.encodeForPrinter(): ByteArray {
     return rasteriser.printImage(this)
 }
 
-fun colourToV(colour: Int): Float {
-    var hsv = FloatArray(3)
-    colorToHSV(colour, hsv)
-    return hsv[2]
+fun greyToV(colour: Int): Float {
+    /* TODO: this is a hack! */
+    return Color.red(colour) / 255.0f
 }
 
 class EscPosBitmapEncoder {
@@ -56,16 +54,36 @@ class EscPosBitmapEncoder {
 
         val controlByte = byteArrayOf((0x00ff and width).toByte(), (0xff00 and width shr 8).toByte())
         val pixels = IntArray(width * height)
+        val errors = Array(height) { IntArray(width) }
 
         bitmap.getPixels(pixels, 0, width, 0, 0, width, height)
+        val threshold = 128
 
-        val BAND_HEIGHT = 24
+        for (row in 0 until height - 1) {
+            for (col in 1 until width - 1) {
+                val index = row * width + col
+                val pixel = pixels[index]
+                val grey = (0.21 * Color.red(pixel) + 0.72 * Color.green(pixel) + 0.07 * Color.blue(pixel)).toInt() + errors[row][col]
+                val mono = if (grey < threshold) {
+                    0
+                } else {
+                    255
+                }
+                val error = grey - mono
+                errors[row][col + 1] += (7 * error) / 16
+                errors[row + 1][col - 1] += (3 * error) / 16
+                errors[row + 1][col] += (5 * error) / 16
+                errors[row + 1][col + 1] += (1* error) / 16
+                pixels[index] = Color.rgb(mono, mono, mono)
+            }
+        }
+
+        val bandHeight = 24
 
         // Bands of pixels are sent that are 8 pixels high.  Iterate through bitmap
         // 24 rows of pixels at a time, capturing bytes representing vertical slices 1 pixel wide.
         // Each bit indicates if the pixel at that position in the slice should be dark or not.
-        var row = 0
-        while (row < height) {
+        for (row in 0 until height step bandHeight) {
             printerBuffer.write(PRINTER_SET_LINE_SPACE_24)
 
             // Need to send these two sets of bytes at the beginning of each row.
@@ -76,44 +94,44 @@ class EscPosBitmapEncoder {
             for (col in 0 until width) {
                 val bandBytes = byteArrayOf(0x0, 0x0, 0x0)
 
-                // Ugh, the nesting of forloops.  For each starting row/col position, evaluate
+                // Ugh, the nesting of for loops.  For each starting row/col position, evaluate
                 // each pixel in a column, or "band", 24 pixels high.  Convert into 3 bytes.
                 for (rowOffset in 0..7) {
                     // Because the printer only maintains correct height/width ratio
                     // at the highest density, where it takes 24 bit-deep slices, process
                     // a 24-bit-deep slice as 3 bytes.
                     val pixelSlice = FloatArray(3)
+                    val pixel1Row = row + rowOffset
                     val pixel2Row = row + rowOffset + 8
                     val pixel3Row = row + rowOffset + 16
 
                     // If we go past the bottom of the image, just send white pixels so the printer
                     // doesn't do anything.  Everything still needs to be sent in sets of 3 rows.
-                    pixelSlice[0] = colourToV(bitmap.getPixel(col, row + rowOffset))
-                    pixelSlice[1] = colourToV(if (pixel2Row >= bitmap.height) {
+                    pixelSlice[0] = greyToV(pixels[pixel1Row * width + col])
+                    pixelSlice[1] = greyToV(if (pixel2Row >= bitmap.height) {
                         Color.WHITE
                     } else {
-                        bitmap.getPixel(col, pixel2Row)
+                        pixels[pixel2Row * width + col]
                     })
-                    pixelSlice[2] = colourToV(if (pixel3Row >= bitmap.height) {
+                    pixelSlice[2] = greyToV(if (pixel3Row >= bitmap.height) {
                         Color.WHITE
                     } else {
-                        bitmap.getPixel(col, pixel3Row)
+                        pixels[pixel3Row * width + col]
                     })
 
                     val isDark = booleanArrayOf(pixelSlice[0] < 0.5,
                                                 pixelSlice[1] < 0.5,
                                                 pixelSlice[2] < 0.5)
 
-                    // Towing that fine line between "should I forloop or not".  This will only
-                    // ever be 3 elements deep.
-                    if (isDark[0]) bandBytes[0] = bandBytes[0] or (1 shl 7 - rowOffset).toByte()
-                    if (isDark[1]) bandBytes[1] = bandBytes[1] or (1 shl 7 - rowOffset).toByte()
-                    if (isDark[2]) bandBytes[2] = bandBytes[2] or (1 shl 7 - rowOffset).toByte()
+                    isDark.forEachIndexed { i, b ->
+                        if (b) {
+                            bandBytes[i] = bandBytes[i] or (1 shl 7 - rowOffset).toByte()
+                        }
+                    }
                 }
                 printerBuffer.write(bandBytes)
             }
             addLineFeed(1)
-            row += BAND_HEIGHT
         }
         return printerBuffer.toByteArray()
     }
