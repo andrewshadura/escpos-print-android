@@ -413,12 +413,16 @@ class PDFStyledTextStripper : PDFTextStripper() {
                         printText(line, element)
                     }
                     is ImageElement -> {
-                        val scaledBitmap = Bitmap.createScaledBitmap(
-                                element.image,
-                                element.image.width * 2,
-                                element.image.height * 2,
-                                false)
-                        centre(true) + scaledBitmap.encodeForPrinter() + centre(false)
+                        if (element.image.width < 384/2) {
+                            val scaledBitmap = Bitmap.createScaledBitmap(
+                                    element.image,
+                                    element.image.width * 2,
+                                    element.image.height * 2,
+                                    false)
+                            centre(true) + scaledBitmap.encodeForPrinter() + centre(false)
+                        } else {
+                            centre(true) + element.image.encodeForPrinter() + centre(false)
+                        }
                     }
                     is RuleElement -> {
                         val startChar = floor(element.start / 12.0).toInt()
