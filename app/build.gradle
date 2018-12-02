@@ -67,6 +67,18 @@ android {
             testCoverageEnabled true
         }
     }
+
+    flavorDimensions "version"
+
+    productFlavors {
+        free {
+            versionNameSuffix '-free'
+        }
+        full {
+            applicationIdSuffix '.plus'
+            versionNameSuffix '-plus'
+        }
+    }
 }
 
 dependencies {
