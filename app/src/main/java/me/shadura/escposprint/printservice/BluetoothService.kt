@@ -28,11 +28,9 @@ import android.content.Context
 import android.os.Bundle
 import android.os.Handler
 import android.util.Log
-import kotlinx.coroutines.experimental.CompletableDeferred
-import kotlinx.coroutines.experimental.CoroutineScope
-import kotlinx.coroutines.experimental.channels.SendChannel
-import kotlinx.coroutines.experimental.channels.actor
-import kotlinx.coroutines.experimental.delay
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.SendChannel
+import kotlinx.coroutines.channels.actor
 import me.shadura.escposprint.L
 import java.lang.Exception
 import kotlin.collections.chunked
@@ -53,9 +51,9 @@ class Connect(val response: CompletableDeferred<State>) : BluetoothServiceMsg()
 object Disconnect : BluetoothServiceMsg()
 class Write(val data: ByteArray) : BluetoothServiceMsg()
 
-fun bluetoothServiceActor(device: BluetoothDevice) = actor<BluetoothServiceMsg> {
+fun CoroutineScope.bluetoothServiceActor(device: BluetoothDevice) = actor<BluetoothServiceMsg>(Dispatchers.IO) {
     val adapter = BluetoothAdapter.getDefaultAdapter()
-    var state = State.STATE_NONE
+    var state: State
     val socket: BluetoothSocket = device.createRfcommSocketToServiceRecord(PRINTER_UUID)
 
     process@ for (msg in channel) {
@@ -88,7 +86,7 @@ fun bluetoothServiceActor(device: BluetoothDevice) = actor<BluetoothServiceMsg> 
     socket.close()
 }
 
-fun bluetoothServiceActor(address: String): SendChannel<BluetoothServiceMsg> {
+fun CoroutineScope.bluetoothServiceActor(address: String): SendChannel<BluetoothServiceMsg> {
     val adapter = BluetoothAdapter.getDefaultAdapter()
     if (adapter == null) {
         throw Exception("Bluetooth is not available")

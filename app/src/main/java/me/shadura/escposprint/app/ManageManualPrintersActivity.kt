@@ -41,15 +41,14 @@ import android.widget.TextView
 
 import me.shadura.escposprint.R
 
-import kotlinx.coroutines.experimental.*
-import kotlinx.coroutines.experimental.android.UI
+import kotlinx.coroutines.*
 import me.shadura.escposprint.L
 import me.shadura.escposprint.printservice.*
 import org.jetbrains.anko.design.longSnackbar
 import org.jetbrains.anko.design.snackbar
 import java.util.*
 
-class ManageManualPrintersActivity : AppCompatActivity() {
+class ManageManualPrintersActivity : AppCompatActivity(), CoroutineScope by MainScope() {
     private var mBluetoothAdapter: BluetoothAdapter? = null
 
     private lateinit var recyclerView: RecyclerView
@@ -144,20 +143,16 @@ class ManageManualPrintersActivity : AppCompatActivity() {
                             bluetoothService.send(Connect(response))
                             when (response.await()) {
                                 State.STATE_CONNECTED -> {
-                                    withContext(UI) {
-                                        snackbar(recyclerView, "Printer connected and enabled")
-                                        printerInfo.connecting = false
-                                        viewAdapter.notifyDataSetChanged()
-                                        addPrinter(printerInfo.name, printerInfo.address, printerInfo.enabled)
-                                    }
+                                    snackbar(recyclerView, "Printer connected and enabled")
+                                    printerInfo.connecting = false
+                                    viewAdapter.notifyDataSetChanged()
+                                    addPrinter(printerInfo.name, printerInfo.address, printerInfo.enabled)
                                 }
                                 State.STATE_NONE -> {
-                                    withContext(UI) {
-                                        snackbar(recyclerView, "Failed to connect to the printer")
-                                        printerInfo.connecting = false
-                                        printerInfo.enabled = false
-                                        viewAdapter.notifyDataSetChanged()
-                                    }
+                                    snackbar(recyclerView, "Failed to connect to the printer")
+                                    printerInfo.connecting = false
+                                    printerInfo.enabled = false
+                                    viewAdapter.notifyDataSetChanged()
                                 }
                             }
                             bluetoothService.close()
@@ -278,7 +273,7 @@ class ManageManualPrintersActivity : AppCompatActivity() {
 
         override fun postRemove(item: Any) {
             if (!isPendingRemoval(item as ManualPrinterInfo)) {
-                val undo = launch {
+                val undo = GlobalScope.launch {
                     delay(PENDING_REMOVAL_TIMEOUT)
                     remove(item)
                 }
@@ -317,7 +312,7 @@ class ManageManualPrintersActivity : AppCompatActivity() {
         }
 
         companion object {
-            private const val PENDING_REMOVAL_TIMEOUT = 3000
+            private const val PENDING_REMOVAL_TIMEOUT = 3000L
         }
     }
 

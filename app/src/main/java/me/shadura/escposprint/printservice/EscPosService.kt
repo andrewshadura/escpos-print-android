@@ -32,10 +32,7 @@ import me.shadura.escposprint.L
 import me.shadura.escposprint.R
 import com.tom_roush.pdfbox.pdmodel.PDDocument
 import com.tom_roush.pdfbox.util.PDFBoxResourceLoader
-import kotlinx.coroutines.experimental.CompletableDeferred
-import kotlinx.coroutines.experimental.android.UI
-import kotlinx.coroutines.experimental.launch
-import kotlinx.coroutines.experimental.withContext
+import kotlinx.coroutines.*
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.toast
 import org.jetbrains.anko.uiThread
@@ -45,7 +42,7 @@ import java.util.concurrent.Future
 /**
  * CUPS print service
  */
-class EscPosService : PrintService() {
+class EscPosService : PrintService(), CoroutineScope by MainScope() {
 
     data class PrintJobTask(var state: JobStateEnum = JobStateEnum.PROCESSING, var task: Future<Unit>?)
 
@@ -253,10 +250,9 @@ class EscPosService : PrintService() {
                     bluetoothService.send(Write(byteArrayOf(0xa, 0xa, 0xa)))
                     bluetoothService.close()
                     L.i("sent text")
-                    withContext(UI) {
-                        mJobs[jobId]?.state = JobStateEnum.COMPLETED
-                        L.i("marked job as complete")
-                    }
+
+                    mJobs[jobId]?.state = JobStateEnum.COMPLETED
+                    L.i("marked job as complete")
                 }
             }
         }
