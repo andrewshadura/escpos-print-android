@@ -17,6 +17,7 @@ package me.shadura.escposprint.printservice.utils
 
 import android.graphics.Bitmap
 import android.graphics.Color
+import me.shadura.escposprint.BuildConfig
 
 import java.io.ByteArrayOutputStream
 import kotlin.experimental.or
@@ -69,11 +70,13 @@ class EscPosBitmapEncoder {
                 } else {
                     255
                 }
-                val error = grey - mono
-                errors[row][col + 1] += (7 * error) / 16
-                errors[row + 1][col - 1] += (3 * error) / 16
-                errors[row + 1][col] += (5 * error) / 16
-                errors[row + 1][col + 1] += (1* error) / 16
+                if (BuildConfig.FLAVOR == "plus") {
+                    val error = grey - mono
+                    errors[row][col + 1] += (7 * error) / 16
+                    errors[row + 1][col - 1] += (3 * error) / 16
+                    errors[row + 1][col] += (5 * error) / 16
+                    errors[row + 1][col + 1] += (1 * error) / 16
+                }
                 pixels[index] = Color.rgb(mono, mono, mono)
             }
         }
