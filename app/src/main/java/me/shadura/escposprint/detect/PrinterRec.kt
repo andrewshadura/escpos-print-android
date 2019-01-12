@@ -1,12 +1,30 @@
 package me.shadura.escposprint.detect
 
-data class PrinterRec(val nickname: String, val protocol: String, val host: String, val port: Int, val queue: String) : Comparable<PrinterRec> {
+import kotlinx.serialization.*
 
-    override fun toString(): String {
-        return "$nickname ($protocol on $host)"
+enum class PrinterModel {
+    Generic,
+    ZiJiang,
+    Epson,
+    Bixolon
+}
+
+@Serializable
+data class PrinterRec(var name: String, val address: String, var enabled: Boolean, var model: PrinterModel) : Comparable<PrinterRec> {
+    @Transient
+    var connecting: Boolean = false
+
+    override fun compareTo(other: PrinterRec): Int {
+        return address.compareTo(other.address)
     }
 
-    override fun compareTo(another: PrinterRec): Int {
-        return toString().compareTo(another.toString())
+    override fun equals(other: Any?): Boolean {
+        return if (other is PrinterRec) {
+            address == other.address
+        } else {
+            super.equals(other)
+        }
     }
+
+    override fun hashCode(): Int = address.hashCode()
 }

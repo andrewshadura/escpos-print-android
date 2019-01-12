@@ -18,16 +18,13 @@
 package me.shadura.escposprint.printservice
 
 import android.content.Context
-import android.content.Intent
 import android.os.AsyncTask
-import android.os.Build
 import android.print.PrintAttributes
 import android.print.PrinterCapabilitiesInfo
 import android.print.PrinterId
 import android.print.PrinterInfo
 import android.printservice.PrintService
 import android.printservice.PrinterDiscoverySession
-import android.text.TextUtils
 import android.widget.Toast
 
 import java.io.FileNotFoundException
@@ -35,23 +32,17 @@ import java.io.IOException
 import java.net.ConnectException
 import java.net.HttpURLConnection
 import java.net.SocketTimeoutException
-import java.net.URI
 import java.net.URISyntaxException
-import java.net.URL
 import java.net.UnknownHostException
-import java.security.cert.CertificateException
 import java.util.ArrayList
-import java.util.HashMap
 
 import javax.net.ssl.SSLException
 import javax.net.ssl.SSLPeerUnverifiedException
 
 import ch.ethz.vppserver.schema.ippclient.Attribute
-import ch.ethz.vppserver.schema.ippclient.AttributeValue
 import me.shadura.escposprint.EscPosPrintApp
 import me.shadura.escposprint.L
 import me.shadura.escposprint.R
-import me.shadura.escposprint.app.AddPrintersActivity
 import me.shadura.escposprint.detect.PrinterRec
 
 /**
@@ -68,12 +59,12 @@ internal class EscPosPrinterDiscoverySession(private val mPrintService: PrintSer
      * @param priorityList The list of printers that the user selected sometime in the past, that need to be checked first
      */
     override fun onStartPrinterDiscovery(priorityList: List<PrinterId>) {
-        object : AsyncTask<Void, Void, Map<String, String>>() {
-            override fun doInBackground(vararg params: Void): Map<String, String> {
+        object : AsyncTask<Void, Void, Map<String, PrinterRec>>() {
+            override fun doInBackground(vararg params: Void): Map<String, PrinterRec> {
                 return scanPrinters()
             }
 
-            override fun onPostExecute(printers: Map<String, String>) {
+            override fun onPostExecute(printers: Map<String, PrinterRec>) {
                 onPrintersDiscovered(printers)
             }
         }.execute()
@@ -85,15 +76,15 @@ internal class EscPosPrinterDiscoverySession(private val mPrintService: PrintSer
      *
      * @param printers The list of printers found, as a map of URL=>name
      */
-    fun onPrintersDiscovered(printers: Map<String, String>) {
+    fun onPrintersDiscovered(printers: Map<String, PrinterRec>) {
         val res = EscPosPrintApp.getInstance().resources
         val toast = res.getQuantityString(R.plurals.printer_discovery_result, printers.size, printers.size)
         Toast.makeText(mPrintService, toast, Toast.LENGTH_SHORT).show()
         L.d("onPrintersDiscovered($printers)")
         val printersInfo = ArrayList<PrinterInfo>(printers.size)
-        for (address in printers.keys) {
+        for ((address, printer) in printers) {
             val printerId = mPrintService.generatePrinterId(address)
-            printersInfo.add(PrinterInfo.Builder(printerId, printers[address], PrinterInfo.STATUS_IDLE).build())
+            printersInfo.add(PrinterInfo.Builder(printerId, printer.name, PrinterInfo.STATUS_IDLE).build())
         }
 
         addPrinters(printersInfo)
@@ -330,30 +321,16 @@ internal class EscPosPrinterDiscoverySession(private val mPrintService: PrintSer
     /**
      * Ran in background thread.
      *
-     * @return The list of printers as [PrinterRec]
+     * @return The list of printers
      */
-    fun scanPrinters(): Map<String, String> {
-        //TODO: check for errors
-        val printers = HashMap<String, String>()
-        var address: String?
-        var name: String?
-        var enabled: Boolean
+    fun scanPrinters(): Map<String, PrinterRec> {
+
 
         /* TODO: Here, we can detect more printers */
 
         // Add the printers manually added
-        val prefs = mPrintService.getSharedPreferences(AddPrintersActivity.SHARED_PREFS_MANUAL_PRINTERS, Context.MODE_PRIVATE)
-        val numPrinters = prefs.getInt(AddPrintersActivity.PREF_NUM_PRINTERS, 0)
-        for (i in 0 until numPrinters) {
-            enabled = prefs.getBoolean(AddPrintersActivity.PREF_ENABLED + i, false)
-            address = prefs.getString(AddPrintersActivity.PREF_ADDRESS + i, null)
-            name = prefs.getString(AddPrintersActivity.PREF_NAME + i, null)
-            if (enabled && address != null && name != null && address.trim { it <= ' ' }.length > 0 && name.trim { it <= ' ' }.length > 0) {
-                printers[address] = name
-            }
-        }
-
-        return printers
+        val prefs = mPrintService.getSharedPreferences(Config.SHARED_PREFS_PRINTERS, Context.MODE_PRIVATE)
+        return Config.read(prefs).configuredPrinters.filterValues(PrinterRec::enabled)
     }
 
     override fun onStopPrinterDiscovery() {

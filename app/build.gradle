@@ -12,10 +12,12 @@ try {
 
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
+apply plugin: 'kotlinx-serialization'
 apply plugin: 'com.github.triplet.play'
 
 repositories {
     mavenCentral()
+    maven { url "https://kotlin.bintray.com/kotlinx" }
 }
 
 android {
@@ -90,6 +92,7 @@ dependencies {
     implementation 'com.android.support:recyclerview-v7:27.1.1'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-common:$kotlin_version"
+    implementation "org.jetbrains.kotlinx:kotlinx-serialization-runtime:0.9.1"
     implementation "org.jetbrains.anko:anko-commons:$anko_version"
     implementation "org.jetbrains.anko:anko-design:$anko_version"
     implementation 'com.tom_roush:pdfbox-android:1.8.10.0'
