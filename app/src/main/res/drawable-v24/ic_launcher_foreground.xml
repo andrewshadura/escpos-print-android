@@ -6,7 +6,7 @@
     android:viewportHeight="108">
   <path
       android:fillType="evenOdd"
-      android:pathData="M32,64C32,64 38.39,52.99 44.13,50.95C51.37,48.37 70.14,49.57 70.14,49.57L108.26,87.69L108,109.01L75.97,107.97L32,64Z"
+      android:pathData="M 35 68.526 C 35 68.526 33.26 50.04 39 48 C 47 47 73 48 73 48 L 108 83 L 108 108 L 75 108 Z"
       android:strokeColor="#00000000"
       android:strokeWidth="1">
       <aapt:attr name="android:fillColor">
