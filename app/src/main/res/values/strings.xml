@@ -63,5 +63,8 @@
     <string name="manage_printers_help">Here are the manually added printers. Click on one item to remove it (no confirmation!)</string>
     <string name="title_activity_device_list" translatable="false">Available Bluetooth devices</string>
     <string name="undo">Undo</string>
+    <string name="printer_model">Model</string>
+    <string name="printer_nickname">Name</string>
+    <string name="printer_details">Printer Details</string>
 
 </resources>
