@@ -1,54 +1,16 @@
-# AndroidCupsPrint
-Port of cups4j to Android.
-
-See it live on the Play Store: https://play.google.com/store/apps/details?id=io.github.benoitduffez.cupsprint  
-See it live on f-droid.org: https://f-droid.org/repository/browse/?fdid=io.github.benoitduffez.cupsprint
+# EscPos printer driver
 
 ## Original work
 
-Original work was created by Jon Freeman, it included an app that reacts to the SEND intent to print documents.
+The print service code is heavily based on Android CUPS Print app by Benoit Duffez.
 
-Original work can be found here: http://mobd.jonbanjo.com/jfcupsprint/default.php  
-Original work found via: http://android.stackexchange.com/q/43774/63883
-
-## Modifications
-
-This app was modified in several ways:
-
-* project structure converted to gradle format
-* added support for Android PrintService so that it can print documents straight from almost all apps
-* removed all legacy code that allowed printing without the use of Android PrintService (this is removed because of `minSdkVersion=19`, meaning all targets of this app are `PrintService`-compliant)
-* fixed SSL code to properly handle self-signed certificates (as it is likely the case with home printers)
-* removed jars and added source code to be compatible with an f-droid.org publication
- 
 ### Print Service
 
 Print service works at the framework level:
 
 <img alt="Android framework Print Services" src="http://i.imgur.com/FIBi7vl.png" width="300" />
 
-See the [Wiki](https://github.com/BenoitDuffez/AndroidCupsPrint/wiki) for more information about how to use it.
-
-As per the code, the following has been added:
-
-* a service in the AndroidManifest.xml file that registers the app as a PrintService
-* `CupsPrinterDiscoverySession.java`: handles printer discovery and printer management
-* `CupsService.java`: handles Android framework connectivity and print jobs management
-* removed all legacy code (pre API 19)
-
-# Contribute
-
-This app wasn't widely tested, it needs your help for better quality. If you find bugs, either submit a new issue or fork/fix/submit PR.
-
-Please use the `develop` branch for testing and troubleshooting.
-
-Also, you can subscribe on the Play Store to receive beta versions of this app: https://play.google.com/apps/testing/io.github.benoitduffez.cupsprint
-
-## Branches
-
-* The `master` branch is code published to Google Play.
-* The `jonbanjo` branch is the app containing all the legacy code written by Jon Freeman
-* The `fdroid` branch was created in an effort to be compatible with f-droid.org; however, this effort was merged into develop and is intended to be merged into master.
+See the [Android CUPS Print wiki](https://github.com/BenoitDuffez/AndroidCupsPrint/wiki) for more information about how to use it.
 
 # License
 
@@ -84,9 +46,4 @@ other liability, whether in contract, tort or otherwise, arising
 from, out of or in connection with the software or the use or
 other dealings in the software.
 ```
-
-## External libraries
-
-* A modified version of cups4j 0.63. The original source code and further details about cups4j may be found at http://www.cups4j.org/ (licensed under the LGPL license)
-* JmDNS This is licensed under the Apache License
 
