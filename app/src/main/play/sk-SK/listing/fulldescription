@@ -1,0 +1,11 @@
+Máte prenosnú tlačiareň na bločky šírkou 58 mm? Táto aplikácia vám umožní tlačiť priamo z vášho zariadenia Android.
+
+Táto aplikácia poskytuje tlačovú službu pre systém Android. Po inštalácii je potrebné povoliť jej použitie v nastaveniach tlače.
+
+Tento softvér je optimalizovaný a primárne zameraný na tlač bločkov a podobných dokladov (vrátane daňových dokladov z VRP), ale umožňuje tlač aj iných textových dokumentov.
+
+Redistribúcia a používanie tejto aplikácie v zdrojovej a binárnej forme s modifikáciami alebo bez nich je povolené za predpokladu, že toto oznámenie bude zachovane v redistribúciách zdrojového kódu a že príjemcovia súhlasia s tým, že táto aplikácia je poskytovaná tak, ako je, bez akejkoľvek záruky, vrátane, ale nie výlučne, záruk obchodovateľnosti, vhodnosti na určitý účel atď. Vlastníci autorských práv alebo žiadni distribútori softvéru v žiadnom prípade nebudú zodpovední za žiadne škody alebo inú zodpovednosť, či už zmluvnú, občianskoprávnu alebo inú.
+
+Tento softvér využíva port Apache PDFBox 1.8 na Android, https://github.com/TomRoush/PdfBox-Android. Tento softvér je založený na ovládači tlače Android CUPS od Benoit Duffez. Ďalšie informácie nájdete na stránke https://benoitduffez.github.io/AndroidCupsPrint
+
+Táto aplikácia je slobodný softvér; môžete ho používať, upravovať a rozširovať pod podmienkami licencie GPL verzie 3. Viac informácií nájdete na webovej stránke aplikácie alebo na jej GitHube.
