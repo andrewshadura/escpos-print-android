@@ -232,6 +232,10 @@ class ManageManualPrintersActivity : AppCompatActivity(), CoroutineScope by Main
                     changeCallback?.invoke(position)
                 }
                 holder.views.connecting.visibility = if (printer.connecting) VISIBLE else INVISIBLE
+                holder.itemView.setOnLongClickListener {
+                    removeAt(position)
+                    false
+                }
             }
         }
 
