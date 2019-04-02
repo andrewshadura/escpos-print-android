@@ -407,8 +407,9 @@ class PDFStyledTextStripper : PDFTextStripper() {
                     listOf(1)
             }
 
+            var lineArray = byteArrayOf()
             line.elements.forEach { element ->
-                byteArrays += (when (element) {
+                lineArray += (when (element) {
                     is TextElement -> {
                         printText(line, element)
                     }
@@ -431,6 +432,7 @@ class PDFStyledTextStripper : PDFTextStripper() {
                     }
                 })
             }
+            byteArrays += lineArray
         }
         return byteArrays
     }
