@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2018 Andrej Shadura
+ * Copyright (C) 2018—2019 Andrej Shadura
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free
@@ -330,7 +330,7 @@ class PDFStyledTextStripper : PDFTextStripper() {
             is TextElement -> {
                 val right = line.width - element.end
                 val left = element.start
-                (abs(left - right) < 1.0) && (left > 0.20 * line.width)
+                (abs(left - right) < 10.0) && (left > 0.20 * line.width)
             }
             else -> false
         }
