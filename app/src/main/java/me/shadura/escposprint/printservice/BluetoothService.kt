@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2018 Andrej Shadura
+ * Copyright (C) 2018—2019 Andrej Shadura
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free
@@ -46,14 +46,17 @@ enum class State {
     STATE_FAILED
 }
 
+data class Result(var state: State, var error: String)
+
 sealed class BluetoothServiceMsg
-class Connect(val response: CompletableDeferred<State>) : BluetoothServiceMsg()
+class Connect(val response: CompletableDeferred<Result>) : BluetoothServiceMsg()
 object Disconnect : BluetoothServiceMsg()
 class Write(val data: ByteArray) : BluetoothServiceMsg()
 
 fun CoroutineScope.bluetoothServiceActor(device: BluetoothDevice) = actor<BluetoothServiceMsg>(Dispatchers.IO) {
     val adapter = BluetoothAdapter.getDefaultAdapter()
     var state: State
+    var error: String = ""
     val socket: BluetoothSocket = device.createRfcommSocketToServiceRecord(PRINTER_UUID)
 
     process@ for (msg in channel) {
@@ -66,11 +69,12 @@ fun CoroutineScope.bluetoothServiceActor(device: BluetoothDevice) = actor<Blueto
                         connect()
                         State.STATE_CONNECTED
                     } catch (e: IOException) {
+                        error = e.message ?: ""
                         L.e("unable to connect", e)
                         State.STATE_FAILED
                     }
                 }
-                msg.response.complete(state)
+                msg.response.complete(Result(state, error))
             }
             is Disconnect -> break@process
             is Write -> {

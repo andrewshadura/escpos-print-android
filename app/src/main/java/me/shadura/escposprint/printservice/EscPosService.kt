@@ -1,6 +1,6 @@
 /**
  * Copyright (C) 2015—2016 Benoit Duffez
- * Copyright (C) 2018      Andrej Shadura
+ * Copyright (C) 2018—2019 Andrej Shadura
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free
@@ -234,9 +234,10 @@ class EscPosService : PrintService(), CoroutineScope by MainScope() {
 
         launch {
             val bluetoothService = bluetoothServiceActor(address)
-            val response = CompletableDeferred<State>()
+            val response = CompletableDeferred<Result>()
             bluetoothService.send(Connect(response))
-            when (response.await()) {
+            var result = response.await()
+            when (result.state) {
                 State.STATE_CONNECTED -> {
                     L.i("sending text")
                     bluetoothService.send(Write(byteArrayOf(0x1b, 0x40)))
@@ -253,6 +254,9 @@ class EscPosService : PrintService(), CoroutineScope by MainScope() {
 
                     mJobs[jobId]?.state = JobStateEnum.COMPLETED
                     L.i("marked job as complete")
+                }
+                State.STATE_FAILED -> {
+                    L.e(result.error)
                 }
             }
         }

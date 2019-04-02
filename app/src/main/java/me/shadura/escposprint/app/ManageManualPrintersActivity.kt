@@ -46,6 +46,7 @@ import me.shadura.escposprint.L
 import me.shadura.escposprint.detect.PrinterModel
 import me.shadura.escposprint.detect.PrinterRec
 import me.shadura.escposprint.printservice.*
+import org.jetbrains.anko.alert
 import org.jetbrains.anko.design.longSnackbar
 import org.jetbrains.anko.design.snackbar
 import java.util.*
@@ -147,17 +148,19 @@ class ManageManualPrintersActivity : AppCompatActivity(), CoroutineScope by Main
 
                         launch {
                             val bluetoothService = bluetoothServiceActor(device)
-                            val response = CompletableDeferred<State>()
+                            val response = CompletableDeferred<Result>()
                             bluetoothService.send(Connect(response))
-                            when (response.await()) {
+                            val result = response.await()
+                            when (result.state) {
                                 State.STATE_CONNECTED -> {
                                     snackbar(recyclerView, "Printer connected and enabled")
                                     printerInfo.connecting = false
                                     viewAdapter.notifyDataSetChanged()
                                     addPrinter(printerInfo)
                                 }
+                                State.STATE_FAILED,
                                 State.STATE_NONE -> {
-                                    snackbar(recyclerView, "Failed to connect to the printer")
+                                    longSnackbar(recyclerView, "Failed to connect to the printer: ${result.error}")
                                     printerInfo.connecting = false
                                     printerInfo.enabled = false
                                     viewAdapter.notifyDataSetChanged()
