@@ -29,6 +29,7 @@ import com.tom_roush.pdfbox.text.TextPosition
 import com.tom_roush.pdfbox.pdmodel.graphics.image.PDImageXObject
 import me.shadura.escposprint.L
 import me.shadura.escposprint.printservice.utils.encodeForPrinter
+import org.w3c.dom.Text
 import java.io.ByteArrayOutputStream
 import java.nio.charset.Charset
 import java.text.Normalizer
@@ -134,6 +135,8 @@ data class TextLine(override var top: Float, val width: Float, val elements: Mut
     }
 }
 
+data class BBox(val x: Int, val y: Int, val w: Int, val h: Int)
+
 class PDFStyledTextStripper : PDFTextStripper() {
     private var currentLine: PageElement = NewLine
     val textLines : MutableList<PageElement> = mutableListOf()
@@ -144,6 +147,7 @@ class PDFStyledTextStripper : PDFTextStripper() {
     private var col = 0
     private var sizes = emptyList<Int>()
     private var columns = emptyList<Int>()
+    private var imageBBoxes = emptyList<BBox>()
 
     private fun lineOffset(): Float {
         return currentPageNo * currentPage.mediaBox.height
@@ -158,7 +162,9 @@ class PDFStyledTextStripper : PDFTextStripper() {
                     is PDImageXObject -> {
                         val ctm = graphicsState.currentTransformationMatrix
                         this.drawImage(xObject, ctm.translateX,
-                                currentPage.mediaBox.height - ctm.translateY - ctm.scalingFactorY)
+                                currentPage.mediaBox.height - ctm.translateY - ctm.scalingFactorY,
+                                ctm.scalingFactorX,
+                                ctm.scalingFactorY)
                     }
                 }
             }
@@ -189,8 +195,9 @@ class PDFStyledTextStripper : PDFTextStripper() {
         super.processOperator(operator, operands)
     }
 
-    private fun drawImage(xObject: PDImageXObject, x: Float, y: Float) {
-        val text = "image: ${xObject.width}x${xObject.height}"
+    private fun drawImage(xObject: PDImageXObject, x: Float, y: Float, w: Float, h: Float) {
+        val text = "image: ${xObject.width}x${xObject.height} (${w}x$h+$x+$y)"
+        imageBBoxes += BBox(x.toInt(), (y + lineOffset()).toInt(), w.toInt(), h.toInt())
         textLines.add(TextLine(y + lineOffset(), currentPage.mediaBox.width, mutableListOf(ImageElement(text, xObject.image))))
     }
 
@@ -207,6 +214,18 @@ class PDFStyledTextStripper : PDFTextStripper() {
             textLines.add(currentLine)
             currentLine = NewLine
         }
+        textLines.filter {
+            it is TextLine && it.elements[0] is TextElement && it.elements.size == 1
+        }.forEach { textLine: PageElement ->
+            val element = (textLine as TextLine).elements[0] as TextElement
+            imageBBoxes.forEach {
+                if ((it.y + it.h >= (textLine.top - element.height * 2 - element.height / 2).toInt() ) &&
+                        (it.x >= element.start) && (it.x + it.w <= element.end)) {
+                    textLine.top = it.y + 1.0f
+                }
+            }
+        }
+
         textLines.sortBy { it.top }
 
         /*
@@ -276,12 +295,13 @@ class PDFStyledTextStripper : PDFTextStripper() {
 
     override fun writeString(text: String?, textPositions: List<TextPosition>?) {
         textPositions?.forEach { position: TextPosition ->
-            if (currentLine is TextLine && (currentLine as TextLine).top != (position.yDirAdj + lineOffset())) {
+            val top = position.yDirAdj + lineOffset()
+            if (currentLine is TextLine && (currentLine as TextLine).top != top) {
                 textLines.add(currentLine)
                 currentLine = NewLine
             }
             if (currentLine is NewLine) {
-                currentLine = TextLine(position.yDirAdj + lineOffset(), currentPage.mediaBox.width, mutableListOf())
+                currentLine = TextLine(top, currentPage.mediaBox.width, mutableListOf())
             }
             (currentLine as TextLine).appendTextPosition(position)
         }
