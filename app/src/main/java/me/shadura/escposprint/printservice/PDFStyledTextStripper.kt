@@ -222,6 +222,7 @@ class PDFStyledTextStripper : PDFTextStripper() {
                 if ((it.y + it.h >= (textLine.top - element.height * 2 - element.height / 2).toInt() ) &&
                         (it.x >= element.start) && (it.x + it.w <= element.end)) {
                     textLine.top = it.y + 1.0f
+                    element.text += "\n"
                 }
             }
         }
