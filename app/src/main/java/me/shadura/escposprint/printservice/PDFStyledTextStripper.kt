@@ -398,8 +398,16 @@ class PDFStyledTextStripper : PDFTextStripper() {
         }.distinct().sorted()
         L.i("font sizes: $sizes")
         val byteArrays = mutableListOf<ByteArray>()
+        var prevLine: PageElement = NewLine
         for (line in textLines) (line as TextLine).let {
             col = 0
+
+            if (prevLine is TextLine &&
+                    (prevLine as TextLine).elements[0] is RuleElement &&
+                    line.elements[0] is RuleElement) {
+                return@let
+            }
+            prevLine = line
             
             if (line.elements.size == 2) {
                 val textLeft = (line.elements[0] as TextElement).text
