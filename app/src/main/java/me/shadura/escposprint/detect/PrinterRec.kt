@@ -6,7 +6,8 @@ enum class PrinterModel {
     Generic,
     ZiJiang,
     Epson,
-    Bixolon
+    Bixolon,
+    Goojprt
 }
 
 @Serializable

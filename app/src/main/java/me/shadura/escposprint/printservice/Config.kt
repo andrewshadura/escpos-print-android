@@ -4,6 +4,7 @@ import android.content.SharedPreferences
 import kotlinx.serialization.*
 import kotlinx.serialization.json.JSON
 import me.shadura.escposprint.L
+import me.shadura.escposprint.detect.PrinterModel
 
 import me.shadura.escposprint.detect.PrinterRec
 
@@ -30,7 +31,13 @@ class Config {
             val config = prefs.getString(PREF_CONFIG, "")
             L.i("read json: %s".format(config))
             return if (config.isNotBlank()) {
-                JSON.parse(config)
+                val c: Config = JSON.parse(config)
+                c.configuredPrinters.filter { (_, printer) ->
+                    printer.name.startsWith("MTP-")
+                }.forEach { (_, printer) ->
+                    printer.model = PrinterModel.Goojprt
+                }
+                c
             } else {
                 Config()
             }

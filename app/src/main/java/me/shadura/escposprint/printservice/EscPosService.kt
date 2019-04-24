@@ -17,6 +17,8 @@
  */
 package me.shadura.escposprint.printservice
 
+import android.content.Context
+import android.content.SharedPreferences
 import android.os.Handler
 import android.print.PrintJobId
 import android.printservice.PrintJob
@@ -33,6 +35,7 @@ import me.shadura.escposprint.R
 import com.tom_roush.pdfbox.pdmodel.PDDocument
 import com.tom_roush.pdfbox.util.PDFBoxResourceLoader
 import kotlinx.coroutines.*
+import me.shadura.escposprint.detect.PrinterModel
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.toast
 import org.jetbrains.anko.uiThread
@@ -48,8 +51,11 @@ class EscPosService : PrintService(), CoroutineScope by MainScope() {
 
     private val mJobs = HashMap<PrintJobId, PrintJobTask>()
 
+    private lateinit var prefs: SharedPreferences
+
     override fun onConnected() {
         PDFBoxResourceLoader.init(applicationContext)
+        prefs = getSharedPreferences(Config.SHARED_PREFS_PRINTERS, Context.MODE_PRIVATE)
     }
 
     override fun onCreatePrinterDiscoverySession(): PrinterDiscoverySession? {
@@ -217,6 +223,12 @@ class EscPosService : PrintService(), CoroutineScope by MainScope() {
      */
     @Throws(Exception::class)
     internal fun parseDocument(jobId: PrintJobId, address: String, fd: FileDescriptor) {
+        val config = Config.read(prefs)
+        if (address !in config.configuredPrinters) {
+            L.e("received a job for unconfigured printer ${address}, bailing out")
+            return
+        }
+        val printerConfig = config.configuredPrinters[address]!!
 
         val inputStream = FileInputStream(fd)
         val document = PDDocument.load(inputStream)
@@ -231,6 +243,14 @@ class EscPosService : PrintService(), CoroutineScope by MainScope() {
             listOf(byteArrayOf())
         }
         document.close()
+        val charsetCode: Byte = when (printerConfig.model) {
+            PrinterModel.Goojprt ->
+                0x1e
+            PrinterModel.ZiJiang ->
+                0x48
+            else ->
+                0x2d
+        }
 
         launch {
             val bluetoothService = bluetoothServiceActor(address)
@@ -243,7 +263,7 @@ class EscPosService : PrintService(), CoroutineScope by MainScope() {
                     bluetoothService.send(Write(byteArrayOf(0x1b, 0x40)))
                     bluetoothService.send(Write(byteArrayOf(0x1c, 0x2e)))
                     bluetoothService.send(Write(byteArrayOf(0xa, 0xa, 0xa)))
-                    bluetoothService.send(Write(byteArrayOf(0x1b, 0x74, 0x48)))
+                    bluetoothService.send(Write(byteArrayOf(0x1b, 0x74, charsetCode)))
                     bytes.forEach {
                         bluetoothService.send(Write(it))
                         bluetoothService.send(Write("\n".toByteArray()))
