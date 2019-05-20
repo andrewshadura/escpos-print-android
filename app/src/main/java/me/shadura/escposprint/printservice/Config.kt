@@ -33,7 +33,7 @@ class Config {
             return if (config.isNotBlank()) {
                 val c: Config = JSON.parse(config)
                 c.configuredPrinters.filter { (_, printer) ->
-                    printer.name.startsWith("MTP-")
+                    printer.name.startsWith("MTP-") || printer.name.startsWith("PT2")
                 }.forEach { (_, printer) ->
                     printer.model = PrinterModel.Goojprt
                 }
