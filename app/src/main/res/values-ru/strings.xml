@@ -7,4 +7,5 @@
     <string name="printer_nickname">Название</string>
     <string name="add_name">Название</string>
     <string name="activity_add_label">Добавление принтера</string>
+    <string name="list_of_currently_configured_printers">Список добавленных принтеров</string>
 </resources>
