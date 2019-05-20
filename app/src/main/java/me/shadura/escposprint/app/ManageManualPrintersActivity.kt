@@ -158,7 +158,7 @@ class ManageManualPrintersActivity : AppCompatActivity(), CoroutineScope by Main
                             val result = response.await()
                             when (result.state) {
                                 State.STATE_CONNECTED -> {
-                                    snackbar(recyclerView, "Printer connected and enabled")
+                                    snackbar(recyclerView, R.string.printer_connected)
                                     printerInfo.connecting = false
                                     viewAdapter.notifyDataSetChanged()
                                     addPrinter(printerInfo)

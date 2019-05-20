@@ -2,10 +2,12 @@
 <resources>
     <string name="app_name">Чековые принтеры</string>
     <string name="add_button">Добавить принтер</string>
-    <string name="title_activity_device_list" translatable="false">Доступные устройства Bluetooth</string>
+    <string name="title_activity_device_list">Доступные устройства Bluetooth</string>
     <string name="printer_model">Модель</string>
     <string name="printer_nickname">Название</string>
     <string name="add_name">Название</string>
     <string name="activity_add_label">Добавление принтера</string>
     <string name="list_of_currently_configured_printers">Список добавленных принтеров</string>
+    <string name="err_document_fd_null">Невозможно распечатать документ</string>
+    <string name="printer_connected">Принтер добавлен и включён</string>
 </resources>

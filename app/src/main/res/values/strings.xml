@@ -30,5 +30,6 @@
     <string name="printer_nickname">Name</string>
     <string name="printer_details" translatable="false">Printer Details</string>
     <string name="list_of_currently_configured_printers">List of currently configured printers</string>
+    <string name="printer_connected">Printer connected and enabled</string>
 
 </resources>
