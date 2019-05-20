@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Чековые принтеры</string>
+    <string name="add_button">Добавить принтер</string>
+    <string name="title_activity_device_list" translatable="false">Доступные устройства Bluetooth</string>
+    <string name="printer_model">Модель</string>
+    <string name="printer_nickname">Название</string>
+    <string name="add_name">Название</string>
+    <string name="activity_add_label">Добавление принтера</string>
+</resources>
