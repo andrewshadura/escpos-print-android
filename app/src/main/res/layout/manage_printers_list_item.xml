@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:descendantFocusability="blocksDescendants">
@@ -24,7 +25,7 @@
             android:padding="8dp"
             android:textAppearance="@style/Base.TextAppearance.AppCompat.Large"
             app:layout_constraintBottom_toTopOf="@+id/manual_printer_address"
-            app:layout_constraintEnd_toEndOf="@+id/manual_printer_address"
+            app:layout_constraintEnd_toEndOf="@+id/manual_printer_model"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintVertical_chainStyle="packed" />
@@ -36,10 +37,21 @@
             android:layout_marginStart="8dp"
             android:padding="8dp"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="@+id/manual_printer_name"
+            app:layout_constraintEnd_toStartOf="@+id/manual_printer_model"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/manual_printer_name" />
 
+        <TextView
+            android:id="@+id/manual_printer_model"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:padding="8dp"
+            android:gravity="end"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/manual_printer_address"
+            app:layout_constraintEnd_toEndOf="@+id/manual_printer_name"
+            app:layout_constraintTop_toBottomOf="@+id/manual_printer_name" />
 
         <Switch
             android:id="@+id/manual_printer_enabled"
@@ -51,8 +63,9 @@
             android:checked="false"
             app:layout_constraintBottom_toTopOf="@+id/manual_printer_progressbar"
             app:layout_constraintEnd_toStartOf="@+id/barrier"
-            app:layout_constraintStart_toEndOf="@+id/manual_printer_address"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintStart_toEndOf="@+id/manual_printer_name"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_chainStyle="spread_inside" />
 
         <ProgressBar
             android:id="@+id/manual_printer_progressbar"
@@ -63,7 +76,7 @@
             android:visibility="visible"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/barrier"
-            app:layout_constraintStart_toEndOf="@+id/manual_printer_address"
+            app:layout_constraintStart_toEndOf="@+id/manual_printer_name"
             app:layout_constraintTop_toBottomOf="@+id/manual_printer_enabled" />
 
 

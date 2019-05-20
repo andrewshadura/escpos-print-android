@@ -195,6 +195,7 @@ class ManageManualPrintersActivity : AppCompatActivity(), CoroutineScope by Main
 
     private data class ManualPrinterInfoViews(val name: TextView,
                                               val address: TextView,
+                                              val model: TextView,
                                               val enabled: Switch,
                                               val connecting: ProgressBar,
                                               val innerLayout: ConstraintLayout)
@@ -210,6 +211,7 @@ class ManageManualPrintersActivity : AppCompatActivity(), CoroutineScope by Main
             val views: ManualPrinterInfoViews = ManualPrinterInfoViews(
                     v.findViewById(R.id.manual_printer_name) as TextView,
                     v.findViewById(R.id.manual_printer_address) as TextView,
+                    v.findViewById(R.id.manual_printer_model) as TextView,
                     v.findViewById(R.id.manual_printer_enabled) as Switch,
                     v.findViewById(R.id.manual_printer_progressbar) as ProgressBar,
                     v.findViewById(R.id.inner_layout) as ConstraintLayout)
@@ -226,6 +228,7 @@ class ManageManualPrintersActivity : AppCompatActivity(), CoroutineScope by Main
             item.let { printer ->
                 holder.views.name.text = printer.name
                 holder.views.address.text = printer.address
+                holder.views.model.text = printer.model.name
                 holder.views.enabled.isChecked = printer.enabled
                 holder.views.enabled.isEnabled = !printer.connecting
 
