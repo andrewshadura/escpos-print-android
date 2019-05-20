@@ -389,22 +389,6 @@ internal class EscPosPrinterDiscoverySession(private val mPrintService: PrintSer
         when {
             exception is FileNotFoundException ->
                 return handleHttpError(exception, printerId)
-            exception is SSLPeerUnverifiedException ||
-                    exception is IOException && (exception.message?.contains("not verified")) == false -> {
-                /*
-                val dialog = Intent(mPrintService, HostNotVerifiedActivity::class.java)
-                dialog.putExtra(HostNotVerifiedActivity.KEY_HOST, mUnverifiedHost)
-                dialog.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                mPrintService.startActivity(dialog)
-                */
-            }
-            exception is SSLException -> {
-                /*
-                val dialog = Intent(mPrintService, UntrustedCertActivity::class.java)
-                dialog.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                mPrintService.startActivity(dialog)
-                */
-            }
             exception is SocketTimeoutException -> {
                 Toast.makeText(mPrintService, R.string.err_printer_socket_timeout, Toast.LENGTH_LONG).show()
             }
@@ -429,41 +413,8 @@ internal class EscPosPrinterDiscoverySession(private val mPrintService: PrintSer
      * @return true if the exception should be reported for a potential bug, false otherwise
      */
     private fun handleHttpError(exception: Exception, printerId: PrinterId): Boolean {
-        when (mResponseCode) {
-            // happens when basic auth is required but not sent
-            HttpURLConnection.HTTP_NOT_FOUND -> Toast.makeText(mPrintService, R.string.err_404, Toast.LENGTH_LONG).show()
-
-            HttpURLConnection.HTTP_BAD_REQUEST -> Toast.makeText(mPrintService, R.string.err_400, Toast.LENGTH_LONG).show()
-
-            HttpURLConnection.HTTP_UNAUTHORIZED -> try {
-                /*
-                val printerUri = URI(printerId.localId)
-                val printersUrl = printerUri.scheme + "://" + printerUri.host + ":" + printerUri.port + "/printers/"
-                val dialog = Intent(mPrintService, BasicAuthActivity::class.java)
-                dialog.putExtra(BasicAuthActivity.KEY_BASIC_AUTH_PRINTERS_URL, printersUrl)
-                dialog.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                mPrintService.startActivity(dialog)
-                */
-            } catch (e: URISyntaxException) {
-                L.e("Couldn't parse URI: " + printerId.localId, e)
-                return true
-            }
-
-            // 426 Upgrade Required (plus header: Upgrade: TLS/1.2,TLS/1.1,TLS/1.0) which means please use HTTPS
-            HTTP_UPGRADE_REQUIRED -> {
-                // remove this printer from the list because it will refuse to print anything over HTTP
-                Toast.makeText(mPrintService, R.string.err_http_upgrade, Toast.LENGTH_LONG).show()
-                val remove = ArrayList<PrinterId>(1)
-                remove.add(printerId)
-                removePrinters(remove)
-            }
-
-            else -> {
-                Toast.makeText(mPrintService, exception.localizedMessage, Toast.LENGTH_LONG).show()
-                return true
-            }
-        }
-        return false
+        Toast.makeText(mPrintService, exception.localizedMessage, Toast.LENGTH_LONG).show()
+        return true
     }
 
     override fun onStopPrinterStateTracking(printerId: PrinterId) {
