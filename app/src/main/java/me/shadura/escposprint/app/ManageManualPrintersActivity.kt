@@ -137,7 +137,7 @@ class ManageManualPrintersActivity : AppCompatActivity(), CoroutineScope by Main
             }
             REQUEST_FIND_DEVICE -> {
                 if (resultCode == Activity.RESULT_OK) {
-                    val address = data!!.extras!!.getString(DeviceListActivity.EXTRA_DEVICE_ADDRESS)
+                    val address = data!!.extras!!.getString(DeviceListActivity.EXTRA_DEVICE_ADDRESS)!!
 
                     if (BluetoothAdapter.checkBluetoothAddress(address)) {
                         val device = mBluetoothAdapter!!.getRemoteDevice(address)
