@@ -14,18 +14,6 @@
     <string name="printer_not_responding">Printer is not responding. Please check it is powered on and available at %1$s</string>
     <string name="err_document_fd_null">Couldn\'t read document to be printed</string>
     <string name="err_add_printer_empty_name">The printer name cannot be empty</string>
-    <string name="err_add_printer_empty_url">The printer URL cannot be empty</string>
-    <string name="untrusted_certinfo"
-            translatable="false">
-        Issuer: CN=test-server\n
-        Validity\n
-        Not Before: Aug 21 19:36:21 2016 GMT\n
-        Not After : Aug 19 19:36:21 2026 GMT\n
-        Subject: CN=test-server\n
-        Subject Public Key Info:\n
-        Public Key Algorithm: rsaEncryption\n
-        Public-Key: (2048 bit)\n
-    </string>
     <string name="err_printer_null_when_printing">Couldn\'t find printer, is it available?</string>
     <string name="err_printer_socket_timeout">Couldn\'t query printer status: socket timeout. Please check network connectivity.</string>
     <string name="err_printer_unknown_host">Couldn\'t query printer status: unknown host. Please check network connectivity.</string>
@@ -36,8 +24,6 @@
     <string name="err_job_socket_timeout">Couldn\'t print document: socket timeout. Please check network connectivity.</string>
     <string name="err_job_exception">Couldn\'t handle job: %1$s (%2$s)</string>
     <string name="print_service_vendor">Generic ESC/POS client</string>
-    <string name="manage_printers_none">There are no manually entered printers. You can add one from the Settings app, in the Printing section.</string>
-    <string name="manage_printers_help">Here are the manually added printers. Click on one item to remove it (no confirmation!)</string>
     <string name="title_activity_device_list">Available Bluetooth devices</string>
     <string name="undo" translatable="false">Undo</string>
     <string name="printer_model">Model</string>

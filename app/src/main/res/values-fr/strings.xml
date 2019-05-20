@@ -9,7 +9,6 @@
     <string name="printer_not_responding">L\'imprimante ne répond pas. Veuillez vérifier qu\'elle est allumée et disponible à l\'adresse %1$s</string>
     <string name="err_document_fd_null">Impossible de lire le document à imprimer</string>
     <string name="err_add_printer_empty_name">Le nom de l\'imprimante ne peut être vide</string>
-    <string name="err_add_printer_empty_url">L\'URL de l\'imprimante ne peut être vide</string>
     <string name="err_printer_null_when_printing">Impossible de trouver l\'imprimante, est-elle disponible ?</string>
     <string name="err_job_econnreset">Impossible de vérifier l\'état de la tâche d\'impression n°%1$d car la connexion au serveur CUPS a été interrompue</string>
     <string name="err_job_exception">Impossible de gérer l\'impression : %1$s (%2$s)</string>
@@ -20,6 +19,4 @@
     <string name="err_printer_unknown_host">Impossible d\'interroger l\'état de l\'imprimante : hôte inconnu. Veuillez vérifier votre connexion au réseau.</string>
     <string name="print_service_vendor">Client CUPS générique</string>
     <string name="err_404">Le nom de l\'imprimante n\'a pas été trouvé sur le serveur (HTTP 404). Veuillez vérifier son nom.</string>
-    <string name="manage_printers_none">Il n\'y a aucune imprimante ajoutée manuellement. Vous pouvez en ajouter une dans l\'appli Paramètres, dans la section Impression.</string>
-    <string name="manage_printers_help">Voici la liste des imprimantes ajoutées manuellement. Cliquez sur l\'une pour la supprimer (pas de confirmation !)</string>
 </resources>
