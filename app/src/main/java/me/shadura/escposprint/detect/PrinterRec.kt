@@ -39,6 +39,10 @@ data class PrinterRec(var name: String, val address: String, var enabled: Boolea
                 model = PrinterModel.Goojprt
             address.startsWith("98:D3:3") || name.startsWith("Printer00") ->
                 model = PrinterModel.Xprinter
+            address.startsWith("00:19:0") || address.startsWith("74:F0:7") -> {
+                L.i("Detected as unsupported Bixolon, fallin back to ZiJiang")
+                model = PrinterModel.ZiJiang
+            }
         }
     }
 }
