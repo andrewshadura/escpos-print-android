@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginTop="8dp"
@@ -11,6 +12,7 @@
         android:layout_width="wrap_content"
         android:layout_height="56dp"
         android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
         android:gravity="center"
         android:text="@string/printer_details"
         android:textSize="16sp"
@@ -36,7 +38,7 @@
         android:id="@+id/printerModel"
         android:layout_width="0dp"
         android:layout_height="56dp"
-        android:layout_marginStart="16dp"
+        android:layout_marginStart="8dp"
         android:layout_marginEnd="16dp"
         android:entries="@array/model_types"
         android:gravity="center"
@@ -47,30 +49,82 @@
         app:layout_constraintTop_toTopOf="@+id/printerModelLabel" />
 
     <TextView
-        android:id="@+id/printerNicknameLabel"
+        android:id="@+id/printWidthLabel"
         android:layout_width="wrap_content"
         android:layout_height="56dp"
         android:gravity="center"
-        android:labelFor="@+id/printerNickname"
-        android:text="@string/printer_nickname"
+        android:labelFor="@+id/printWidth"
+        android:text="@string/print_width"
         android:textColor="?android:attr/colorForeground"
         android:textSize="16sp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@+id/closeButton"
         app:layout_constraintStart_toStartOf="@+id/printerModelLabel"
         app:layout_constraintTop_toBottomOf="@+id/printerModelLabel" />
 
-    <EditText
-        android:id="@+id/printerNickname"
+    <RadioGroup
+        android:id="@+id/printWidth"
         android:layout_width="0dp"
         android:layout_height="56dp"
+        android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
+        android:checkedButton="@id/width58"
         android:ems="10"
         android:inputType="textPersonName"
+        android:orientation="horizontal"
         android:text=""
         android:textSize="16sp"
-        app:layout_constraintBottom_toBottomOf="@+id/printerNicknameLabel"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@+id/printWidthLabel"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="@+id/printerModel"
-        app:layout_constraintTop_toTopOf="@+id/printerNicknameLabel" />
+        app:layout_constraintStart_toEndOf="@+id/printWidthLabel"
+        app:layout_constraintTop_toTopOf="@+id/printWidthLabel">
+
+        <RadioButton
+            android:id="@+id/width58"
+            style="@style/Widget.AppCompat.CompoundButton.RadioButton"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:text="@string/_58_mm" />
+
+        <RadioButton
+            android:id="@+id/width80"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:text="@string/_80_mm" />
+    </RadioGroup>
+
+    <ImageButton
+        android:id="@+id/deleteButton"
+        style="@style/Widget.AppCompat.Button.Borderless"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="8dp"
+        android:adjustViewBounds="true"
+        android:contentDescription="@string/delete"
+        android:cropToPadding="false"
+        app:layout_constraintBottom_toTopOf="@+id/printerModel"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/ic_action_delete" />
+
+    <Button
+        android:id="@+id/closeButton"
+        style="@style/Widget.AppCompat.Button.Borderless"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+        android:text="@string/close"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/printWidthLabel" />
 
 </android.support.constraint.ConstraintLayout>

@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string-array name="model_types">
-        <item>Generic</item>
         <item>ZiJiang</item>
-        <item>Epson</item>
-        <item>Bixolon</item>
+        <item>Goojprt</item>
     </string-array>
 </resources>

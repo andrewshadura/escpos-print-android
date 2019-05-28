@@ -26,6 +26,7 @@ import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.support.constraint.ConstraintLayout
+import android.support.design.widget.BottomSheetDialog
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
@@ -35,9 +36,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.View.*
 import android.view.ViewGroup
-import android.widget.ProgressBar
-import android.widget.Switch
-import android.widget.TextView
+import android.widget.*
 
 import me.shadura.escposprint.R
 
@@ -46,7 +45,6 @@ import me.shadura.escposprint.L
 import me.shadura.escposprint.detect.PrinterModel
 import me.shadura.escposprint.detect.PrinterRec
 import me.shadura.escposprint.printservice.*
-import org.jetbrains.anko.alert
 import org.jetbrains.anko.design.longSnackbar
 import org.jetbrains.anko.design.snackbar
 import java.util.*
@@ -60,6 +58,7 @@ class ManageManualPrintersActivity : AppCompatActivity(), CoroutineScope by Main
     private lateinit var printers: MutableList<PrinterRec>
     private lateinit var prefs: SharedPreferences
     private lateinit var config: Config
+    private var bottomDialog: BottomSheetDialog? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -79,12 +78,54 @@ class ManageManualPrintersActivity : AppCompatActivity(), CoroutineScope by Main
             adapter = viewAdapter
         }
 
-        viewAdapter.removeCallback = {
+        viewAdapter.removeCallback = { _, printer: PrinterRec ->
+            if (printer.address in config.configuredPrinters) {
+                config.configuredPrinters.remove(printer.address)
+            }
             savePrinters()
         }
-        viewAdapter.changeCallback = {
+        viewAdapter.changeCallback = { _, printer: PrinterRec ->
+            if (printer.address !in config.configuredPrinters) {
+                config.configuredPrinters[printer.address] = printer
+            }
             savePrinters()
         }
+
+        viewAdapter.clickCallback = { _, printer: PrinterRec ->
+            bottomDialog = BottomSheetDialog(this)
+            val sheetView = this.layoutInflater.inflate(R.layout.printer_details, null)
+
+            sheetView.findViewById<ImageButton>(R.id.deleteButton).setOnClickListener {
+                viewAdapter.remove(printer)
+                bottomDialog?.cancel()
+            }
+            sheetView.findViewById<Button>(R.id.closeButton).setOnClickListener {
+                bottomDialog?.cancel()
+            }
+            with (sheetView.findViewById<Spinner>(R.id.printerModel)) {
+                onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+                    override fun onNothingSelected(parent: AdapterView<*>?) {
+                    }
+
+                    override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
+                        L.i("${parent.getItemAtPosition(position)}")
+                        printer.model = PrinterModel.valueOf(parent.getItemAtPosition(position).toString())
+                        viewAdapter.notifyDataSetChanged()
+                        savePrinters()
+                    }
+                }
+                setSelection((adapter as ArrayAdapter<String>).getPosition(printer.model.name))
+            }
+            bottomDialog?.run {
+                setContentView(sheetView)
+                show()
+            }
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        bottomDialog?.dismiss()
     }
 
     fun findPrinters(button: View) {
@@ -205,8 +246,9 @@ class ManageManualPrintersActivity : AppCompatActivity(), CoroutineScope by Main
             UndoableDeleteAdapter<ManualPrintersRecyclerAdapter.ViewHolder>() {
 
         private val pendingRemovals = mutableMapOf<PrinterRec, Job>()
-        var removeCallback: ((position: Int) -> Unit)? = null
-        var changeCallback: ((position: Int) -> Unit)? = null
+        var removeCallback: ((position: Int, o: PrinterRec) -> Unit)? = null
+        var changeCallback: ((position: Int, o: PrinterRec) -> Unit)? = null
+        var clickCallback: ((position: Int, o: PrinterRec) -> Unit)? = null
 
         class ViewHolder(v: View) : RecyclerView.ViewHolder(v) {
             val views: ManualPrinterInfoViews = ManualPrinterInfoViews(
@@ -234,13 +276,13 @@ class ManageManualPrintersActivity : AppCompatActivity(), CoroutineScope by Main
                 holder.views.enabled.isEnabled = !printer.connecting
 
                 holder.views.enabled.setOnCheckedChangeListener { _, isChecked ->
-                    item.enabled = isChecked
-                    L.i("$item -> $isChecked")
-                    changeCallback?.invoke(position)
+                    printer.enabled = isChecked
+                    L.i("$printer -> $isChecked")
+                    changeCallback?.invoke(position, printer)
                 }
                 holder.views.connecting.visibility = if (printer.connecting) VISIBLE else INVISIBLE
-                holder.itemView.setOnLongClickListener {
-                    removeAt(position)
+                holder.itemView.setOnClickListener {
+                    clickCallback?.invoke(position, printer)
                     false
                 }
             }
@@ -294,8 +336,10 @@ class ManageManualPrintersActivity : AppCompatActivity(), CoroutineScope by Main
                 }
                 L.i("removing $item")
                 val position = objects.indexOf(item)
-                removeCallback?.invoke(position)
                 objects.remove(item)
+                if (item is PrinterRec) {
+                    removeCallback?.invoke(position, item)
+                }
                 notifyItemRemoved(position)
             }
         }

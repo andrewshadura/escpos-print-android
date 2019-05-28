@@ -28,8 +28,14 @@
     <string name="undo" translatable="false">Undo</string>
     <string name="printer_model">Model</string>
     <string name="printer_nickname">Name</string>
-    <string name="printer_details" translatable="false">Printer Details</string>
+    <string name="printer_details">Printer Details</string>
     <string name="list_of_currently_configured_printers">List of currently configured printers</string>
     <string name="printer_connected">Printer connected and enabled</string>
+    <string name="cancel">Cancel</string>
+    <string name="delete">Delete</string>
+    <string name="_80_mm" translatable="false">80 mm</string>
+    <string name="_58_mm" translatable="false">58 mm</string>
+    <string name="print_width">Print width</string>
+    <string name="close">Close</string>
 
 </resources>

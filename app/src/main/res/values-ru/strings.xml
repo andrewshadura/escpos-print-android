@@ -10,4 +10,9 @@
     <string name="list_of_currently_configured_printers">Список добавленных принтеров</string>
     <string name="err_document_fd_null">Невозможно распечатать документ</string>
     <string name="printer_connected">Принтер добавлен и включён</string>
+    <string name="print_width">Ширина печати</string>
+    <string name="printer_details">Настройки принтера</string>
+    <string name="cancel">Отмена</string>
+    <string name="delete">Удалить</string>
+    <string name="close">Закрыть</string>
 </resources>
