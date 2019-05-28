@@ -28,16 +28,10 @@ class Config {
 
         @UseExperimental(ImplicitReflectionSerializer::class)
         fun read(prefs: SharedPreferences) : Config {
-            val config = prefs.getString(PREF_CONFIG, "")
+            val config = prefs.getString(PREF_CONFIG, "") ?: ""
             L.i("read json: %s".format(config))
             return if (config.isNotBlank()) {
-                val c: Config = JSON.parse(config)
-                c.configuredPrinters.filter { (_, printer) ->
-                    printer.name.startsWith("MTP-") || printer.name.startsWith("PT2")
-                }.forEach { (_, printer) ->
-                    printer.model = PrinterModel.Goojprt
-                }
-                c
+                JSON.parse(config)
             } else {
                 Config()
             }

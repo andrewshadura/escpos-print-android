@@ -141,12 +141,8 @@ class ManageManualPrintersActivity : AppCompatActivity(), CoroutineScope by Main
 
                     if (BluetoothAdapter.checkBluetoothAddress(address)) {
                         val device = mBluetoothAdapter!!.getRemoteDevice(address)
-                        val model = if (device.name.startsWith("MTP-") || device.name.startsWith("PT2")) {
-                            PrinterModel.Goojprt
-                        } else {
-                            PrinterModel.ZiJiang
-                        }
-                        val printerInfo = PrinterRec(device.name, address, true, model)
+                        val printerInfo = PrinterRec(device.name, address, true, PrinterModel.ZiJiang)
+                        printerInfo.detectModel()
                         printerInfo.connecting = true
                         printers.add(printerInfo)
                         viewAdapter.notifyDataSetChanged()

@@ -1,6 +1,7 @@
 package me.shadura.escposprint.detect
 
 import kotlinx.serialization.*
+import me.shadura.escposprint.L
 
 enum class PrinterModel {
     Generic,
@@ -28,4 +29,13 @@ data class PrinterRec(var name: String, val address: String, var enabled: Boolea
     }
 
     override fun hashCode(): Int = address.hashCode()
+
+    fun detectModel() {
+        when {
+            name.startsWith("Bluetooth Printer") ->
+                model = PrinterModel.ZiJiang
+            name.startsWith("MTP-") || name.startsWith("PT2") ->
+                model = PrinterModel.Goojprt
+        }
+    }
 }
