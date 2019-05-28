@@ -29,7 +29,6 @@ import com.tom_roush.pdfbox.text.TextPosition
 import com.tom_roush.pdfbox.pdmodel.graphics.image.PDImageXObject
 import me.shadura.escposprint.L
 import me.shadura.escposprint.printservice.utils.encodeForPrinter
-import org.w3c.dom.Text
 import java.io.ByteArrayOutputStream
 import java.nio.charset.Charset
 import java.text.Normalizer
