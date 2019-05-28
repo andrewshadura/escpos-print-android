@@ -17,6 +17,7 @@
  */
 package me.shadura.escposprint.printservice
 
+import android.bluetooth.BluetoothAdapter
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Handler
@@ -253,6 +254,12 @@ class EscPosService : PrintService(), CoroutineScope by MainScope() {
         }
 
         launch {
+            BluetoothAdapter.getDefaultAdapter()?.apply {
+                if (!isEnabled) {
+                    enable()
+                }
+            }
+
             val bluetoothService = bluetoothServiceActor(address)
             val response = CompletableDeferred<Result>()
             bluetoothService.send(Connect(response))
