@@ -8,7 +8,8 @@ enum class PrinterModel {
     ZiJiang,
     Epson,
     Bixolon,
-    Goojprt
+    Goojprt,
+    Xprinter
 }
 
 @Serializable
@@ -36,6 +37,8 @@ data class PrinterRec(var name: String, val address: String, var enabled: Boolea
                 model = PrinterModel.ZiJiang
             name.startsWith("MTP-") || name.startsWith("PT2") ->
                 model = PrinterModel.Goojprt
+            address.startsWith("98:D3:3") || name.startsWith("Printer00") ->
+                model = PrinterModel.Xprinter
         }
     }
 }
