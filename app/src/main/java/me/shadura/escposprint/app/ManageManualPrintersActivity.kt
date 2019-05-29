@@ -108,7 +108,6 @@ class ManageManualPrintersActivity : AppCompatActivity(), CoroutineScope by Main
                     }
 
                     override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
-                        L.i("${parent.getItemAtPosition(position)}")
                         printer.model = PrinterModel.valueOf(parent.getItemAtPosition(position).toString())
                         viewAdapter.notifyDataSetChanged()
                         savePrinters()
