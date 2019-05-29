@@ -3,14 +3,7 @@ package me.shadura.escposprint.detect
 import kotlinx.serialization.*
 import me.shadura.escposprint.L
 
-enum class PrinterModel {
-    Generic,
-    ZiJiang,
-    Epson,
-    Bixolon,
-    Goojprt,
-    Xprinter
-}
+import me.shadura.escpos.PrinterModel
 
 @Serializable
 data class PrinterRec(var name: String, val address: String, var enabled: Boolean, var model: PrinterModel) : Comparable<PrinterRec> {

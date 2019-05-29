@@ -42,7 +42,7 @@ import me.shadura.escposprint.R
 
 import kotlinx.coroutines.*
 import me.shadura.escposprint.L
-import me.shadura.escposprint.detect.PrinterModel
+import me.shadura.escpos.PrinterModel
 import me.shadura.escposprint.detect.PrinterRec
 import me.shadura.escposprint.printservice.*
 import org.jetbrains.anko.design.longSnackbar

@@ -27,6 +27,8 @@ import com.tom_roush.pdfbox.pdmodel.font.PDFontDescriptor
 import com.tom_roush.pdfbox.text.PDFTextStripper
 import com.tom_roush.pdfbox.text.TextPosition
 import com.tom_roush.pdfbox.pdmodel.graphics.image.PDImageXObject
+import me.shadura.escpos.Dialect
+import me.shadura.escpos.Encoder
 import me.shadura.escposprint.L
 import me.shadura.escposprint.printservice.utils.encodeForPrinter
 import java.io.ByteArrayOutputStream
@@ -136,6 +138,7 @@ data class TextLine(override var top: Float, val width: Float, val elements: Mut
 
 data class BBox(val x: Int, val y: Int, val w: Int, val h: Int)
 
+
 class PDFStyledTextStripper : PDFTextStripper() {
     private var currentLine: PageElement = NewLine
     val textLines : MutableList<PageElement> = mutableListOf()
@@ -147,6 +150,12 @@ class PDFStyledTextStripper : PDFTextStripper() {
     private var sizes = emptyList<Int>()
     private var columns = emptyList<Int>()
     private var imageBBoxes = emptyList<BBox>()
+    var dialect = Dialect()
+        set(value) {
+            field = value
+            encoder = Encoder(value)
+        }
+    var encoder = Encoder(dialect)
 
     private fun lineOffset(): Float {
         return currentPageNo * currentPage.mediaBox.height
@@ -325,9 +334,11 @@ class PDFStyledTextStripper : PDFTextStripper() {
     }
 
     private fun smallFont(text: String, small: Boolean): ByteArray {
-        return smallFont((if (small) {
+        val cooked = if (small) {
             text.removeAccents()
-        } else text).toByteArray(Charset.forName("windows-1250")), small)
+        } else text
+        val encoded = encoder.encode(cooked)
+        return smallFont(encoded, small)
     }
 
     private fun smallFont(bytes: ByteArray, small: Boolean): ByteArray {
@@ -371,6 +382,7 @@ class PDFStyledTextStripper : PDFTextStripper() {
         col++ /* only count text columns */
         val large = element.size == sizes.last()
         val small = (sizes.size > 2) && (element.size == sizes.first())
+        val encoded = encoder.encode(paddedText)
         return largeFont(boldFont(smallFont(paddedText, small), element.bold),
                 large)
     }

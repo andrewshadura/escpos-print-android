@@ -36,7 +36,9 @@ import me.shadura.escposprint.R
 import com.tom_roush.pdfbox.pdmodel.PDDocument
 import com.tom_roush.pdfbox.util.PDFBoxResourceLoader
 import kotlinx.coroutines.*
-import me.shadura.escposprint.detect.PrinterModel
+import me.shadura.escpos.Dialect
+import me.shadura.escpos.PrinterModel
+import me.shadura.escpos.dialects
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.toast
 import org.jetbrains.anko.uiThread
@@ -235,6 +237,7 @@ class EscPosService : PrintService(), CoroutineScope by MainScope() {
         val document = PDDocument.load(inputStream)
         val pdfStripper = PDFStyledTextStripper()
         pdfStripper.addMoreFormatting = true
+        pdfStripper.dialect = dialects.getValue(printerConfig.model).java.newInstance()
         val bytes = try {
             pdfStripper.getByteArrays(document)
         } catch (e: Exception) {
@@ -244,14 +247,6 @@ class EscPosService : PrintService(), CoroutineScope by MainScope() {
             listOf(byteArrayOf())
         }
         document.close()
-        val charsetCode: Byte = when (printerConfig.model) {
-            PrinterModel.Goojprt ->
-                0x1e
-            PrinterModel.ZiJiang ->
-                0x48
-            else ->
-                0x2d
-        }
 
         launch {
             BluetoothAdapter.getDefaultAdapter()?.apply {
@@ -270,7 +265,6 @@ class EscPosService : PrintService(), CoroutineScope by MainScope() {
                     bluetoothService.send(Write(byteArrayOf(0x1b, 0x40)))
                     bluetoothService.send(Write(byteArrayOf(0x1c, 0x2e)))
                     bluetoothService.send(Write(byteArrayOf(0xa, 0xa, 0xa)))
-                    bluetoothService.send(Write(byteArrayOf(0x1b, 0x74, charsetCode)))
                     bytes.forEach {
                         bluetoothService.send(Write(it))
                         bluetoothService.send(Write("\n".toByteArray()))

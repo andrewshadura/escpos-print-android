@@ -3,5 +3,6 @@
     <string-array name="model_types">
         <item>ZiJiang</item>
         <item>Goojprt</item>
+        <item>Xprinter</item>
     </string-array>
 </resources>

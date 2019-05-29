@@ -4,7 +4,7 @@ import android.content.SharedPreferences
 import kotlinx.serialization.*
 import kotlinx.serialization.json.JSON
 import me.shadura.escposprint.L
-import me.shadura.escposprint.detect.PrinterModel
+import me.shadura.escpos.PrinterModel
 
 import me.shadura.escposprint.detect.PrinterRec
 
