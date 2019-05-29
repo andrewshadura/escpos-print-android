@@ -409,6 +409,7 @@ class PDFStyledTextStripper : PDFTextStripper() {
         }.distinct().sorted()
         L.i("font sizes: $sizes")
         val byteArrays = mutableListOf<ByteArray>()
+        byteArrays += dialect.pageStart()
         var prevLine: PageElement = NewLine
         for (line in textLines) (line as TextLine).let {
             col = 0
@@ -474,6 +475,7 @@ class PDFStyledTextStripper : PDFTextStripper() {
             }
             byteArrays += lineArray
         }
+        byteArrays += dialect.pageFeed()
         return byteArrays
     }
 }

@@ -53,6 +53,12 @@ open class Dialect {
         return byteArrayOf(0x1b, 0x61, if (enable) 1 else 0)
     }
 
+    open fun pageStart(): ByteArray =
+        byteArrayOf(0xa, 0xa)
+
+    open fun pageFeed(): ByteArray =
+        byteArrayOf(0xa, 0xa, 0xa)
+
     fun getColumns(num: Int): List<Int> {
         return when (lineWidth) {
             32 ->
@@ -108,6 +114,9 @@ class XprinterDialect: Dialect() {
             Codepage("cp437")  to 0,
             Codepage("cp866")  to 17
     )
+
+    override fun pageFeed(): ByteArray =
+            byteArrayOf(0x1b, 0x64, 11)
 }
 
 class GoojprtDialect: Dialect() {

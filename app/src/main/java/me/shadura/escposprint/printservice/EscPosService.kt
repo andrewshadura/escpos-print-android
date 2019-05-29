@@ -264,12 +264,13 @@ class EscPosService : PrintService(), CoroutineScope by MainScope() {
                     L.i("sending text")
                     bluetoothService.send(Write(byteArrayOf(0x1b, 0x40)))
                     bluetoothService.send(Write(byteArrayOf(0x1c, 0x2e)))
-                    bluetoothService.send(Write(byteArrayOf(0xa, 0xa, 0xa)))
+                    bluetoothService.send(Write(byteArrayOf(0x9)))
                     bytes.forEach {
                         bluetoothService.send(Write(it))
                         bluetoothService.send(Write("\n".toByteArray()))
                     }
-                    bluetoothService.send(Write(byteArrayOf(0xa, 0xa, 0xa)))
+                    /* perform partial cut */
+                    bluetoothService.send(Write(byteArrayOf(0x1d, 0x58, 1)))
                     bluetoothService.close()
                     L.i("sent text")
 
