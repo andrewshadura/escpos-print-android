@@ -10,7 +10,19 @@ class Encoder(val dialect: Dialect) {
         var out = mutableListOf<Pair<Codepage, ByteArray>>()
         var curcp: Codepage? = null
         var acc = mutableListOf<Byte>()
-        for (c in s) {
+        for (char in s) {
+            val c = when (char) {
+                'ș' ->
+                    'ş'
+                'ț' ->
+                    'ţ'
+                'Ș' ->
+                    'Ş'
+                'Ț' ->
+                    'Ţ'
+                else ->
+                    char
+            }
             for (cp in codepages) {
                 if (cp.canEncode(c)) {
                     curcp = cp
