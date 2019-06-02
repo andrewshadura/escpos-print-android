@@ -134,7 +134,7 @@ class EpsonTMP20Dialect: Dialect() {
     }
 
     override fun pageFeed(): ByteArray =
-            byteArrayOf(0x1b, 0x64, 11)
+            byteArrayOf(0x1b, 0x64, 2)
 }
 
 class GoojprtDialect: Dialect() {
