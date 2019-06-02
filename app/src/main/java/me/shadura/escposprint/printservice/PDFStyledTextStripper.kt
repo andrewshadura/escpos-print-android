@@ -382,7 +382,6 @@ class PDFStyledTextStripper : PDFTextStripper() {
         col++ /* only count text columns */
         val large = (sizes.size > 2) && (element.size == sizes.last())
         val small = (sizes.size > 2) && (element.size == sizes.first())
-        val encoded = encoder.encode(paddedText)
         return largeFont(boldFont(smallFont(paddedText, small), element.bold),
                 large)
     }
