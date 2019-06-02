@@ -120,6 +120,19 @@ class XprinterDialect: Dialect() {
             byteArrayOf(0x1b, 0x64, 11)
 }
 
+class EpsonTMP20Dialect: Dialect() {
+    override val supportedCharsets = mapOf(
+            Codepage("cp852")  to 18,
+            Codepage("cp1252") to 16,
+            Codepage("cp437")  to 0,
+            Codepage("cp866")  to 17,
+            Codepage("cp1251") to 46
+    )
+
+    override fun pageFeed(): ByteArray =
+            byteArrayOf(0x1b, 0x64, 11)
+}
+
 class GoojprtDialect: Dialect() {
     override val supportedCharsets = mapOf(
             IncompleteCodepage("cp1250", listOf('ý')) to 30,
@@ -134,7 +147,7 @@ val dialects = mapOf(
         PrinterModel.ZiJiang to ZiJiangDialect::class,
         PrinterModel.Goojprt to GoojprtDialect::class,
         PrinterModel.Xprinter to XprinterDialect::class,
-        PrinterModel.Epson to Dialect::class,
+        PrinterModel.Epson to EpsonTMP20Dialect::class,
         PrinterModel.Bixolon to Dialect::class,
         PrinterModel.Generic to Dialect::class
 )
