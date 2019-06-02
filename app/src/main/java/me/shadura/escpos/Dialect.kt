@@ -112,7 +112,8 @@ class XprinterDialect: Dialect() {
             Codepage("cp852")  to 18,
             Codepage("cp1252") to 16,
             Codepage("cp437")  to 0,
-            Codepage("cp866")  to 17
+            Codepage("cp866")  to 17,
+            IncompleteCodepage("cp1251", listOf('Ђ')) to 23
     )
 
     override fun pageFeed(): ByteArray =
