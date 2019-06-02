@@ -129,6 +129,10 @@ class EpsonTMP20Dialect: Dialect() {
             Codepage("cp1251") to 46
     )
 
+    override fun pageStart(): ByteArray {
+        return super.pageStart() + byteArrayOf(0x1b, 0x4d, 0)
+    }
+
     override fun pageFeed(): ByteArray =
             byteArrayOf(0x1b, 0x64, 11)
 }
