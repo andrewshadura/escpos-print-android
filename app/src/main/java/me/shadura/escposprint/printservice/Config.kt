@@ -31,7 +31,7 @@ class Config {
             val config = prefs.getString(PREF_CONFIG, "") ?: ""
             L.i("read json: %s".format(config))
             return if (config.isNotBlank()) {
-                JSON.parse(config)
+                JSON.nonstrict.parse(config)
             } else {
                 Config()
             }
