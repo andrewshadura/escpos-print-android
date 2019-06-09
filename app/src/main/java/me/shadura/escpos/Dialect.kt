@@ -6,7 +6,8 @@ enum class PrinterModel {
     Epson,
     Bixolon,
     Goojprt,
-    Xprinter
+    Xprinter,
+    Cashino
 }
 
 open class Dialect {
