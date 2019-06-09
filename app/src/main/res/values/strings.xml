@@ -37,5 +37,7 @@
     <string name="_58_mm" translatable="false">58 mm</string>
     <string name="print_width">Print width</string>
     <string name="close">Close</string>
+    <string name="bluetooth_connection_failure">Failed to open Bluetooth connection</string>
+    <string name="connection_failure">Failed to connect to the printer</string>
 
 </resources>

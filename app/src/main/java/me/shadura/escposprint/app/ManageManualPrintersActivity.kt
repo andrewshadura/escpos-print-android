@@ -177,7 +177,7 @@ class ManageManualPrintersActivity : AppCompatActivity(), CoroutineScope by Main
             }
             REQUEST_FIND_DEVICE -> {
                 if (resultCode == Activity.RESULT_OK) {
-                    val address = data!!.extras!!.getString(DeviceListActivity.EXTRA_DEVICE_ADDRESS)!!
+                    val address = data?.extras?.getString(DeviceListActivity.EXTRA_DEVICE_ADDRESS, "") ?: ""
 
                     if (BluetoothAdapter.checkBluetoothAddress(address)) {
                         val device = mBluetoothAdapter!!.getRemoteDevice(address)
@@ -188,7 +188,15 @@ class ManageManualPrintersActivity : AppCompatActivity(), CoroutineScope by Main
                         viewAdapter.notifyDataSetChanged()
 
                         launch {
-                            val bluetoothService = bluetoothServiceActor(device)
+                            val bluetoothService = try {
+                                bluetoothServiceActor(device)
+                            } catch (e: Exception) {
+                                L.e(getString(R.string.bluetooth_connection_failure), e)
+                                longSnackbar(recyclerView, R.string.bluetooth_connection_failure)
+                                printerInfo.connecting = false
+                                viewAdapter.notifyDataSetChanged()
+                                return@launch
+                            }
                             val response = CompletableDeferred<Result>()
                             bluetoothService.send(Connect(response))
                             val result = response.await()
@@ -209,6 +217,9 @@ class ManageManualPrintersActivity : AppCompatActivity(), CoroutineScope by Main
                             }
                             bluetoothService.close()
                         }
+                    } else {
+                        L.e("Not a valid Bluetooth address: $address")
+                        longSnackbar(recyclerView, getString(R.string.connection_failure))
                     }
                 }
             }

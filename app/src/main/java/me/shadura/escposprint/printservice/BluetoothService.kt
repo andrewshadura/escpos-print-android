@@ -91,7 +91,7 @@ fun CoroutineScope.bluetoothServiceActor(device: BluetoothDevice) = actor<Blueto
 }
 
 fun CoroutineScope.bluetoothServiceActor(address: String): SendChannel<BluetoothServiceMsg> {
-    val adapter = BluetoothAdapter.getDefaultAdapter()
+    val adapter: BluetoothAdapter? = BluetoothAdapter.getDefaultAdapter()
     if (adapter == null) {
         throw Exception("Bluetooth is not available")
     } else {

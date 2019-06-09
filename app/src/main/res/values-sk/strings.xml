@@ -15,4 +15,6 @@
     <string name="printer_details">Nastavenia tlačiarne</string>
     <string name="print_width">Šírka tlače</string>
     <string name="close">Hotovo</string>
+    <string name="bluetooth_connection_failure">Chyba Bluetooth spojenia</string>
+    <string name="connection_failure">Nepodarilo sa spojiť s tlačiarňou</string>
 </resources>
