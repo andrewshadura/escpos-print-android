@@ -41,8 +41,6 @@ private fun PDFontDescriptor.isBold(): Boolean {
     return this.isForceBold || this.fontName.contains("Bold")
 }
 
-private const val LINEWIDTH = 32
-
 fun String.padCentre(length: Int, padChar: Char = ' '): String {
     if (length < 0)
         throw IllegalArgumentException("Desired length $length is less than zero.")
@@ -316,41 +314,6 @@ class PDFStyledTextStripper : PDFTextStripper() {
         }
     }
 
-    private fun boldFont(text: String, bold: Boolean): ByteArray {
-        return boldFont(text.toByteArray(Charset.forName("windows-1250")),
-                bold)
-    }
-
-    private fun boldFont(bytes: ByteArray, bold: Boolean): ByteArray {
-        return if (bold) {
-            byteArrayOf(0x1b, 0x45, 1) + bytes + byteArrayOf(0x1b, 0x45, 0)
-        } else bytes
-    }
-
-    private fun largeFont(bytes: ByteArray, large: Boolean): ByteArray {
-        return if (large) {
-            byteArrayOf(0x1d, 0x21, 1) + bytes + byteArrayOf(0x1d, 0x21, 0)
-        } else bytes
-    }
-
-    private fun smallFont(text: String, small: Boolean): ByteArray {
-        val cooked = if (small) {
-            text.removeAccents()
-        } else text
-        val encoded = encoder.encode(cooked)
-        return smallFont(encoded, small)
-    }
-
-    private fun smallFont(bytes: ByteArray, small: Boolean): ByteArray {
-        return if (small) {
-            byteArrayOf(0x1b, 0x4d, 1) + bytes + byteArrayOf(0x1b, 0x4d, 0)
-        } else bytes
-    }
-
-    private fun centre(enable: Boolean): ByteArray {
-        return byteArrayOf(0x1b, 0x61, if (enable) 1 else 0)
-    }
-
     private fun isCentred(line: TextLine, element: LineElement): Boolean {
         return when (element) {
             is RuleElement -> {
@@ -382,8 +345,12 @@ class PDFStyledTextStripper : PDFTextStripper() {
         col++ /* only count text columns */
         val large = (sizes.size > 2) && (element.size == sizes.last())
         val small = (sizes.size > 2) && (element.size == sizes.first())
-        return largeFont(boldFont(smallFont(paddedText, small), element.bold),
-                large)
+
+        val cooked = if (small) {
+            paddedText.removeAccents()
+        } else paddedText
+        val encoded = encoder.encode(cooked)
+        return dialect.largeFont(dialect.boldFont(dialect.smallFont(encoded, small), element.bold), large)
     }
 
     fun getBytes(document: PDDocument): ByteArray {
@@ -423,7 +390,7 @@ class PDFStyledTextStripper : PDFTextStripper() {
             if (line.elements.size == 2) {
                 val textLeft = (line.elements[0] as TextElement).text
                 val textRight = (line.elements[1] as TextElement).text
-                val padLength = LINEWIDTH - textLeft.length - textRight.length
+                val padLength = dialect.lineWidth - textLeft.length - textRight.length
                 val text = textLeft +
                            " ".repeat(if (padLength > 0) padLength else 1) +
                            textRight
@@ -432,20 +399,7 @@ class PDFStyledTextStripper : PDFTextStripper() {
             }
 
             L.i("${line.top} (${line.width}): ${line.elements}")
-            columns = when (line.elements.count()) {
-                1 ->
-                    listOf(32)
-                2 ->
-                    listOf(16, 16)
-                3 ->
-                    listOf(10, 12, 10)
-                4 ->
-                    listOf(8, 8, 8, 8)
-                5 ->
-                    listOf(7, 5, 8, 5, 7)
-                else ->
-                    listOf(1)
-            }
+            columns = dialect.getColumns(line.elements.count())
 
             var lineArray = byteArrayOf()
             line.elements.forEach { element ->
@@ -454,21 +408,21 @@ class PDFStyledTextStripper : PDFTextStripper() {
                         printText(line, element)
                     }
                     is ImageElement -> {
-                        if (element.image.width < 384/2) {
+                        if (element.image.width < dialect.pixelWidth / 2) {
                             val scaledBitmap = Bitmap.createScaledBitmap(
                                     element.image,
                                     element.image.width * 2,
                                     element.image.height * 2,
                                     false)
-                            centre(true) + scaledBitmap.encodeForPrinter() + centre(false)
+                            dialect.centre(true) + scaledBitmap.encodeForPrinter() + dialect.centre(false)
                         } else {
-                            centre(true) + element.image.encodeForPrinter() + centre(false)
+                            dialect.centre(true) + element.image.encodeForPrinter() + dialect.centre(false)
                         }
                     }
                     is RuleElement -> {
                         val startChar = floor(element.start / 12.0).toInt()
                         val endChar = floor(element.end / 12.0).toInt()
-                        "=".repeat(32).toByteArray()
+                        "=".repeat(dialect.lineWidth).toByteArray()
                     }
                 })
             }

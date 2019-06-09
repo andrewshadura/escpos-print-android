@@ -11,20 +11,26 @@ enum class PrinterModel {
 }
 
 open class Dialect {
-    var paperWidth: Int = 58
-    val lineWidth: Int
-        get() = when (paperWidth) {
-            58 ->
-                32
-            80 ->
-                42
-            else ->
-                32
+    open var lineWidth: Int = 32
+        set(value) {
+            field = if (value == 42) 48 else value
         }
-    val pixelWidth: Int
-        get() = when (paperWidth) {
-            58 -> 384
-            80 -> 512
+    val paperWidth: Int
+        get() = when (lineWidth) {
+            32 ->
+                58
+            42 ->
+                80
+            48 ->
+                80
+            else ->
+                58
+        }
+    open val pixelWidth: Int
+        get() = when (lineWidth) {
+            32 -> 384
+            42 -> 512
+            48 -> 576
             else -> 384
         }
     open val supportedCharsets = mapOf(
@@ -38,7 +44,7 @@ open class Dialect {
         } else bytes
     }
 
-    fun largeFont(bytes: ByteArray, large: Boolean): ByteArray {
+    open fun largeFont(bytes: ByteArray, large: Boolean): ByteArray {
         return if (large) {
             byteArrayOf(0x1d, 0x21, 1) + bytes + byteArrayOf(0x1d, 0x21, 0)
         } else bytes
@@ -92,6 +98,21 @@ open class Dialect {
                     else ->
                         listOf(1)
                 }
+            48 ->
+                when (num) {
+                    1 ->
+                        listOf(48)
+                    2 ->
+                        listOf(24, 24)
+                    3 ->
+                        listOf(16, 16, 16)
+                    4 ->
+                        listOf(12, 12, 12, 12)
+                    5 ->
+                        listOf(10, 9, 10, 9, 10)
+                    else ->
+                        listOf(1)
+                }
             else ->
                 listOf(1)
         }
@@ -138,7 +159,7 @@ class EpsonTMP20Dialect: Dialect() {
             byteArrayOf(0x1b, 0x64, 2)
 }
 
-class GoojprtDialect: Dialect() {
+open class GoojprtDialect: Dialect() {
     override val supportedCharsets = mapOf(
             IncompleteCodepage("cp1250", listOf('ý')) to 30,
             Codepage("cp852")  to 18,
@@ -148,9 +169,26 @@ class GoojprtDialect: Dialect() {
     )
 }
 
+class CashinoDialect: GoojprtDialect() {
+    override fun pageFeed(): ByteArray {
+        return super.pageFeed() + byteArrayOf(0x1b, 0x64, 2)
+    }
+
+    /*
+    // This doesn’t work properly atm since the line remains 48 chars long
+    // but the characters are double width
+    override fun largeFont(bytes: ByteArray, large: Boolean): ByteArray {
+        return if (large) {
+            byteArrayOf(0x1b, 0x21, 0x28) + bytes + byteArrayOf(0x1b, 0x21, 0)
+        } else bytes
+    }
+    */
+}
+
 val dialects = mapOf(
         PrinterModel.ZiJiang to ZiJiangDialect::class,
         PrinterModel.Goojprt to GoojprtDialect::class,
+        PrinterModel.Cashino to CashinoDialect::class,
         PrinterModel.Xprinter to XprinterDialect::class,
         PrinterModel.Epson to EpsonTMP20Dialect::class,
         PrinterModel.Bixolon to Dialect::class,

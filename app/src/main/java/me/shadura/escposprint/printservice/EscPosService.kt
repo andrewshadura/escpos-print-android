@@ -238,6 +238,7 @@ class EscPosService : PrintService(), CoroutineScope by MainScope() {
         val pdfStripper = PDFStyledTextStripper()
         pdfStripper.addMoreFormatting = true
         pdfStripper.dialect = dialects.getValue(printerConfig.model).java.newInstance()
+        pdfStripper.dialect.lineWidth = printerConfig.lineWidth
         val bytes = try {
             pdfStripper.getByteArrays(document)
         } catch (e: Exception) {
@@ -264,7 +265,6 @@ class EscPosService : PrintService(), CoroutineScope by MainScope() {
                     L.i("sending text")
                     bluetoothService.send(Write(byteArrayOf(0x1b, 0x40)))
                     bluetoothService.send(Write(byteArrayOf(0x1c, 0x2e)))
-                    bluetoothService.send(Write(byteArrayOf(0x9)))
                     bytes.forEach {
                         bluetoothService.send(Write(it))
                         bluetoothService.send(Write("\n".toByteArray()))

@@ -10,6 +10,9 @@ data class PrinterRec(var name: String, val address: String, var enabled: Boolea
     @Transient
     var connecting: Boolean = false
 
+    @Optional
+    var lineWidth: Int = 32
+
     override fun compareTo(other: PrinterRec): Int {
         return address.compareTo(other.address)
     }
@@ -30,6 +33,10 @@ data class PrinterRec(var name: String, val address: String, var enabled: Boolea
                 model = PrinterModel.ZiJiang
             name.startsWith("MTP-") || name.startsWith("PT2") ->
                 model = PrinterModel.Goojprt
+            name.startsWith("PTP-II") -> {
+                lineWidth = if (name == "PTP-III") 48 else 32
+                model = PrinterModel.Cashino
+            }
             address.startsWith("98:D3:3") || name.startsWith("Printer00") ->
                 model = PrinterModel.Xprinter
             address.startsWith("00:01:90") || name.startsWith("TM-P20_") -> {
