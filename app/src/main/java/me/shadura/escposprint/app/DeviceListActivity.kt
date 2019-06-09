@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2018 Andrej Shadura
+ * Copyright (C) 2018—2019 Andrej Shadura
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free
@@ -45,6 +45,19 @@ import android.widget.TextView
 import java.util.HashSet
 
 import me.shadura.escposprint.R
+import java.lang.reflect.InvocationTargetException
+
+fun BluetoothDevice.getNameOrAlias(): String {
+    return try {
+        (this.javaClass.getMethod("getAlias").invoke(this) as String?)
+    } catch (e: NoSuchMethodException) {
+        null
+    } catch (e: SecurityException) {
+        null
+    } catch (e: InvocationTargetException) {
+        null
+    } ?: this.name ?: "(unnamed)"
+}
 
 class DeviceListActivity : AppCompatActivity() {
     private var bluetoothAdapter: BluetoothAdapter = getDefaultAdapter()
@@ -190,7 +203,7 @@ class DeviceListActivity : AppCompatActivity() {
             }
 
             val device: BluetoothDevice = getItem(position)
-            views.name.text = device.name ?: "(unnamed)"
+            views.name.text = device.getNameOrAlias()
             views.address.text = device.address
 
             return convertView
