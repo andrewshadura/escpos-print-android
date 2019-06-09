@@ -24,6 +24,7 @@
         android:layout_gravity="end|bottom"
         android:layout_margin="16dp"
         android:clickable="true"
+        android:contentDescription="@string/add_button"
         android:focusable="true"
         android:onClick="findPrinters"
         app:srcCompat="@drawable/ic_action_add" />
