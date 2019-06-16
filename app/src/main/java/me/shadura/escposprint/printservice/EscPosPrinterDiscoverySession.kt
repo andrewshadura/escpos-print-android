@@ -28,18 +28,13 @@ import android.printservice.PrinterDiscoverySession
 import android.widget.Toast
 
 import java.io.FileNotFoundException
-import java.io.IOException
 import java.net.ConnectException
-import java.net.HttpURLConnection
 import java.net.SocketTimeoutException
-import java.net.URISyntaxException
 import java.net.UnknownHostException
 import java.util.ArrayList
 
-import javax.net.ssl.SSLException
 import javax.net.ssl.SSLPeerUnverifiedException
 
-import ch.ethz.vppserver.schema.ippclient.Attribute
 import me.shadura.escposprint.EscPosPrintApp
 import me.shadura.escposprint.L
 import me.shadura.escposprint.R
@@ -111,178 +106,8 @@ internal class EscPosPrinterDiscoverySession(private val mPrintService: PrintSer
             builder.setMinMargins(PrintAttributes.Margins(0, 0, 0, 0))
             return builder.build()
         }
-        /*
-        if (address == null || !address.startsWith("http://") && !address.startsWith("https://")) {
-            return null
-        }
-        val printerURL = URL(address)
 
-        val tmpUri = URI(address)
-        val schemeHostPort = tmpUri.scheme + "://" + tmpUri.host + ":" + tmpUri.port
-        val clientURL = URL(schemeHostPort)
-
-        // Most servers have URLs like xxx://ip:port/printers/printer_name; however some may have xxx://ip:port/printer_name (see GitHub issue #40)
-        var path: String? = null
-        if (address.length > schemeHostPort.length + 1) {
-            path = address.substring(schemeHostPort.length + 1)
-            val pos = path.indexOf('/')
-            if (pos > 0) {
-                path = path.substring(0, pos)
-            }
-        }
-
-        //val client = CupsClient(clientURL).setPath(path)
-        val testPrinter = null
-
-        // Check if we need to save the server certs if we don't trust the connection
-        try {
-        } catch (e: SSLException) {
-            throw e
-        } catch (e: CertificateException) {
-            throw e
-        } catch (e: FileNotFoundException) { // this one is returned whenever we get a 4xx HTTP response code
-            mResponseCode = client.lastResponseCode // it might be an HTTP 401!
-            throw e
-        }
-
-        if (testPrinter == null) {
-            L.e("Printer not responding. Printer on fire?")
-        } else {
-            val propertyMap = HashMap<String, String>()
-            propertyMap["requested-attributes"] = TextUtils.join(" ", REQUIRED_ATTRIBUTES)
-
-            val op = IppGetPrinterAttributesOperation()
-            val builder = PrinterCapabilitiesInfo.Builder(printerId)
-            val ippAttributes = op.request(printerURL, propertyMap)
-            if (ippAttributes == null) {
-                L.e("Couldn't get 'requested-attributes' from printer: $address")
-                return null
-            }
-
-            var colorDefault = 0
-            var colorMode = 0
-            var marginMilsTop = 0
-            var marginMilsRight = 0
-            var marginMilsBottom = 0
-            var marginMilsLeft = 0
-            val attributes = ippAttributes.attributeGroupList
-            if (attributes == null) {
-                L.e("Couldn't get attributes list from printer: $address")
-                return null
-            }
-
-            var mediaSizeSet = false
-            var resolutionSet = false
-            for (attributeGroup in attributes) {
-                for (attribute in attributeGroup.attribute) {
-                    when (attribute.name) {
-                        "media-default" -> {
-                            val mediaSize = EscPosPrinterDiscoveryUtils.getMediaSizeFromAttributeValue(attribute.attributeValue[0])
-                            if (mediaSize != null) {
-                                mediaSizeSet = true
-                                builder.addMediaSize(mediaSize, true)
-                            }
-                        }
-                        "media-supported" -> {
-                            for (attributeValue in attribute.attributeValue) {
-                                val mediaSize = EscPosPrinterDiscoveryUtils.getMediaSizeFromAttributeValue(attributeValue)
-                                if (mediaSize != null) {
-                                    mediaSizeSet = true
-                                    builder.addMediaSize(mediaSize, false)
-                                }
-                            }
-                        }
-                        "printer-resolution-default" -> {
-                            resolutionSet = true
-                            builder.addResolution(EscPosPrinterDiscoveryUtils.getResolutionFromAttributeValue("0", attribute.attributeValue[0]), true)
-                        }
-                        "printer-resolution-supported" -> {
-                            for (attributeValue in attribute.attributeValue) {
-                                resolutionSet = true
-                                builder.addResolution(EscPosPrinterDiscoveryUtils.getResolutionFromAttributeValue(attributeValue.tag, attributeValue), false)
-                            }
-                        }
-                        "print-color-mode-supported" -> {
-                            for (attributeValue in attribute.attributeValue) {
-                                if ("monochrome" == attributeValue.value) {
-                                    colorMode = colorMode or PrintAttributes.COLOR_MODE_MONOCHROME
-                                } else if ("color" == attributeValue.value) {
-                                    colorMode = colorMode or PrintAttributes.COLOR_MODE_COLOR
-                                }
-                            }
-                        }
-                        "print-color-mode-default" -> {
-                            var attributeValue: AttributeValue? = null
-                            if (!attribute.attributeValue.isEmpty()) {
-                                attributeValue = attribute.attributeValue[0]
-                            }
-                            if (attributeValue != null && "color" == attributeValue.value) {
-                                colorDefault = PrintAttributes.COLOR_MODE_COLOR
-                            } else {
-                                colorDefault = PrintAttributes.COLOR_MODE_MONOCHROME
-                            }
-                        }
-                        "media-left-margin-supported" -> {
-                            marginMilsLeft = determineMarginFromAttribute(attribute)
-                        }
-                        "media-right-margin-supported" -> {
-                            marginMilsRight = determineMarginFromAttribute(attribute)
-                        }
-                        "media-top-margin-supported" -> {
-                            marginMilsTop = determineMarginFromAttribute(attribute)
-                        }
-                        "media-bottom-margin-supported" -> {
-                            marginMilsBottom = determineMarginFromAttribute(attribute)
-                        }
-                    }
-                }
-            }
-
-            if (!mediaSizeSet) {
-                builder.addMediaSize(PrintAttributes.MediaSize.ISO_A4, true)
-            }
-
-            if (!resolutionSet) {
-                builder.addResolution(PrintAttributes.Resolution("0", "300x300 dpi", 300, 300), true)
-            }
-
-            // Workaround for KitKat (SDK 19)
-            // see: https://developer.android.com/reference/android/print/PrinterCapabilitiesInfo.Builder.html
-            if (Build.VERSION.SDK_INT == Build.VERSION_CODES.KITKAT && colorMode == PrintAttributes.COLOR_MODE_MONOCHROME) {
-                colorMode = PrintAttributes.COLOR_MODE_MONOCHROME or PrintAttributes.COLOR_MODE_COLOR
-                L.w("Workaround for Kitkat enabled.")
-            }
-
-            // May happen. Fallback to monochrome by default
-            if (colorMode and (PrintAttributes.COLOR_MODE_MONOCHROME or PrintAttributes.COLOR_MODE_COLOR) == 0) {
-                colorMode = PrintAttributes.COLOR_MODE_MONOCHROME
-            }
-
-            // May happen. Fallback to monochrome by default
-            if (colorDefault and (PrintAttributes.COLOR_MODE_MONOCHROME or PrintAttributes.COLOR_MODE_COLOR) == 0) {
-                colorDefault = PrintAttributes.COLOR_MODE_MONOCHROME
-            }
-
-            builder.setColorModes(colorMode, colorDefault)
-            builder.setMinMargins(PrintAttributes.Margins(marginMilsLeft, marginMilsTop, marginMilsRight, marginMilsBottom))
-            return builder.build()
-        }
-        */
         return null
-    }
-
-    private fun determineMarginFromAttribute(attribute: Attribute): Int {
-        val values = attribute.attributeValue
-        if (values.isEmpty()) {
-            return 0
-        }
-
-        var margin = Integer.MAX_VALUE
-        for (value in attribute.attributeValue) {
-            val valueMargin = (MM_IN_MILS * Integer.parseInt(value.value) / 100).toInt()
-            margin = Math.min(margin, valueMargin)
-        }
-        return margin
     }
 
     /**
@@ -424,10 +249,6 @@ internal class EscPosPrinterDiscoverySession(private val mPrintService: PrintSer
     override fun onDestroy() {}
 
     companion object {
-        const val HTTP_UPGRADE_REQUIRED = 426
-
         const val MM_IN_MILS = 39.3700787
-
-        private val REQUIRED_ATTRIBUTES = arrayOf("media-default", "media-supported", "printer-resolution-default", "printer-resolution-supported", "print-color-mode-default", "print-color-mode-supported", "media-left-margin-supported", "media-bottom-right-supported", "media-top-margin-supported", "media-bottom-margin-supported")
     }
 }
