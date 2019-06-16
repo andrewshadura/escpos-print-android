@@ -13,6 +13,16 @@ data class PrinterRec(var name: String, val address: String, var enabled: Boolea
     @Optional
     var lineWidth: Int = 32
 
+    @Optional
+    var alias: String = ""
+        get() = if (field.isBlank()) {
+            if (name.isBlank()) {
+                "(unnamed)"
+            } else name
+        } else {
+            field
+        }
+
     override fun compareTo(other: PrinterRec): Int {
         return address.compareTo(other.address)
     }

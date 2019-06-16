@@ -47,7 +47,7 @@ import java.util.HashSet
 import me.shadura.escposprint.R
 import java.lang.reflect.InvocationTargetException
 
-fun BluetoothDevice.getNameOrAlias(): String {
+fun BluetoothDevice.getNameOrAlias(default: String = "(unnamed)"): String {
     return try {
         (this.javaClass.getMethod("getAlias").invoke(this) as String?)
     } catch (e: NoSuchMethodException) {
@@ -56,7 +56,7 @@ fun BluetoothDevice.getNameOrAlias(): String {
         null
     } catch (e: InvocationTargetException) {
         null
-    } ?: this.name ?: "(unnamed)"
+    } ?: this.name ?: default
 }
 
 class DeviceListActivity : AppCompatActivity() {

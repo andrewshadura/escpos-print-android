@@ -181,7 +181,14 @@ class ManageManualPrintersActivity : AppCompatActivity(), CoroutineScope by Main
 
                     if (BluetoothAdapter.checkBluetoothAddress(address)) {
                         val device = mBluetoothAdapter!!.getRemoteDevice(address)
-                        val printerInfo = PrinterRec(device.getNameOrAlias(), address, true, PrinterModel.ZiJiang)
+                        L.i("name = ${device.name}, alias = ${device.getNameOrAlias()}")
+                        val printerInfo = PrinterRec(
+                                name = device.name ?: "",
+                                address = address,
+                                enabled = true,
+                                model = PrinterModel.ZiJiang
+                        )
+                        printerInfo.alias = device.getNameOrAlias()
                         printerInfo.detectModel()
                         printerInfo.connecting = true
                         printers.add(printerInfo)
@@ -279,7 +286,7 @@ class ManageManualPrintersActivity : AppCompatActivity(), CoroutineScope by Main
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
             val item = objects[position]
             item.let { printer ->
-                holder.views.name.text = printer.name
+                holder.views.name.text = printer.alias
                 holder.views.address.text = printer.address
                 holder.views.model.text = printer.model.name
                 holder.views.enabled.isChecked = printer.enabled
