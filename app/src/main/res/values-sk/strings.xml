@@ -17,4 +17,5 @@
     <string name="close">Hotovo</string>
     <string name="bluetooth_connection_failure">Chyba Bluetooth spojenia</string>
     <string name="connection_failure">Nepodarilo sa spojiť s tlačiarňou</string>
+    <string name="this_app_needs_bt">Táto aplikácia potrebuje Bluetooth</string>
 </resources>

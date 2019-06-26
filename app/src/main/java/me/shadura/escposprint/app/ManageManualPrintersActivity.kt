@@ -50,7 +50,7 @@ import org.jetbrains.anko.design.snackbar
 import java.util.*
 
 class ManageManualPrintersActivity : AppCompatActivity(), CoroutineScope by MainScope() {
-    private var mBluetoothAdapter: BluetoothAdapter? = null
+    private var bluetoothAdapter: BluetoothAdapter? = null
 
     private lateinit var recyclerView: RecyclerView
     private lateinit var viewAdapter: ManualPrintersRecyclerAdapter
@@ -128,16 +128,19 @@ class ManageManualPrintersActivity : AppCompatActivity(), CoroutineScope by Main
     }
 
     fun findPrinters(button: View) {
-        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter()?.apply {
+        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()?.apply {
             if (!isEnabled) {
                 val enableIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
                 startActivityForResult(enableIntent, REQUEST_ENABLE_BLUETOOTH)
             } else {
+                /* TODO: this is wrong: we only request coarse location permission
+                   if Bluetooth is not enabled, but we should always check and ask
+                   probably best if we call REQUEST_ENABLE_BLUETOOTH */
                 val serverIntent = Intent(this@ManageManualPrintersActivity, DeviceListActivity::class.java)
                 startActivityForResult(serverIntent, REQUEST_FIND_DEVICE)
             }
         } ?: {
-            longSnackbar(recyclerView, "Bluetooth is not available")
+            longSnackbar(recyclerView, getString(R.string.no_bluetooth))
 
             val debug = false
             if (debug) {
@@ -172,7 +175,7 @@ class ManageManualPrintersActivity : AppCompatActivity(), CoroutineScope by Main
                         startActivityForResult(serverIntent, REQUEST_FIND_DEVICE)
                     }
                 } else {
-                    longSnackbar(recyclerView, "This app needs Bluetooth to add new printers")
+                    longSnackbar(recyclerView, getString(R.string.this_app_needs_bt))
                 }
             }
             REQUEST_FIND_DEVICE -> {
@@ -180,7 +183,7 @@ class ManageManualPrintersActivity : AppCompatActivity(), CoroutineScope by Main
                     val address = data?.extras?.getString(DeviceListActivity.EXTRA_DEVICE_ADDRESS, "") ?: ""
 
                     if (BluetoothAdapter.checkBluetoothAddress(address)) {
-                        val device = mBluetoothAdapter!!.getRemoteDevice(address)
+                        val device = bluetoothAdapter!!.getRemoteDevice(address)
                         L.i("name = ${device.name}, alias = ${device.getNameOrAlias()}")
                         val printerInfo = PrinterRec(
                                 name = device.name ?: "",
@@ -216,7 +219,7 @@ class ManageManualPrintersActivity : AppCompatActivity(), CoroutineScope by Main
                                 }
                                 State.STATE_FAILED,
                                 State.STATE_NONE -> {
-                                    longSnackbar(recyclerView, "Failed to connect to the printer: ${result.error}")
+                                    longSnackbar(recyclerView, getString(R.string.connection_failure) + ": " + result.error)
                                     printerInfo.connecting = false
                                     printerInfo.enabled = false
                                     viewAdapter.notifyDataSetChanged()

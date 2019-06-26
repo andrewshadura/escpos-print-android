@@ -39,5 +39,7 @@
     <string name="close">Close</string>
     <string name="bluetooth_connection_failure">Failed to open Bluetooth connection</string>
     <string name="connection_failure">Failed to connect to the printer</string>
+    <string name="this_app_needs_bt">This app needs Bluetooth</string>
+    <string name="no_bluetooth">Bluetooth is not available</string>
 
 </resources>
