@@ -49,6 +49,18 @@ import org.jetbrains.anko.design.longSnackbar
 import org.jetbrains.anko.design.snackbar
 import java.util.*
 
+fun Spinner.setOnItemSelectedListener(l: (parent: AdapterView<*>, view: View?, position: Int, id: Long) -> Unit) {
+    this.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+        override fun onNothingSelected(parent: AdapterView<*>?) {
+
+        }
+
+        override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
+            l(parent, view, position, id)
+        }
+    }
+}
+
 class ManageManualPrintersActivity : AppCompatActivity(), CoroutineScope by MainScope() {
     private var bluetoothAdapter: BluetoothAdapter? = null
 
@@ -103,15 +115,10 @@ class ManageManualPrintersActivity : AppCompatActivity(), CoroutineScope by Main
                 bottomDialog?.cancel()
             }
             with (sheetView.findViewById<Spinner>(R.id.printerModel)) {
-                onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-                    override fun onNothingSelected(parent: AdapterView<*>?) {
-                    }
-
-                    override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
-                        printer.model = PrinterModel.valueOf(parent.getItemAtPosition(position).toString())
-                        viewAdapter.notifyDataSetChanged()
-                        savePrinters()
-                    }
+                setOnItemSelectedListener { parent, _, position, _ ->
+                    printer.model = PrinterModel.valueOf(parent.getItemAtPosition(position).toString())
+                    viewAdapter.notifyDataSetChanged()
+                    savePrinters()
                 }
                 setSelection((adapter as ArrayAdapter<String>).getPosition(printer.model.name))
             }
