@@ -12,14 +12,12 @@ enum class PrinterModel {
 
 enum class LineWidth(val characters: Int) {
     NarrowPaper(32),
-    WidePaper(42)
+    MediumPaper(42),
+    WidePaper(48)
 }
 
 open class Dialect {
     open var lineWidth: Int = 32
-        set(value) {
-            field = if (value == 42) 48 else value
-        }
 
     fun setLineWidth(value: LineWidth) {
         lineWidth = value.characters
@@ -154,9 +152,6 @@ class XprinterDialect: Dialect() {
 
 class EpsonTMP20Dialect: Dialect() {
     override var lineWidth: Int = 32
-        set(value) {
-            field = if (value == 48) 42 else value
-        }
 
     override val supportedCharsets = mapOf(
             Codepage("cp852")  to 18,
