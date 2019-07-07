@@ -32,10 +32,12 @@
 
         <TextView
             android:id="@+id/manual_printer_address"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:padding="8dp"
+            android:singleLine="true"
+            android:text="MM:MM:MM:MM:MM:MM"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/manual_printer_model"
             app:layout_constraintStart_toStartOf="parent"
