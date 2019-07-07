@@ -33,8 +33,9 @@
     <string name="printer_connected">Printer connected and enabled</string>
     <string name="cancel">Cancel</string>
     <string name="delete">Delete</string>
-    <string name="_80_mm" translatable="false">80 mm</string>
-    <string name="_58_mm" translatable="false">58 mm</string>
+    <string name="_80_mm_wide" translatable="false">48</string>
+    <string name="_80_mm_narrow" translatable="false">42</string>
+    <string name="_58_mm" translatable="false">32</string>
     <string name="print_width">Print width</string>
     <string name="close">Close</string>
     <string name="bluetooth_connection_failure">Failed to open Bluetooth connection</string>

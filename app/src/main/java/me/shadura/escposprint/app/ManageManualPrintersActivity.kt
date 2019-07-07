@@ -122,6 +122,32 @@ class ManageManualPrintersActivity : AppCompatActivity(), CoroutineScope by Main
                 }
                 setSelection((adapter as ArrayAdapter<String>).getPosition(printer.model.name))
             }
+            with (sheetView.findViewById<RadioGroup>(R.id.printWidth)) {
+                check(when(printer.lineWidth) {
+                    32 ->
+                        R.id.width32
+                    42 ->
+                        R.id.width42
+                    48 ->
+                        R.id.width48
+                    else ->
+                        throw IllegalStateException("Unknown line width")
+                })
+                setOnCheckedChangeListener { _, checkedId ->
+                    printer.lineWidth = when (checkedId) {
+                        R.id.width32 ->
+                            32
+                        R.id.width42 ->
+                            42
+                        R.id.width48 ->
+                            48
+                        else ->
+                            throw IllegalStateException("One radio must be checked")
+                    }
+                    viewAdapter.notifyDataSetChanged()
+                    savePrinters()
+                }
+            }
             bottomDialog?.run {
                 setContentView(sheetView)
                 show()
