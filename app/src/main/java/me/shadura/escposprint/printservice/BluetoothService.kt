@@ -78,10 +78,10 @@ fun CoroutineScope.bluetoothServiceActor(device: BluetoothDevice) = actor<Blueto
             }
             is Disconnect -> break@process
             is Write -> {
-                msg.data.asIterable().chunked(256).forEach {
+                msg.data.asIterable().chunked(64).forEach {
                     socket.outputStream.write(it.toByteArray())
                     socket.outputStream.flush()
-                    delay(10)
+                    delay(15)
                 }
             }
         }
