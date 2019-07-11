@@ -408,15 +408,26 @@ class PDFStyledTextStripper : PDFTextStripper() {
                         printText(line, element)
                     }
                     is ImageElement -> {
-                        if (element.image.width < dialect.pixelWidth / 2) {
-                            val scaledBitmap = Bitmap.createScaledBitmap(
-                                    element.image,
-                                    element.image.width * 2,
-                                    element.image.height * 2,
-                                    false)
-                            dialect.centre(true) + scaledBitmap.encodeForPrinter() + dialect.centre(false)
-                        } else {
-                            dialect.centre(true) + element.image.encodeForPrinter() + dialect.centre(false)
+                        when {
+                            element.image.width < dialect.pixelWidth / 2 -> {
+                                val scaledBitmap = Bitmap.createScaledBitmap(
+                                        element.image,
+                                        element.image.width * 2,
+                                        element.image.height * 2,
+                                        false)
+                                dialect.centre(true) + scaledBitmap.encodeForPrinter() + dialect.centre(false)
+                            }
+                            element.image.width > dialect.pixelWidth -> {
+                                val scaledBitmap = Bitmap.createScaledBitmap(
+                                        element.image,
+                                        dialect.pixelWidth,
+                                        dialect.pixelWidth * element.image.height / element.image.width,
+                                        true)
+                                dialect.centre(true) + scaledBitmap.encodeForPrinter() + dialect.centre(false)
+                            }
+                            else -> {
+                                dialect.centre(true) + element.image.encodeForPrinter() + dialect.centre(false)
+                            }
                         }
                     }
                     is RuleElement -> {
