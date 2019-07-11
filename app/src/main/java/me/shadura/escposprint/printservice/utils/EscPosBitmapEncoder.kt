@@ -110,16 +110,16 @@ class EscPosBitmapEncoder {
 
                     // If we go past the bottom of the image, just send white pixels so the printer
                     // doesn't do anything.  Everything still needs to be sent in sets of 3 rows.
-                    pixelSlice[0] = greyToV(pixels[pixel1Row * width + col])
+                    pixelSlice[0] = greyToV(pixels.elementAtOrNull(pixel1Row * width + col) ?: Color.WHITE)
                     pixelSlice[1] = greyToV(if (pixel2Row >= bitmap.height) {
                         Color.WHITE
                     } else {
-                        pixels[pixel2Row * width + col]
+                        pixels.elementAtOrNull(pixel2Row * width + col) ?: Color.WHITE
                     })
                     pixelSlice[2] = greyToV(if (pixel3Row >= bitmap.height) {
                         Color.WHITE
                     } else {
-                        pixels[pixel3Row * width + col]
+                        pixels.elementAtOrNull(pixel3Row * width + col) ?: Color.WHITE
                     })
 
                     val isDark = booleanArrayOf(pixelSlice[0] < 0.5,
