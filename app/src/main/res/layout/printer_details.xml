@@ -73,44 +73,19 @@
             app:layout_constraintStart_toStartOf="@+id/printerModelLabel"
             app:layout_constraintTop_toBottomOf="@+id/printerModelLabel" />
 
-        <RadioGroup
+        <Spinner
             android:id="@+id/printWidth"
             android:layout_width="0dp"
             android:layout_height="56dp"
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
-            android:checkedButton="@id/width32"
             android:ems="10"
             android:orientation="horizontal"
-            android:text=""
             android:textSize="16sp"
             app:layout_constraintBottom_toBottomOf="@+id/printWidthLabel"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/printWidthLabel"
-            app:layout_constraintTop_toTopOf="@+id/printWidthLabel">
-
-            <RadioButton
-                android:id="@+id/width32"
-                style="@style/Widget.AppCompat.CompoundButton.RadioButton"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:text="@string/_58_mm" />
-
-            <RadioButton
-                android:id="@+id/width42"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:text="@string/_80_mm_narrow" />
-
-            <RadioButton
-                android:id="@+id/width48"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:text="@string/_80_mm_wide" />
-        </RadioGroup>
+            app:layout_constraintTop_toTopOf="@+id/printWidthLabel" />
 
         <ImageButton
             android:id="@+id/deleteButton"

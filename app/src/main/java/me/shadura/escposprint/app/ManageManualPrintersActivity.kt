@@ -48,6 +48,7 @@ import me.shadura.escposprint.printservice.*
 import org.jetbrains.anko.design.longSnackbar
 import org.jetbrains.anko.design.snackbar
 import java.util.*
+import kotlin.collections.ArrayList
 
 fun Spinner.setOnItemSelectedListener(l: (parent: AdapterView<*>, view: View?, position: Int, id: Long) -> Unit) {
     this.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
@@ -63,6 +64,22 @@ fun Spinner.setOnItemSelectedListener(l: (parent: AdapterView<*>, view: View?, p
 
 class ManageManualPrintersActivity : AppCompatActivity(), CoroutineScope by MainScope() {
     private var bluetoothAdapter: BluetoothAdapter? = null
+
+    open inner class PrintWidthName(val width: Int, val resId: Int) {
+        override fun toString(): String {
+            return getString(resId)
+        }
+    }
+
+    private val printWidthNames = arrayListOf(
+            PrintWidthName(32, R.string._58_mm),
+            PrintWidthName(48, R.string._80_mm_wide),
+            PrintWidthName(42, R.string._80_mm_narrow)
+    )
+
+    private val printWidths = printWidthNames.mapIndexed { position, it ->
+        it.width to position
+    }.toMap()
 
     private lateinit var recyclerView: RecyclerView
     private lateinit var viewAdapter: ManualPrintersRecyclerAdapter
@@ -126,30 +143,23 @@ class ManageManualPrintersActivity : AppCompatActivity(), CoroutineScope by Main
                     }
                 }
             }
-            with (sheetView.findViewById<RadioGroup>(R.id.printWidth)) {
-                check(when(printer.lineWidth) {
-                    32 ->
-                        R.id.width32
-                    42 ->
-                        R.id.width42
-                    48 ->
-                        R.id.width48
-                    else ->
-                        throw IllegalStateException("Unknown line width")
-                })
-                setOnCheckedChangeListener { _, checkedId ->
-                    printer.lineWidth = when (checkedId) {
-                        R.id.width32 ->
-                            32
-                        R.id.width42 ->
-                            42
-                        R.id.width48 ->
-                            48
-                        else ->
-                            throw IllegalStateException("One radio must be checked")
+            val printWidthsAdapter = ArrayAdapter(this, R.layout.support_simple_spinner_dropdown_item, printWidthNames)
+            printWidthsAdapter.setDropDownViewResource(R.layout.support_simple_spinner_dropdown_item)
+            with (sheetView.findViewById<Spinner>(R.id.printWidth)) {
+                adapter = printWidthsAdapter
+                setSelection(printWidths[printer.lineWidth] ?: 0)
+                setOnItemSelectedListener { _, _, position, _ ->
+                    if (position < 0 || position > printWidthNames.size) {
+                        throw IllegalStateException("Confusing index $position")
                     }
-                    viewAdapter.notifyDataSetChanged()
-                    savePrinters()
+                    printWidthNames[position].width.also { newWidth ->
+                        if (printer.lineWidth != newWidth) {
+                            L.i(" -> $newWidth")
+                            printer.lineWidth = newWidth
+                            viewAdapter.notifyDataSetChanged()
+                            savePrinters()
+                        }
+                    }
                 }
             }
             bottomDialog?.run {
