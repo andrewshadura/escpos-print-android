@@ -276,17 +276,18 @@ class EscPosService : PrintService(), CoroutineScope by MainScope() {
                         bluetoothService.send(Write(it))
                         bluetoothService.send(Write("\n".toByteArray()))
                     }
-                    /* perform partial cut */
-                    bluetoothService.send(Write(byteArrayOf(0x1d, 0x56, 1)))
-
-                    if (printerConfig.drawerSetting == OpenDrawerSetting.OpenAfter) {
-                        bluetoothService.send(Write(dialect.openDrawer()))
-                    }
 
                     if (printerConfig.extraLines > 0) {
                         bluetoothService.send(Write(ByteArray(printerConfig.extraLines) {
                             0xa
                         }))
+                    }
+
+                    /* perform partial cut */
+                    bluetoothService.send(Write(byteArrayOf(0x1d, 0x56, 1)))
+
+                    if (printerConfig.drawerSetting == OpenDrawerSetting.OpenAfter) {
+                        bluetoothService.send(Write(dialect.openDrawer()))
                     }
 
                     bluetoothService.close()
