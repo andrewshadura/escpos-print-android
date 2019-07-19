@@ -23,6 +23,9 @@ data class PrinterRec(var name: String, val address: String, var enabled: Boolea
     var drawerSetting: OpenDrawerSetting = OpenDrawerSetting.DontOpen
 
     @Optional
+    var extraLines: Int = 0
+
+    @Optional
     var alias: String = ""
         get() = if (field.isBlank()) {
             if (name.isBlank()) {

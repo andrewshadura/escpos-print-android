@@ -283,6 +283,12 @@ class EscPosService : PrintService(), CoroutineScope by MainScope() {
                         bluetoothService.send(Write(dialect.openDrawer()))
                     }
 
+                    if (printerConfig.extraLines > 0) {
+                        bluetoothService.send(Write(ByteArray(printerConfig.extraLines) {
+                            0xa
+                        }))
+                    }
+
                     bluetoothService.close()
                     L.i("sent text")
 

@@ -13,6 +13,7 @@
         android:layout_height="wrap_content"
         app:layout_constraintBottom_toTopOf="@+id/closeButton"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
@@ -114,7 +115,7 @@
             android:text="@string/open_drawer"
             android:textColor="?android:attr/colorForeground"
             android:textSize="16sp"
-            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/extraLinesLabel"
             app:layout_constraintStart_toStartOf="@+id/printWidthLabel"
             app:layout_constraintTop_toBottomOf="@+id/printWidthLabel" />
 
@@ -131,6 +132,47 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/openDrawerLabel"
             app:layout_constraintTop_toTopOf="@+id/openDrawerLabel" />
+
+        <TextView
+            android:id="@+id/extraLinesLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="56dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            android:gravity="center"
+            android:text="Extra lines"
+            android:textColor="?android:attr/colorForeground"
+            android:textSize="16sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="@+id/openDrawerLabel"
+            app:layout_constraintTop_toBottomOf="@+id/openDrawerLabel" />
+
+        <SeekBar
+            android:id="@+id/extraLines"
+            style="@style/Widget.AppCompat.SeekBar.Discrete"
+            android:layout_width="0dp"
+            android:layout_height="56dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:max="10"
+            android:progress="0"
+            app:layout_constraintBottom_toBottomOf="@+id/extraLinesLabel"
+            app:layout_constraintEnd_toStartOf="@+id/extraLinesText"
+            app:layout_constraintStart_toEndOf="@+id/extraLinesLabel"
+            app:layout_constraintTop_toTopOf="@+id/extraLinesLabel" />
+
+        <TextView
+            android:id="@+id/extraLinesText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="16dp"
+            android:minEms="1"
+            android:text="0"
+            android:textAppearance="@style/TextAppearance.AppCompat.Large"
+            app:layout_constraintBottom_toBottomOf="@+id/extraLinesLabel"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/extraLines"
+            app:layout_constraintTop_toTopOf="@+id/extraLinesLabel" />
 
     </android.support.constraint.ConstraintLayout>
 

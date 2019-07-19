@@ -62,6 +62,26 @@ fun Spinner.setOnItemSelectedListener(l: (parent: AdapterView<*>, view: View?, p
     }
 }
 
+fun SeekBar.setOnChangeListener(l: (seekBar: SeekBar?, progress: Int, fromUser: Boolean) -> Unit) {
+    this.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+        override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+            if (!fromUser) {
+                l(seekBar, progress, false)
+            }
+        }
+
+        override fun onStartTrackingTouch(seekBar: SeekBar?) {
+
+        }
+
+        override fun onStopTrackingTouch(seekBar: SeekBar?) {
+            seekBar?.run {
+                l(this, this.progress, true)
+            }
+        }
+    })
+}
+
 class ManageManualPrintersActivity : AppCompatActivity(), CoroutineScope by MainScope() {
     private var bluetoothAdapter: BluetoothAdapter? = null
 
@@ -192,6 +212,19 @@ class ManageManualPrintersActivity : AppCompatActivity(), CoroutineScope by Main
                         }
                     }
                 }
+            }
+
+            val extraLinesText = sheetView.findViewById<TextView>(R.id.extraLinesText)
+            with (sheetView.findViewById<SeekBar>(R.id.extraLines)) {
+                setOnChangeListener { _, progress, fromUser ->
+                    extraLinesText.text = progress.toString()
+                    if (fromUser) {
+                        printer.extraLines = progress
+                        viewAdapter.notifyDataSetChanged()
+                        savePrinters()
+                    }
+                }
+                progress = printer.extraLines
             }
 
             bottomDialog?.run {
