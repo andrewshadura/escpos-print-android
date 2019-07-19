@@ -25,4 +25,5 @@
     <string name="open_drawer_before">Otvoriť pred tlačou</string>
     <string name="open_drawer_no">Neotvárať</string>
     <string name="open_drawer_after">Otvoriť po tlači</string>
+    <string name="extra_feed">Odstup dole</string>
 </resources>

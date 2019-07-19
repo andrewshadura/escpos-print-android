@@ -22,4 +22,5 @@
     <string name="open_drawer_after">Открыть после печати</string>
     <string name="open_drawer_before">Открыть перед печатью</string>
     <string name="open_drawer_no">Не открывать</string>
+    <string name="extra_feed">Отступ внизу</string>
 </resources>
