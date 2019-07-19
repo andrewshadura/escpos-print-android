@@ -48,7 +48,6 @@ import me.shadura.escposprint.printservice.*
 import org.jetbrains.anko.design.longSnackbar
 import org.jetbrains.anko.design.snackbar
 import java.util.*
-import kotlin.collections.ArrayList
 
 fun Spinner.setOnItemSelectedListener(l: (parent: AdapterView<*>, view: View?, position: Int, id: Long) -> Unit) {
     this.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
@@ -65,20 +64,20 @@ fun Spinner.setOnItemSelectedListener(l: (parent: AdapterView<*>, view: View?, p
 class ManageManualPrintersActivity : AppCompatActivity(), CoroutineScope by MainScope() {
     private var bluetoothAdapter: BluetoothAdapter? = null
 
-    open inner class PrintWidthName(val width: Int, val resId: Int) {
+    open inner class LabelledValue<T>(val value: T, val resId: Int) {
         override fun toString(): String {
             return getString(resId)
         }
     }
 
     private val printWidthNames = arrayListOf(
-            PrintWidthName(32, R.string._58_mm),
-            PrintWidthName(48, R.string._80_mm_wide),
-            PrintWidthName(42, R.string._80_mm_narrow)
+            LabelledValue(32, R.string._58_mm),
+            LabelledValue(48, R.string._80_mm_wide),
+            LabelledValue(42, R.string._80_mm_narrow)
     )
 
     private val printWidths = printWidthNames.mapIndexed { position, it ->
-        it.width to position
+        it.value to position
     }.toMap()
 
     private lateinit var recyclerView: RecyclerView
@@ -152,7 +151,7 @@ class ManageManualPrintersActivity : AppCompatActivity(), CoroutineScope by Main
                     if (position < 0 || position > printWidthNames.size) {
                         throw IllegalStateException("Confusing index $position")
                     }
-                    printWidthNames[position].width.also { newWidth ->
+                    printWidthNames[position].value.also { newWidth ->
                         if (printer.lineWidth != newWidth) {
                             L.i(" -> $newWidth")
                             printer.lineWidth = newWidth
