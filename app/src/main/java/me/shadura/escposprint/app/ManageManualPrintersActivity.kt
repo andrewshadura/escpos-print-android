@@ -115,12 +115,16 @@ class ManageManualPrintersActivity : AppCompatActivity(), CoroutineScope by Main
                 bottomDialog?.cancel()
             }
             with (sheetView.findViewById<Spinner>(R.id.printerModel)) {
-                setOnItemSelectedListener { parent, _, position, _ ->
-                    printer.model = PrinterModel.valueOf(parent.getItemAtPosition(position).toString())
-                    viewAdapter.notifyDataSetChanged()
-                    savePrinters()
-                }
                 setSelection((adapter as ArrayAdapter<String>).getPosition(printer.model.name))
+                setOnItemSelectedListener { parent, _, position, _ ->
+                    PrinterModel.valueOf(parent.getItemAtPosition(position).toString()).also { newModel ->
+                        if (printer.model != newModel) {
+                            printer.model = newModel
+                            viewAdapter.notifyDataSetChanged()
+                            savePrinters()
+                        }
+                    }
+                }
             }
             with (sheetView.findViewById<RadioGroup>(R.id.printWidth)) {
                 check(when(printer.lineWidth) {
