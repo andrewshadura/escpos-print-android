@@ -43,6 +43,7 @@ import me.shadura.escposprint.R
 import kotlinx.coroutines.*
 import me.shadura.escposprint.L
 import me.shadura.escpos.PrinterModel
+import me.shadura.escposprint.detect.OpenDrawerSetting
 import me.shadura.escposprint.detect.PrinterRec
 import me.shadura.escposprint.printservice.*
 import org.jetbrains.anko.design.longSnackbar
@@ -77,6 +78,16 @@ class ManageManualPrintersActivity : AppCompatActivity(), CoroutineScope by Main
     )
 
     private val printWidths = printWidthNames.mapIndexed { position, it ->
+        it.value to position
+    }.toMap()
+    
+    private val drawerSettingNames = arrayListOf(
+            LabelledValue(OpenDrawerSetting.DontOpen, R.string.open_drawer_no),
+            LabelledValue(OpenDrawerSetting.OpenBefore, R.string.open_drawer_before),
+            LabelledValue(OpenDrawerSetting.OpenAfter, R.string.open_drawer_after)
+    )
+
+    private val drawerSettings = drawerSettingNames.mapIndexed { position, it ->
         it.value to position
     }.toMap()
 
@@ -142,6 +153,7 @@ class ManageManualPrintersActivity : AppCompatActivity(), CoroutineScope by Main
                     }
                 }
             }
+
             val printWidthsAdapter = ArrayAdapter(this, R.layout.support_simple_spinner_dropdown_item, printWidthNames)
             printWidthsAdapter.setDropDownViewResource(R.layout.support_simple_spinner_dropdown_item)
             with (sheetView.findViewById<Spinner>(R.id.printWidth)) {
@@ -161,6 +173,27 @@ class ManageManualPrintersActivity : AppCompatActivity(), CoroutineScope by Main
                     }
                 }
             }
+
+            val drawerSettingsAdapter = ArrayAdapter(this, R.layout.support_simple_spinner_dropdown_item, drawerSettingNames)
+            drawerSettingsAdapter.setDropDownViewResource(R.layout.support_simple_spinner_dropdown_item)
+            with (sheetView.findViewById<Spinner>(R.id.openDrawer)) {
+                adapter = drawerSettingsAdapter
+                setSelection(drawerSettings[printer.drawerSetting] ?: 0)
+                setOnItemSelectedListener { _, _, position, _ ->
+                    if (position < 0 || position > drawerSettingNames.size) {
+                        throw IllegalStateException("Confusing index $position")
+                    }
+                    drawerSettingNames[position].value.also { newDrawerSetting ->
+                        if (printer.drawerSetting != newDrawerSetting) {
+                            L.i(" -> $newDrawerSetting")
+                            printer.drawerSetting = newDrawerSetting
+                            viewAdapter.notifyDataSetChanged()
+                            savePrinters()
+                        }
+                    }
+                }
+            }
+
             bottomDialog?.run {
                 setContentView(sheetView)
                 show()

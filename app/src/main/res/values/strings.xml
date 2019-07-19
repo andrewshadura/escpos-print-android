@@ -42,5 +42,9 @@
     <string name="connection_failure">Failed to connect to the printer</string>
     <string name="this_app_needs_bt">This app needs Bluetooth</string>
     <string name="no_bluetooth">Bluetooth is not available</string>
+    <string name="open_drawer">Drawer</string>
+    <string name="open_drawer_before">Open before printing</string>
+    <string name="open_drawer_after">Open after printing</string>
+    <string name="open_drawer_no">Don’t open</string>
 
 </resources>

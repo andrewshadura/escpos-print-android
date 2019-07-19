@@ -69,7 +69,7 @@
             android:text="@string/print_width"
             android:textColor="?android:attr/colorForeground"
             android:textSize="16sp"
-            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/openDrawerLabel"
             app:layout_constraintStart_toStartOf="@+id/printerModelLabel"
             app:layout_constraintTop_toBottomOf="@+id/printerModelLabel" />
 
@@ -102,6 +102,36 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:srcCompat="@drawable/ic_action_delete" />
+
+        <TextView
+            android:id="@+id/openDrawerLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="56dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            android:gravity="center"
+            android:labelFor="@+id/openDrawer"
+            android:text="@string/open_drawer"
+            android:textColor="?android:attr/colorForeground"
+            android:textSize="16sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="@+id/printWidthLabel"
+            app:layout_constraintTop_toBottomOf="@+id/printWidthLabel" />
+
+        <Spinner
+            android:id="@+id/openDrawer"
+            android:layout_width="0dp"
+            android:layout_height="56dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:ems="10"
+            android:orientation="horizontal"
+            android:textSize="16sp"
+            app:layout_constraintBottom_toBottomOf="@+id/openDrawerLabel"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/openDrawerLabel"
+            app:layout_constraintTop_toTopOf="@+id/openDrawerLabel" />
+
     </android.support.constraint.ConstraintLayout>
 
     <Button
@@ -118,7 +148,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/switches" />
-
 
 
 </android.support.constraint.ConstraintLayout>

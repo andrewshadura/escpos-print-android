@@ -5,6 +5,12 @@ import me.shadura.escposprint.L
 
 import me.shadura.escpos.PrinterModel
 
+enum class OpenDrawerSetting {
+    DontOpen,
+    OpenBefore,
+    OpenAfter
+}
+
 @Serializable
 data class PrinterRec(var name: String, val address: String, var enabled: Boolean, var model: PrinterModel) : Comparable<PrinterRec> {
     @Transient
@@ -12,6 +18,9 @@ data class PrinterRec(var name: String, val address: String, var enabled: Boolea
 
     @Optional
     var lineWidth: Int = 32
+
+    @Optional
+    var drawerSetting: OpenDrawerSetting = OpenDrawerSetting.DontOpen
 
     @Optional
     var alias: String = ""
