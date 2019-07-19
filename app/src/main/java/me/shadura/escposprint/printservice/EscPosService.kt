@@ -39,6 +39,7 @@ import kotlinx.coroutines.*
 import me.shadura.escpos.Dialect
 import me.shadura.escpos.PrinterModel
 import me.shadura.escpos.dialects
+import me.shadura.escposprint.detect.OpenDrawerSetting
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.toast
 import org.jetbrains.anko.uiThread
@@ -237,8 +238,9 @@ class EscPosService : PrintService(), CoroutineScope by MainScope() {
         val document = PDDocument.load(inputStream)
         val pdfStripper = PDFStyledTextStripper()
         pdfStripper.addMoreFormatting = true
-        pdfStripper.dialect = dialects.getValue(printerConfig.model).java.newInstance()
-        pdfStripper.dialect.lineWidth = printerConfig.lineWidth
+        val dialect = dialects.getValue(printerConfig.model).java.newInstance()
+        dialect.lineWidth = printerConfig.lineWidth
+        pdfStripper.dialect = dialect
         val bytes = try {
             pdfStripper.getByteArrays(document)
         } catch (e: Exception) {
@@ -265,12 +267,22 @@ class EscPosService : PrintService(), CoroutineScope by MainScope() {
                     L.i("sending text")
                     bluetoothService.send(Write(byteArrayOf(0x1b, 0x40)))
                     bluetoothService.send(Write(byteArrayOf(0x1c, 0x2e)))
+
+                    if (printerConfig.drawerSetting == OpenDrawerSetting.OpenBefore) {
+                        bluetoothService.send(Write(dialect.openDrawer()))
+                    }
+
                     bytes.forEach {
                         bluetoothService.send(Write(it))
                         bluetoothService.send(Write("\n".toByteArray()))
                     }
                     /* perform partial cut */
                     bluetoothService.send(Write(byteArrayOf(0x1d, 0x56, 1)))
+
+                    if (printerConfig.drawerSetting == OpenDrawerSetting.OpenAfter) {
+                        bluetoothService.send(Write(dialect.openDrawer()))
+                    }
+
                     bluetoothService.close()
                     L.i("sent text")
 

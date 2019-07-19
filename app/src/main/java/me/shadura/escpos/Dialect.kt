@@ -74,6 +74,9 @@ open class Dialect {
     open fun pageFeed(): ByteArray =
         byteArrayOf(0xa, 0xa, 0xa)
 
+    open fun openDrawer(): ByteArray =
+            byteArrayOf(0x1b, 0x70, 0, 0x40, 0x50)
+
     fun getColumns(num: Int): List<Int> {
         return when (lineWidth) {
             32 ->
