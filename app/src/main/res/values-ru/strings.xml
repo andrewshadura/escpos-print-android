@@ -15,4 +15,7 @@
     <string name="cancel">Отмена</string>
     <string name="delete">Удалить</string>
     <string name="close">Закрыть</string>
+    <string name="_58_mm">58 мм (32 знака)</string>
+    <string name="_80_mm_narrow">80 мм (42 знака)</string>
+    <string name="_80_mm_wide">80 мм (48 знаков)</string>
 </resources>
