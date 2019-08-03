@@ -25,6 +25,9 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.pm.PackageManager
+import android.hardware.usb.*
+import android.os.Build
 import android.os.Bundle
 import android.support.annotation.LayoutRes
 import android.support.design.widget.FloatingActionButton
@@ -41,6 +44,7 @@ import android.widget.ArrayAdapter
 import android.widget.ListView
 import android.widget.AdapterView.OnItemClickListener
 import android.widget.TextView
+import me.shadura.escposprint.L
 
 import java.util.HashSet
 
@@ -59,28 +63,56 @@ fun BluetoothDevice.getNameOrAlias(default: String = "(unnamed)"): String {
     } ?: this.name ?: default
 }
 
+val UsbDevice.interfaces: List<UsbInterface>
+    get() {
+        return (0 until this.interfaceCount).map {
+            this.getInterface(it)
+        }
+    }
+
+val UsbInterface.endpoints: List<UsbEndpoint>
+    get() {
+        return (0 until this.endpointCount).map {
+            this.getEndpoint(it)
+        }
+    }
+
+val UsbDevice.name: String
+    get() = if (Build.VERSION.SDK_INT >= 21) {
+        this.productName
+        } else {
+        this.manufacturerName ?: "USB printer ${this.serialNumber}"
+    } ?: "USB printer ${this.deviceId}"
+
+val UsbDevice.address: String
+    get() = "%4x:%4x".format(this.vendorId, this.productId)
+
 class DeviceListActivity : AppCompatActivity() {
     private var bluetoothAdapter: BluetoothAdapter = getDefaultAdapter()
-    private var discoveredDevicesArrayAdapter: BluetoothDevicesAdapter? = null
+    private lateinit var discoveredDevicesArrayAdapter: BluetoothDevicesAdapter
     private var snackbar: Snackbar? = null
     private var refreshLayout: SwipeRefreshLayout? = null
-    private val discoveredDevices = HashSet<BluetoothDevice>()
+    private val discoveredDevices = HashSet<Any>()
 
     private val discoveredDevicesClickListener = OnItemClickListener { _, _, position, _ ->
         bluetoothAdapter.cancelDiscovery()
 
         val intent = Intent()
-        intent.putExtra(EXTRA_DEVICE_ADDRESS,
-                discoveredDevicesArrayAdapter!!.getItem(position)!!.address)
+        when (val device = discoveredDevicesArrayAdapter.getItem(position)) {
+            is BluetoothDevice ->
+                intent.putExtra(EXTRA_DEVICE_ADDRESS, device.address)
+            is UsbDevice -> {
+                intent.putExtra(EXTRA_DEVICE_ADDRESS, "${device.address}")
+                intent.putExtra(EXTRA_DEVICE_USB, true)
+            }
+        }
         setResult(Activity.RESULT_OK, intent)
         finish()
     }
 
     private val receiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            val action = intent.action
-
-            when (action) {
+            when (intent.action) {
                 ACTION_FOUND -> {
                     val device = intent.getParcelableExtra<BluetoothDevice>(EXTRA_DEVICE)
                     if (device.bondState != BOND_BONDED) {
@@ -88,13 +120,13 @@ class DeviceListActivity : AppCompatActivity() {
                             return
                         }
                         discoveredDevices.add(device)
-                        discoveredDevicesArrayAdapter!!.add(device)
+                        discoveredDevicesArrayAdapter.add(device)
                     }
                 }
                 ACTION_NAME_CHANGED -> {
                     val device = intent.getParcelableExtra<BluetoothDevice>(EXTRA_DEVICE)
                     if (discoveredDevices.contains(device)) {
-                        discoveredDevicesArrayAdapter!!.notifyDataSetChanged()
+                        discoveredDevicesArrayAdapter.notifyDataSetChanged()
                     }
                 }
                 ACTION_DISCOVERY_FINISHED -> {
@@ -122,6 +154,8 @@ class DeviceListActivity : AppCompatActivity() {
         this.registerReceiver(receiver, IntentFilter(ACTION_NAME_CHANGED))
         this.registerReceiver(receiver, IntentFilter(ACTION_DISCOVERY_FINISHED))
 
+        discoveredDevicesArrayAdapter.clear()
+        addUsbDevices()
         addPairedDevices()
 
         val refreshDevices = findViewById<FloatingActionButton>(R.id.refresh_devices)
@@ -132,29 +166,52 @@ class DeviceListActivity : AppCompatActivity() {
                 }
 
         refreshLayout = findViewById(R.id.discovered_refresh_layout)
-        refreshLayout!!.setOnRefreshListener { discoverDevices() }
+        refreshLayout?.setOnRefreshListener { discoverDevices() }
 
         refreshDevices.setOnClickListener {
-            refreshLayout!!.isRefreshing = true
+            refreshLayout?.isRefreshing = true
             discoverDevices()
         }
     }
 
     private fun discoverDevices() {
         if (!bluetoothAdapter.isDiscovering) {
-            snackbar!!.show()
+            snackbar?.show()
+            discoveredDevicesArrayAdapter.clear()
+            addUsbDevices()
             addPairedDevices()
             discoveredDevices.clear()
             bluetoothAdapter.startDiscovery()
         }
     }
 
+    private fun addUsbDevices() {
+        if (packageManager.hasSystemFeature(PackageManager.FEATURE_USB_HOST)) {
+            val manager = getSystemService(Context.USB_SERVICE) as UsbManager
+            val deviceList = manager.deviceList
+            deviceList.forEach { (name, device) ->
+
+                L.i("found device $name: %4x:%4x".format(device.vendorId, device.productId))
+                val interfaces = device.interfaces
+                interfaces.forEach { intf ->
+                    if (intf.interfaceClass == UsbConstants.USB_CLASS_PRINTER && intf.interfaceSubclass == 1) {
+                        L.i("found USB printer, endpoints:")
+                        intf.endpoints.forEach {
+                            L.i("   %2x direction ${it.direction}".format(it.address))
+                        }
+                        discoveredDevices.add(device)
+                        discoveredDevicesArrayAdapter.add(device)
+                    }
+                }
+            }
+        }
+    }
+
     private fun addPairedDevices() {
-        discoveredDevicesArrayAdapter!!.clear()
         val pairedDevices = bluetoothAdapter.bondedDevices
         if (pairedDevices.size > 0) {
             for (device in pairedDevices) {
-                discoveredDevicesArrayAdapter!!.add(device)
+                discoveredDevicesArrayAdapter.add(device)
             }
         }
     }
@@ -168,7 +225,7 @@ class DeviceListActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.menu_refresh -> {
-                refreshLayout!!.isRefreshing = true
+                refreshLayout?.isRefreshing = true
                 discoverDevices()
                 return true
             }
@@ -186,7 +243,7 @@ class DeviceListActivity : AppCompatActivity() {
 
     private class BluetoothDeviceViews internal constructor(internal var name: TextView, internal var address: TextView)
 
-    private class BluetoothDevicesAdapter(context: Context, @LayoutRes resource: Int) : ArrayAdapter<BluetoothDevice>(context, resource) {
+    private class BluetoothDevicesAdapter(context: Context, @LayoutRes resource: Int) : ArrayAdapter<Any>(context, resource) {
 
         override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
             var convertView = convertView
@@ -202,9 +259,16 @@ class DeviceListActivity : AppCompatActivity() {
                 views = convertView.tag as BluetoothDeviceViews
             }
 
-            val device: BluetoothDevice = getItem(position)
-            views.name.text = device.getNameOrAlias()
-            views.address.text = device.address
+            when (val device = getItem(position)) {
+                is BluetoothDevice -> {
+                    views.name.text = device.getNameOrAlias()
+                    views.address.text = device.address
+                }
+                is UsbDevice -> {
+                    views.name.text = device.name
+                    views.address.text = device.address
+                }
+            }
 
             return convertView
         }
@@ -213,5 +277,6 @@ class DeviceListActivity : AppCompatActivity() {
     companion object {
 
         const val EXTRA_DEVICE_ADDRESS = "device_address"
+        const val EXTRA_DEVICE_USB = "device_usb"
     }
 }
