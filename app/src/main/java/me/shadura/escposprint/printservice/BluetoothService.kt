@@ -31,22 +31,9 @@ import kotlin.collections.chunked
 
 private val PRINTER_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")
 
-// Constants that indicate the current connection state
-enum class State {
-    STATE_NONE, // we're doing nothing
-    STATE_CONNECTING, // now initiating an outgoing connection
-    STATE_CONNECTED,  // now connected to a remote device
-    STATE_FAILED
-}
-
 data class Result(var state: State, var error: String)
 
-sealed class BluetoothServiceMsg
-class Connect(val response: CompletableDeferred<Result>) : BluetoothServiceMsg()
-object Disconnect : BluetoothServiceMsg()
-class Write(val data: ByteArray) : BluetoothServiceMsg()
-
-fun CoroutineScope.bluetoothServiceActor(device: BluetoothDevice) = actor<BluetoothServiceMsg>(Dispatchers.IO) {
+fun CoroutineScope.bluetoothServiceActor(device: BluetoothDevice) = actor<CommServiceMsg>(Dispatchers.IO) {
     val adapter = BluetoothAdapter.getDefaultAdapter()
     var state: State
     var error: String = ""
@@ -83,7 +70,7 @@ fun CoroutineScope.bluetoothServiceActor(device: BluetoothDevice) = actor<Blueto
     socket.close()
 }
 
-fun CoroutineScope.bluetoothServiceActor(address: String): SendChannel<BluetoothServiceMsg> {
+fun CoroutineScope.bluetoothServiceActor(address: String): SendChannel<CommServiceMsg> {
     val adapter: BluetoothAdapter? = BluetoothAdapter.getDefaultAdapter()
     if (adapter == null) {
         throw Exception("Bluetooth is not available")

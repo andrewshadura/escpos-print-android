@@ -293,25 +293,27 @@ class ManageManualPrintersActivity : AppCompatActivity(), CoroutineScope by Main
             REQUEST_FIND_DEVICE -> {
                 if (resultCode == Activity.RESULT_OK) {
                     val address = data?.extras?.getString(DeviceListActivity.EXTRA_DEVICE_ADDRESS, "") ?: ""
+                    val name = data?.extras?.getString(DeviceListActivity.EXTRA_DEVICE_NAME, "") ?: ""
 
-                    if (BluetoothAdapter.checkBluetoothAddress(address)) {
-                        val device = bluetoothAdapter!!.getRemoteDevice(address)
-                        L.i("name = ${device.name}, alias = ${device.getNameOrAlias()}")
+                    if (true) {
                         val printerInfo = PrinterRec(
-                                name = device.name ?: "",
+                                name = name,
                                 address = address,
                                 enabled = true,
                                 model = PrinterModel.ZiJiang
                         )
-                        printerInfo.alias = device.getNameOrAlias()
+                        printerInfo.alias = if (BluetoothAdapter.checkBluetoothAddress(address)) {
+                            bluetoothAdapter?.getRemoteDevice(address)?.getNameOrAlias() ?: name
+                        } else name
+                        L.i("name = ${name}, alias = ${printerInfo.alias}")
                         printerInfo.detectModel()
                         printerInfo.connecting = true
                         printers.add(printerInfo)
                         viewAdapter.notifyDataSetChanged()
 
                         launch {
-                            val bluetoothService = try {
-                                bluetoothServiceActor(device)
+                            val commService = try {
+                                commServiceActor(this@ManageManualPrintersActivity, address)
                             } catch (e: Exception) {
                                 L.e(getString(R.string.bluetooth_connection_failure), e)
                                 longSnackbar(recyclerView, R.string.bluetooth_connection_failure)
@@ -320,7 +322,7 @@ class ManageManualPrintersActivity : AppCompatActivity(), CoroutineScope by Main
                                 return@launch
                             }
                             val response = CompletableDeferred<Result>()
-                            bluetoothService.send(Connect(response))
+                            commService.send(Connect(response))
                             val result = response.await()
                             when (result.state) {
                                 State.STATE_CONNECTED -> {
@@ -337,7 +339,7 @@ class ManageManualPrintersActivity : AppCompatActivity(), CoroutineScope by Main
                                     viewAdapter.notifyDataSetChanged()
                                 }
                             }
-                            bluetoothService.close()
+                            commService.close()
                         }
                     } else {
                         L.e("Not a valid Bluetooth address: $address")

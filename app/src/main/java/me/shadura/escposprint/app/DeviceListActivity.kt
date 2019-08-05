@@ -51,6 +51,8 @@ import java.util.HashSet
 import me.shadura.escposprint.R
 import java.lang.reflect.InvocationTargetException
 
+import me.shadura.escposprint.printservice.*
+
 fun BluetoothDevice.getNameOrAlias(default: String = "(unnamed)"): String {
     return try {
         (this.javaClass.getMethod("getAlias").invoke(this) as String?)
@@ -62,30 +64,6 @@ fun BluetoothDevice.getNameOrAlias(default: String = "(unnamed)"): String {
         null
     } ?: this.name ?: default
 }
-
-val UsbDevice.interfaces: List<UsbInterface>
-    get() {
-        return (0 until this.interfaceCount).map {
-            this.getInterface(it)
-        }
-    }
-
-val UsbInterface.endpoints: List<UsbEndpoint>
-    get() {
-        return (0 until this.endpointCount).map {
-            this.getEndpoint(it)
-        }
-    }
-
-val UsbDevice.name: String
-    get() = if (Build.VERSION.SDK_INT >= 21) {
-        this.productName
-        } else {
-        this.manufacturerName ?: "USB printer ${this.serialNumber}"
-    } ?: "USB printer ${this.deviceId}"
-
-val UsbDevice.address: String
-    get() = "%4x:%4x".format(this.vendorId, this.productId)
 
 class DeviceListActivity : AppCompatActivity() {
     private var bluetoothAdapter: BluetoothAdapter = getDefaultAdapter()
@@ -99,11 +77,14 @@ class DeviceListActivity : AppCompatActivity() {
 
         val intent = Intent()
         when (val device = discoveredDevicesArrayAdapter.getItem(position)) {
-            is BluetoothDevice ->
+            is BluetoothDevice -> {
                 intent.putExtra(EXTRA_DEVICE_ADDRESS, device.address)
+                intent.putExtra(EXTRA_DEVICE_NAME, device.name)
+            }
             is UsbDevice -> {
                 intent.putExtra(EXTRA_DEVICE_ADDRESS, "${device.address}")
                 intent.putExtra(EXTRA_DEVICE_USB, true)
+                intent.putExtra(EXTRA_DEVICE_NAME, device.name)
             }
         }
         setResult(Activity.RESULT_OK, intent)
@@ -191,17 +172,9 @@ class DeviceListActivity : AppCompatActivity() {
             val deviceList = manager.deviceList
             deviceList.forEach { (name, device) ->
 
-                L.i("found device $name: %4x:%4x".format(device.vendorId, device.productId))
-                val interfaces = device.interfaces
-                interfaces.forEach { intf ->
-                    if (intf.interfaceClass == UsbConstants.USB_CLASS_PRINTER && intf.interfaceSubclass == 1) {
-                        L.i("found USB printer, endpoints:")
-                        intf.endpoints.forEach {
-                            L.i("   %2x direction ${it.direction}".format(it.address))
-                        }
-                        discoveredDevices.add(device)
-                        discoveredDevicesArrayAdapter.add(device)
-                    }
+                L.i("found device $name: $device")
+                if (device.isUsbPrinter) {
+                    discoveredDevicesArrayAdapter.add(device)
                 }
             }
         }
@@ -278,5 +251,6 @@ class DeviceListActivity : AppCompatActivity() {
 
         const val EXTRA_DEVICE_ADDRESS = "device_address"
         const val EXTRA_DEVICE_USB = "device_usb"
+        const val EXTRA_DEVICE_NAME = "device_name"
     }
 }
