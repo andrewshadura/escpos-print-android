@@ -29,10 +29,10 @@ import com.tom_roush.pdfbox.text.TextPosition
 import com.tom_roush.pdfbox.pdmodel.graphics.image.PDImageXObject
 import me.shadura.escpos.Dialect
 import me.shadura.escpos.Encoder
+import me.shadura.escpos.SunmiDialect
 import me.shadura.escposprint.L
 import me.shadura.escposprint.printservice.utils.encodeForPrinter
 import java.io.ByteArrayOutputStream
-import java.nio.charset.Charset
 import java.text.Normalizer
 import kotlin.math.abs
 import kotlin.math.floor
@@ -391,9 +391,12 @@ class PDFStyledTextStripper : PDFTextStripper() {
                 val textLeft = (line.elements[0] as TextElement).text
                 val textRight = (line.elements[1] as TextElement).text
                 val padLength = dialect.lineWidth - textLeft.length - textRight.length
-                val text = textLeft +
+                var text = textLeft +
                            " ".repeat(if (padLength > 0) padLength else 1) +
                            textRight
+                if (dialect is SunmiDialect && text.endsWith(" €")) {
+                    text = text.replace(Regex(" €$"), "€")
+                }
                 (line.elements[0] as TextElement).text = text
                 line.elements.removeAt(1)
             }
