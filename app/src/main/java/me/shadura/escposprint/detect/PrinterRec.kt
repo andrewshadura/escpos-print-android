@@ -72,6 +72,8 @@ data class PrinterRec(var name: String, val address: String, var enabled: Boolea
                 L.i("Detected as unsupported Bixolon, fallin back to ZiJiang")
                 model = PrinterModel.ZiJiang
             }
+            name == "InnerPrinter" && address == "00:11:22:33:44:55" ->
+                model = PrinterModel.Sunmi
         }
     }
 }

@@ -7,7 +7,8 @@ enum class PrinterModel {
     Bixolon,
     Goojprt,
     Xprinter,
-    Cashino
+    Cashino,
+    Sunmi
 }
 
 enum class LineWidth(val characters: Int) {
@@ -198,12 +199,31 @@ class CashinoDialect: GoojprtDialect() {
     */
 }
 
+class SunmiDialect: Dialect() {
+    override var lineWidth: Int = 32
+
+    override val supportedCharsets = mapOf(
+            Codepage("cp852")  to 18,
+            Codepage("cp1252") to 16,
+            Codepage("cp437")  to 0,
+            Codepage("cp866")  to 17
+    )
+
+    override fun pageStart(): ByteArray {
+        return super.pageStart() + byteArrayOf(0x1b, 0x4d, 0)
+    }
+
+    override fun pageFeed(): ByteArray =
+            byteArrayOf(0x1b, 0x64, 3)
+}
+
 val dialects = mapOf(
         PrinterModel.ZiJiang to ZiJiangDialect::class,
         PrinterModel.Goojprt to GoojprtDialect::class,
         PrinterModel.Cashino to CashinoDialect::class,
         PrinterModel.Xprinter to XprinterDialect::class,
         PrinterModel.Epson to EpsonTMP20Dialect::class,
+        PrinterModel.Sunmi to SunmiDialect::class,
         PrinterModel.Bixolon to Dialect::class,
         PrinterModel.Generic to Dialect::class
 )
