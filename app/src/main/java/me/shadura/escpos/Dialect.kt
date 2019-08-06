@@ -17,6 +17,10 @@ enum class LineWidth(val characters: Int) {
     WidePaper(48)
 }
 
+private val ESC: Byte = 0x1b
+private val GS: Byte = 0x1d
+private val LF: Byte = 0x0a
+
 open class Dialect {
     open var lineWidth: Int = 32
 
@@ -49,34 +53,37 @@ open class Dialect {
     )
     fun boldFont(bytes: ByteArray, bold: Boolean): ByteArray {
         return if (bold) {
-            byteArrayOf(0x1b, 0x45, 1) + bytes + byteArrayOf(0x1b, 0x45, 0)
+            byteArrayOf(ESC, 0x45, 1) + bytes + byteArrayOf(ESC, 0x45, 0)
         } else bytes
     }
 
     open fun largeFont(bytes: ByteArray, large: Boolean): ByteArray {
         return if (large) {
-            byteArrayOf(0x1d, 0x21, 1) + bytes + byteArrayOf(0x1d, 0x21, 0)
+            byteArrayOf(GS, 0x21, 1) + bytes + byteArrayOf(GS, 0x21, 0)
         } else bytes
     }
 
     fun smallFont(bytes: ByteArray, small: Boolean): ByteArray {
         return if (small) {
-            byteArrayOf(0x1b, 0x4d, 1) + bytes + byteArrayOf(0x1b, 0x4d, 0)
+            byteArrayOf(ESC, 0x4d, 1) + bytes + byteArrayOf(ESC, 0x4d, 0)
         } else bytes
     }
 
     fun centre(enable: Boolean): ByteArray {
-        return byteArrayOf(0x1b, 0x61, if (enable) 1 else 0)
+        return byteArrayOf(ESC, 0x61, if (enable) 1 else 0)
     }
 
     open fun pageStart(): ByteArray =
-        byteArrayOf(0xa, 0xa)
+        byteArrayOf(LF, LF)
 
     open fun pageFeed(): ByteArray =
-        byteArrayOf(0xa, 0xa, 0xa)
+        byteArrayOf(LF, LF, LF)
+
+    fun pageFeed(lines: Int): ByteArray =
+            byteArrayOf(ESC, 0x64, lines.toByte())
 
     open fun openDrawer(): ByteArray =
-            byteArrayOf(0x1b, 0x70, 0, 0x40, 0x50)
+            byteArrayOf(ESC, 0x70, 0, 0x40, 0x50)
 
     fun getColumns(num: Int): List<Int> {
         return when (lineWidth) {
@@ -151,7 +158,7 @@ class XprinterDialect: Dialect() {
     )
 
     override fun pageFeed(): ByteArray =
-            byteArrayOf(0x1b, 0x64, 11)
+            pageFeed(11)
 }
 
 class EpsonTMP20Dialect: Dialect() {
@@ -166,11 +173,11 @@ class EpsonTMP20Dialect: Dialect() {
     )
 
     override fun pageStart(): ByteArray {
-        return super.pageStart() + byteArrayOf(0x1b, 0x4d, 0)
+        return super.pageStart() + byteArrayOf(ESC, 0x4d, 0)
     }
 
     override fun pageFeed(): ByteArray =
-            byteArrayOf(0x1b, 0x64, 2)
+            pageFeed(2)
 }
 
 open class GoojprtDialect: Dialect() {
@@ -185,7 +192,7 @@ open class GoojprtDialect: Dialect() {
 
 class CashinoDialect: GoojprtDialect() {
     override fun pageFeed(): ByteArray {
-        return super.pageFeed() + byteArrayOf(0x1b, 0x64, 2)
+        return super.pageFeed() + pageFeed(2)
     }
 
     /*
@@ -193,7 +200,7 @@ class CashinoDialect: GoojprtDialect() {
     // but the characters are double width
     override fun largeFont(bytes: ByteArray, large: Boolean): ByteArray {
         return if (large) {
-            byteArrayOf(0x1b, 0x21, 0x28) + bytes + byteArrayOf(0x1b, 0x21, 0)
+            byteArrayOf(ESC, 0x21, 0x28) + bytes + byteArrayOf(ESC, 0x21, 0)
         } else bytes
     }
     */
@@ -210,11 +217,11 @@ class SunmiDialect: Dialect() {
     )
 
     override fun pageStart(): ByteArray {
-        return super.pageStart() + byteArrayOf(0x1b, 0x4d, 0)
+        return super.pageStart() + byteArrayOf(ESC, 0x4d, 0)
     }
 
     override fun pageFeed(): ByteArray =
-            byteArrayOf(0x1b, 0x64, 3)
+            pageFeed(3)
 }
 
 val dialects = mapOf(
