@@ -51,6 +51,13 @@ open class Dialect {
             Codepage("cp852") to 18,
             Codepage("cp437") to 0
     )
+
+    fun initialise(): ByteArray {
+        return byteArrayOf(ESC, 0x40)
+    }
+
+    open fun bitImageAdvance(): ByteArray = byteArrayOf(LF)
+
     fun boldFont(bytes: ByteArray, bold: Boolean): ByteArray {
         return if (bold) {
             byteArrayOf(ESC, 0x45, 1) + bytes + byteArrayOf(ESC, 0x45, 0)
@@ -222,6 +229,9 @@ class SunmiDialect: Dialect() {
 
     override fun pageFeed(): ByteArray =
             pageFeed(3)
+
+    override fun bitImageAdvance(): ByteArray =
+            byteArrayOf()
 }
 
 val dialects = mapOf(

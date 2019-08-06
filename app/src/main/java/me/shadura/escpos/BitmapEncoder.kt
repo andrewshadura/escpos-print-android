@@ -35,11 +35,6 @@ fun greyToV(colour: Int): Float {
 class BitmapEncoder(val dialect: Dialect? = null) {
     private val printerBuffer = ByteArrayOutputStream()
 
-    private fun configure() {
-        printerBuffer.write(PRINTER_INITIALIZE)
-        printerBuffer.write(PRINTER_DARKER_PRINTING)
-    }
-
     private fun addLineFeed(numLines: Int) {
         if (numLines <= 1) {
             printerBuffer.write(LF)
@@ -135,7 +130,7 @@ class BitmapEncoder(val dialect: Dialect? = null) {
                 }
                 printerBuffer.write(bandBytes)
             }
-            addLineFeed(1)
+            printerBuffer.write(dialect?.bitImageAdvance() ?: byteArrayOf())
         }
         return printerBuffer.toByteArray()
     }
