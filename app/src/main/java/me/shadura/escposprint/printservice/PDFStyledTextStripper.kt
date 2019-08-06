@@ -31,7 +31,7 @@ import me.shadura.escpos.Dialect
 import me.shadura.escpos.Encoder
 import me.shadura.escpos.SunmiDialect
 import me.shadura.escposprint.L
-import me.shadura.escposprint.printservice.utils.encodeForPrinter
+import me.shadura.escpos.encodeForPrinter
 import java.io.ByteArrayOutputStream
 import java.text.Normalizer
 import kotlin.math.abs

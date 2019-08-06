@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package me.shadura.escposprint.printservice.utils
+package me.shadura.escpos
 
 import android.graphics.Bitmap
 import android.graphics.Color
@@ -22,8 +22,8 @@ import me.shadura.escposprint.BuildConfig
 import java.io.ByteArrayOutputStream
 import kotlin.experimental.or
 
-fun Bitmap.encodeForPrinter(): ByteArray {
-    val rasteriser = EscPosBitmapEncoder()
+fun Bitmap.encodeForPrinter(dialect: Dialect? = null): ByteArray {
+    val rasteriser = BitmapEncoder(dialect)
     return rasteriser.printImage(this)
 }
 
@@ -32,7 +32,7 @@ fun greyToV(colour: Int): Float {
     return Color.red(colour) / 255.0f
 }
 
-class EscPosBitmapEncoder {
+class BitmapEncoder(val dialect: Dialect? = null) {
     private val printerBuffer = ByteArrayOutputStream()
 
     private fun configure() {
@@ -110,7 +110,8 @@ class EscPosBitmapEncoder {
 
                     // If we go past the bottom of the image, just send white pixels so the printer
                     // doesn't do anything.  Everything still needs to be sent in sets of 3 rows.
-                    pixelSlice[0] = greyToV(pixels.elementAtOrNull(pixel1Row * width + col) ?: Color.WHITE)
+                    pixelSlice[0] = greyToV(pixels.elementAtOrNull(pixel1Row * width + col)
+                            ?: Color.WHITE)
                     pixelSlice[1] = greyToV(if (pixel2Row >= bitmap.height) {
                         Color.WHITE
                     } else {
