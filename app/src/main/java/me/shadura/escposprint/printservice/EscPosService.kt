@@ -67,28 +67,12 @@ class EscPosService : PrintService(), CoroutineScope by MainScope() {
     }
 
     override fun onRequestCancelPrintJob(printJob: PrintJob) {
-        val jobInfo = printJob.info
-        val printerId = jobInfo.printerId
-        if (printerId == null) {
-            L.e("Tried to cancel a job, but the printer ID is null")
-            return
+        mJobs[printJob.id]?.apply {
+            state = JobStateEnum.CANCELED
+            task?.cancel(true)
         }
-
-        val id = printJob.id
-        if (id == null) {
-            L.e("Tried to cancel a job, but the print job ID is null")
-            return
-        }
-        val job = mJobs[id]!!
-        if (job.task == null) {
-            L.e("Tried to cancel a job, but the print job is null")
-            return
-        }
-        job.state = JobStateEnum.CANCELED
-        job.task?.cancel(true)
 
         onPrintJobCancelled(printJob)
-
     }
 
     /**
@@ -163,37 +147,17 @@ class EscPosService : PrintService(), CoroutineScope by MainScope() {
     internal fun updateJobStatus(printJob: PrintJob): Boolean {
         // Check if the job is already gone
         if (printJob.id !in mJobs) {
-            L.e("Tried to request a job status, but the job couldn't be found in the jobs list")
-            return false
-        }
-
-        val printerId = printJob.info.printerId
-        if (printerId == null) {
-            L.e("Tried to request a job status, but the printer ID is null")
+            L.w("Tried to request a job status, but the job couldn't be found in the jobs list")
             return false
         }
 
         // Prepare job
-        if (printJob.id in mJobs) {
-            val job = mJobs[printJob.id]
-
-            val state = job!!.state
-            onJobStateUpdate(printJob, state)
+        mJobs[printJob.id]?.also { job ->
+            onJobStateUpdate(printJob, job.state)
         }
-
 
         // We don’t want to be called again if the job has been removed from the map.
         return printJob.id in mJobs
-    }
-
-    /**
-     * Called in a background thread, in order to check the job status
-     *
-     * @param jobId     The printer job ID
-     * @return true if the job is complete/aborted/cancelled, false if it's still processing (printing, paused, etc)
-     */
-    internal fun getJobState(job: PrintJobTask): JobStateEnum {
-        return job.state
     }
 
     /**
@@ -202,16 +166,15 @@ class EscPosService : PrintService(), CoroutineScope by MainScope() {
      * @param printJob The print job
      * @param state    Print job state
      */
-    private fun onJobStateUpdate(printJob: PrintJob, state: JobStateEnum?) {
+    private fun onJobStateUpdate(printJob: PrintJob, state: JobStateEnum) {
         // Couldn't check state -- don't do anything
-        if (state == null) {
-            mJobs.remove(printJob.id)
-            printJob.cancel()
-        } else {
-            if (state == JobStateEnum.CANCELED) {
+        when (state) {
+            JobStateEnum.CANCELED -> {
                 mJobs.remove(printJob.id)
                 printJob.cancel()
-            } else if (state == JobStateEnum.COMPLETED || state == JobStateEnum.ABORTED) {
+            }
+            JobStateEnum.COMPLETED,
+                JobStateEnum.ABORTED -> {
                 mJobs.remove(printJob.id)
                 printJob.complete()
             }
@@ -229,7 +192,7 @@ class EscPosService : PrintService(), CoroutineScope by MainScope() {
     internal fun parseDocument(jobId: PrintJobId, address: String, fd: FileDescriptor) {
         val config = Config.read(prefs)
         if (address !in config.configuredPrinters) {
-            L.e("received a job for unconfigured printer ${address}, bailing out")
+            L.e("received a job for unconfigured printer $address, bailing out")
             return
         }
         val printerConfig = config.configuredPrinters[address]!!
