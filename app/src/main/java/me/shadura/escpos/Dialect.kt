@@ -86,11 +86,22 @@ open class Dialect {
     open fun pageFeed(): ByteArray =
         byteArrayOf(LF, LF, LF)
 
-    fun pageFeed(lines: Int): ByteArray =
-            byteArrayOf(ESC, 0x64, lines.toByte())
+    fun pageFeed(lines: Int): ByteArray = if (lines > 1) {
+        byteArrayOf(ESC, 0x64, lines.toByte())
+    } else {
+        byteArrayOf(LF)
+    }
 
     open fun openDrawer(): ByteArray =
             byteArrayOf(ESC, 0x70, 0, 0x40, 0x50)
+
+    fun setLineSpacing(px: Int): ByteArray =
+            byteArrayOf(ESC, 0x33, px.toByte())
+
+    fun selectBitImageMode(width: Int): ByteArray =
+            byteArrayOf(ESC, 0x2a, 33,
+                    (0xff and width).toByte(),
+                    (0xff00 and width shr 8).toByte())
 
     fun getColumns(num: Int): List<Int> {
         return when (lineWidth) {

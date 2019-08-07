@@ -22,7 +22,7 @@ import me.shadura.escposprint.BuildConfig
 import java.io.ByteArrayOutputStream
 import kotlin.experimental.or
 
-fun Bitmap.encodeForPrinter(dialect: Dialect? = null): ByteArray {
+fun Bitmap.encodeForPrinter(dialect: Dialect): ByteArray {
     val rasteriser = BitmapEncoder(dialect)
     return rasteriser.printImage(this)
 }
@@ -32,23 +32,16 @@ fun greyToV(colour: Int): Float {
     return Color.red(colour) / 255.0f
 }
 
-class BitmapEncoder(val dialect: Dialect? = null) {
+class BitmapEncoder(private val dialect: Dialect) {
     private val printerBuffer = ByteArrayOutputStream()
 
-    private fun addLineFeed(numLines: Int) {
-        if (numLines <= 1) {
-            printerBuffer.write(LF)
-        } else {
-            printerBuffer.write(PRINTER_PRINT_AND_FEED)
-            printerBuffer.write(numLines)
-        }
-    }
+    private fun addLineFeed(numLines: Int) =
+            printerBuffer.write(dialect.pageFeed(numLines))
 
     internal fun printImage(bitmap: Bitmap): ByteArray {
         val width = bitmap.width
         val height = bitmap.height
 
-        val controlByte = byteArrayOf((0x00ff and width).toByte(), (0xff00 and width shr 8).toByte())
         val pixels = IntArray(width * height)
         val errors = Array(height) { IntArray(width) }
 
@@ -82,11 +75,10 @@ class BitmapEncoder(val dialect: Dialect? = null) {
         // 24 rows of pixels at a time, capturing bytes representing vertical slices 1 pixel wide.
         // Each bit indicates if the pixel at that position in the slice should be dark or not.
         for (row in 0 until height step bandHeight) {
-            printerBuffer.write(PRINTER_SET_LINE_SPACE_24)
+            printerBuffer.write(dialect.setLineSpacing(bandHeight))
 
             // Need to send these two sets of bytes at the beginning of each row.
-            printerBuffer.write(PRINTER_SELECT_BIT_IMAGE_MODE)
-            printerBuffer.write(controlByte)
+            printerBuffer.write(dialect.selectBitImageMode(width))
 
             // Columns, unlike rows, are one at a time.
             for (col in 0 until width) {
@@ -130,25 +122,20 @@ class BitmapEncoder(val dialect: Dialect? = null) {
                 }
                 printerBuffer.write(bandBytes)
             }
-            printerBuffer.write(dialect?.bitImageAdvance() ?: byteArrayOf())
+            printerBuffer.write(dialect.bitImageAdvance())
         }
         return printerBuffer.toByteArray()
     }
 
     companion object {
-        private val ESC: Byte = 0x1B
-        private val PRINTER_SET_LINE_SPACE_24 = byteArrayOf(ESC, 0x33, 24)
+        private const val ESC: Byte = 0x1B
         // Slowing down the printer a little and increasing dot density, in order to make the QR
         // codes darker (they're a little faded at default settings).
         // Bytes represent the following: (first two): Print settings.
         // Max heating dots: Units of 8 dots.  11 means 88 dots.
         // Heating time: Units of 10 uS.  120 means 1.2 milliseconds.
         // Heating interval: Units of 10 uS. 50 means 0.5 milliseconds.
-        val PRINTER_INITIALIZE = byteArrayOf(ESC, 0x40)
         val PRINTER_DARKER_PRINTING = byteArrayOf(ESC, 0x37, 11, 0x7F, 50)
-        val PRINTER_PRINT_AND_FEED = byteArrayOf(ESC, 0x64)
-        val LF = byteArrayOf(0xA);
-        private val PRINTER_SELECT_BIT_IMAGE_MODE = byteArrayOf(ESC, 0x2A, 33)
     }
 
 }
