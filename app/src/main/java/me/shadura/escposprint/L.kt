@@ -1,6 +1,6 @@
 package me.shadura.escposprint
 
-import android.util.Log
+import com.hypertrack.hyperlog.HyperLog
 
 /**
  * Logging/crash reporting functions
@@ -12,7 +12,7 @@ object L {
      * @param msg Log message
      */
     fun v(msg: String) {
-        Log.v(EscPosPrintApp.LOG_TAG, msg)
+        HyperLog.v(EscPosPrintApp.LOG_TAG, msg)
     }
 
     /**
@@ -21,7 +21,7 @@ object L {
      * @param msg Log message
      */
     fun i(msg: String) {
-        Log.i(EscPosPrintApp.LOG_TAG, msg)
+        HyperLog.i(EscPosPrintApp.LOG_TAG, msg)
     }
 
     /**
@@ -30,7 +30,7 @@ object L {
      * @param msg Log message
      */
     fun w(msg: String) {
-        Log.w(EscPosPrintApp.LOG_TAG, msg)
+        HyperLog.w(EscPosPrintApp.LOG_TAG, msg)
     }
 
     /**
@@ -39,7 +39,7 @@ object L {
      * @param msg Log message
      */
     fun d(msg: String) {
-        Log.d(EscPosPrintApp.LOG_TAG, msg)
+        HyperLog.d(EscPosPrintApp.LOG_TAG, msg)
     }
 
     /**
@@ -48,7 +48,7 @@ object L {
      * @param msg Log message
      */
     fun e(msg: String) {
-        Log.e(EscPosPrintApp.LOG_TAG, msg)
+        HyperLog.e(EscPosPrintApp.LOG_TAG, msg)
     }
 
     /**

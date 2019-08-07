@@ -2,6 +2,9 @@ package me.shadura.escposprint;
 
 import android.content.Context;
 import android.support.multidex.MultiDexApplication;
+import android.util.Log;
+
+import com.hypertrack.hyperlog.HyperLog;
 
 public class EscPosPrintApp extends MultiDexApplication {
     public static final String LOG_TAG = "ESCPOS";
@@ -20,5 +23,7 @@ public class EscPosPrintApp extends MultiDexApplication {
     public void onCreate() {
         super.onCreate();
         instance = this;
+
+        HyperLog.initialize(this);
     }
 }
