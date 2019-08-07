@@ -418,7 +418,7 @@ class PDFStyledTextStripper : PDFTextStripper() {
                                         element.image.width * 2,
                                         element.image.height * 2,
                                         false)
-                                dialect.centre(true) + scaledBitmap.encodeForPrinter() + dialect.centre(false)
+                                dialect.centre(true) + scaledBitmap.encodeForPrinter(dialect) + dialect.centre(false)
                             }
                             element.image.width > dialect.pixelWidth -> {
                                 val scaledBitmap = Bitmap.createScaledBitmap(
@@ -426,10 +426,10 @@ class PDFStyledTextStripper : PDFTextStripper() {
                                         dialect.pixelWidth,
                                         dialect.pixelWidth * element.image.height / element.image.width,
                                         true)
-                                dialect.centre(true) + scaledBitmap.encodeForPrinter() + dialect.centre(false)
+                                dialect.centre(true) + scaledBitmap.encodeForPrinter(dialect) + dialect.centre(false)
                             }
                             else -> {
-                                dialect.centre(true) + element.image.encodeForPrinter() + dialect.centre(false)
+                                dialect.centre(true) + element.image.encodeForPrinter(dialect) + dialect.centre(false)
                             }
                         }
                     }
