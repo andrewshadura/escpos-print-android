@@ -16,6 +16,19 @@
         android:icon="@mipmap/ic_launcher_receipt_printer"
         android:networkSecurityConfig="@xml/network_security_config"
         android:label="@string/app_name">
+        <activity android:name=".printservice.UsbEventReceiverActivity"
+            android:label="@string/app_name"
+            android:theme="@style/Theme.Transparent"
+            android:noHistory="true"
+            android:excludeFromRecents="true"
+            android:process=":UsbEventReceiverActivityProcess"
+            android:taskAffinity="me.shadura.escposprint.taskAffinityUsbEventReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
+            </intent-filter>
+            <meta-data android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" android:resource="@xml/device_filter" />
+        </activity>
         <service
             android:name=".printservice.EscPosService"
             android:permission="android.permission.BIND_PRINT_SERVICE">
