@@ -45,6 +45,7 @@
             android:exported="true"
             android:theme="@style/EscPosPrint">
             <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
