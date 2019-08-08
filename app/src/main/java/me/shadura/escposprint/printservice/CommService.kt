@@ -35,13 +35,25 @@ class Connect(val response: CompletableDeferred<Result>) : CommServiceMsg()
 object Disconnect : CommServiceMsg()
 class Write(val data: ByteArray) : CommServiceMsg()
 
+val String.isBluetoothAddress: Boolean
+    get() {
+        return (this.count {
+            it == ':'
+        }) == 5
+    }
+
+val String.isUsbAddress: Boolean
+    get() {
+        return (this.count {
+            it == ':'
+        }) == 1
+    }
+
 fun CoroutineScope.commServiceActor(context: Context, address: String): SendChannel<CommServiceMsg> {
-    return when (address.count {
-        it == ':'
-    }) {
-        5 ->
+    return when {
+        address.isBluetoothAddress ->
             bluetoothServiceActor(address)
-        1 ->
+        address.isUsbAddress ->
             usbServiceActor(context, address)
         else ->
             throw IllegalStateException("wrong address format")
