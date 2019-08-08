@@ -241,7 +241,8 @@ class ManageManualPrintersActivity : AppCompatActivity(), CoroutineScope by Main
 
     fun findPrinters(button: View) {
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()?.apply {
-            if (!isEnabled) {
+            if (!isEnabled || (ContextCompat.checkSelfPermission(this@ManageManualPrintersActivity,
+                                Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)) {
                 val enableIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
                 startActivityForResult(enableIntent, REQUEST_ENABLE_BLUETOOTH)
             } else {
