@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="me.shadura.escposprint"
-    xmlns:android="http://schemas.android.com/apk/res/android"
     android:installLocation="auto">
 
-    <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
@@ -14,30 +13,36 @@
         android:name=".EscPosPrintApp"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher_receipt_printer"
-        android:networkSecurityConfig="@xml/network_security_config"
-        android:label="@string/app_name">
-        <activity android:name=".printservice.UsbEventReceiverActivity"
-            android:label="@string/app_name"
-            android:theme="@style/Theme.Transparent"
-            android:noHistory="true"
+        android:label="@string/app_name"
+        android:networkSecurityConfig="@xml/network_security_config">
+        <activity
+            android:name=".printservice.UsbEventReceiverActivity"
             android:excludeFromRecents="true"
+            android:exported="false"
+            android:label="@string/app_name"
+            android:noHistory="true"
             android:process=":UsbEventReceiverActivityProcess"
             android:taskAffinity="me.shadura.escposprint.taskAffinityUsbEventReceiver"
-            android:exported="false">
+            android:theme="@style/Theme.Transparent">
             <intent-filter>
                 <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
             </intent-filter>
-            <meta-data android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" android:resource="@xml/device_filter" />
+
+            <meta-data
+                android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"
+                android:resource="@xml/device_filter" />
         </activity>
+
         <service
             android:name=".printservice.EscPosService"
             android:permission="android.permission.BIND_PRINT_SERVICE">
             <intent-filter>
-                <action android:name="android.printservice.PrintService"/>
+                <action android:name="android.printservice.PrintService" />
             </intent-filter>
+
             <meta-data
                 android:name="android.printservice"
-                android:resource="@xml/printservice"/>
+                android:resource="@xml/printservice" />
         </service>
 
         <activity
@@ -45,9 +50,10 @@
             android:exported="true"
             android:theme="@style/EscPosPrint">
             <intent-filter>
-                <action android:name="android.intent.action.VIEW"/>
-                <action android:name="android.intent.action.MAIN"/>
-                <category android:name="android.intent.category.LAUNCHER"/>
+                <action android:name="android.intent.action.VIEW" />
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity
@@ -55,8 +61,9 @@
             android:label="@string/title_activity_device_list"
             android:theme="@style/AppTheme.NoActionBar" />
 
-        <uses-library android:name="org.apache.http.legacy" android:required="false" />
-
+        <uses-library
+            android:name="org.apache.http.legacy"
+            android:required="false" />
     </application>
 
 </manifest>
