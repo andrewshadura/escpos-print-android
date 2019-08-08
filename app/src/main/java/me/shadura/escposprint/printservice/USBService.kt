@@ -17,6 +17,7 @@
 package me.shadura.escposprint.printservice
 
 import android.content.Context
+import android.content.pm.PackageManager
 import android.hardware.usb.*
 import android.os.Build
 import kotlinx.coroutines.*
@@ -81,7 +82,7 @@ val UsbDevice.printerInterface: UsbInterface?
     }
 
 fun CoroutineScope.usbServiceActor(context: Context, device: UsbDevice?) = actor<CommServiceMsg>(Dispatchers.IO) {
-    val manager = context.getSystemService(Context.USB_SERVICE) as UsbManager
+    val manager = context.usbManager
     var state: State
     var error = ""
     var conn: UsbDeviceConnection? = null
@@ -121,18 +122,31 @@ fun CoroutineScope.usbServiceActor(context: Context, device: UsbDevice?) = actor
     }
 }
 
+val Context.usbManager: UsbManager
+    get() =
+        getSystemService(Context.USB_SERVICE) as UsbManager
 
-
-fun CoroutineScope.usbServiceActor(context: Context, address: String): SendChannel<CommServiceMsg> {
+fun Context.getUsbDevice(address: String): UsbDevice? {
     val (vendorId, productId) = address.split(":", limit = 2).map {
         it.toInt(16)
     }
-    val manager = context.getSystemService(Context.USB_SERVICE) as UsbManager
-    val deviceList = manager.deviceList
+    val deviceList = usbManager.deviceList
     deviceList.forEach { (name, device) ->
         if (device.isUsbPrinter && device.vendorId == vendorId && device.productId == productId) {
-            return usbServiceActor(context, device)
+            return device
         }
     }
-    throw IOException("device $address not found")
+    return null
 }
+
+fun Context.hasUsbPermission(address: String): Boolean {
+    return getUsbDevice(address)?.let { device ->
+        usbManager.hasPermission(device)
+    } ?: false
+}
+
+fun CoroutineScope.usbServiceActor(context: Context, address: String): SendChannel<CommServiceMsg> =
+    context.getUsbDevice(address)?.let { device ->
+        usbServiceActor(context, device)
+    } ?: throw IOException("device $address not found")
+

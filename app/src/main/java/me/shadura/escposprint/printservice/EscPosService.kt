@@ -215,13 +215,22 @@ class EscPosService : PrintService(), CoroutineScope by MainScope() {
         document.close()
 
         launch {
-            BluetoothAdapter.getDefaultAdapter()?.apply {
-                if (!isEnabled) {
-                    enable()
+            when {
+                address.isBluetoothAddress -> {
+                    BluetoothAdapter.getDefaultAdapter()?.apply {
+                        if (!isEnabled) {
+                            enable()
+                        }
+                    }
+                }
+                address.isUsbAddress -> {
+                    while (!hasUsbPermission(address)) {
+                        delay(1000)
+                    }
                 }
             }
 
-            val bluetoothService = bluetoothServiceActor(address)
+            val bluetoothService = commServiceActor(this@EscPosService, address)
             val response = CompletableDeferred<Result>()
             bluetoothService.send(Connect(response))
             var result = response.await()
