@@ -3,7 +3,7 @@
     <string name="app_name">Bločkové tlačiarne</string>
     <string name="add_button">Pridať tlačiareň</string>
     <string name="add_name">Názov</string>
-    <string name="title_activity_device_list">Dostupné zariadenia Bluetooth</string>
+    <string name="title_activity_device_list">Dostupné zariadenia</string>
     <string name="printer_model">Model</string>
     <string name="printer_nickname">Názov</string>
     <string name="activity_add_label">Pripojenie zariadenia</string>

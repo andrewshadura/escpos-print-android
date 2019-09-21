@@ -24,7 +24,7 @@
     <string name="err_job_socket_timeout">Couldn\'t print document: socket timeout. Please check network connectivity.</string>
     <string name="err_job_exception">Couldn\'t handle job: %1$s (%2$s)</string>
     <string name="print_service_vendor">Generic ESC/POS client</string>
-    <string name="title_activity_device_list">Available Bluetooth devices</string>
+    <string name="title_activity_device_list">Available devices</string>
     <string name="undo" translatable="false">Undo</string>
     <string name="printer_model">Model</string>
     <string name="printer_nickname">Name</string>
