@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources>
+	<string name="define_pdfbox_android"></string>
+	<!-- Author section -->
+	<string name="library_pdfbox_android_author">Tom Roush</string>
+	<string name="library_pdfbox_android_authorWebsite">https://github.com/TomRoush</string>
+	<!-- Library section -->
+	<string name="library_pdfbox_android_libraryName">PDFBox-Android</string>
+	<string name="library_pdfbox_android_libraryDescription">A port of Apache\'s PdfBox library to be usable on Android.</string>
+	<string name="library_pdfbox_android_libraryWebsite">https://github.com/TomRoush/PdfBox-Android</string>
+	<string name="library_pdfbox_android_libraryVersion">1.8.10.0</string>
+	<!-- OpenSource section -->
+	<string name="library_pdfbox_android_isOpenSource">true</string>
+	<string name="library_pdfbox_android_repositoryLink">https://github.com/TomRoush/PdfBox-Android</string>
+	<!-- ClassPath for autoDetect section -->
+	<string name="library_pdfbox_android_classPath">com.tom_roush.pdfbox</string>
+	<string name="library_pdfbox_android_licenseId">apache_2_0</string>
+</resources>

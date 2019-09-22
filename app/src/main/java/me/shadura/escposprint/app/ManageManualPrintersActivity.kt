@@ -25,6 +25,7 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.view.*
 import androidx.constraintlayout.widget.ConstraintLayout
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import androidx.core.app.ActivityCompat
@@ -32,10 +33,7 @@ import androidx.core.content.ContextCompat
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import android.view.LayoutInflater
-import android.view.View
 import android.view.View.*
-import android.view.ViewGroup
 import android.widget.*
 
 import me.shadura.escposprint.R
@@ -48,6 +46,8 @@ import me.shadura.escposprint.detect.PrinterRec
 import me.shadura.escposprint.printservice.*
 import java.util.*
 
+import com.mikepenz.aboutlibraries.LibsBuilder
+import com.mikepenz.aboutlibraries.Libs
 
 class ManageManualPrintersActivity : AppCompatActivity(), CoroutineScope by MainScope() {
     private var bluetoothAdapter: BluetoothAdapter? = null
@@ -204,6 +204,24 @@ class ManageManualPrintersActivity : AppCompatActivity(), CoroutineScope by Main
     override fun onPause() {
         super.onPause()
         bottomDialog?.dismiss()
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.about, menu)
+        return true
+    }
+
+    fun showAbout(item: MenuItem) {
+        with (LibsBuilder()) {
+            //provide a style (optional) (LIGHT, DARK, LIGHT_DARK_TOOLBAR)
+            activityStyle  = Libs.ActivityStyle.LIGHT_DARK_TOOLBAR
+            aboutShowIcon = true
+            aboutShowVersion = true
+            activityTitle = resources.getString(R.string.about_long)
+            aboutDescription = resources.getString(R.string.aboutLibraries_description_text)
+            //start the activity
+            start(this@ManageManualPrintersActivity)
+        }
     }
 
     fun findPrinters(button: View) {

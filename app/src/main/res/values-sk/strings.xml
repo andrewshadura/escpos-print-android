@@ -26,4 +26,7 @@
     <string name="open_drawer_no">Neotvárať</string>
     <string name="open_drawer_after">Otvoriť po tlači</string>
     <string name="extra_feed">Odstup dole</string>
+    <string name="searching">Hľadajú sa Bluetooth zariadenia</string>
+    <string name="about">O aplikácii</string>
+    <string name="about_long">O aplikácii</string>
 </resources>

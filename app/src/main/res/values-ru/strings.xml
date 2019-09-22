@@ -23,4 +23,11 @@
     <string name="open_drawer_before">Открыть перед печатью</string>
     <string name="open_drawer_no">Не открывать</string>
     <string name="extra_feed">Отступ внизу</string>
+    <string name="about">О приложении</string>
+    <string name="no_bluetooth">Bluetooth недоступен</string>
+    <string name="refresh">Обновить</string>
+    <string name="searching">Поиск устройств Bluetooth</string>
+    <string name="this_app_needs_bt">Для этого приложения требуется Bluetooth</string>
+    <string name="undo">Отменить</string>
+    <string name="about_long">О приложении</string>
 </resources>

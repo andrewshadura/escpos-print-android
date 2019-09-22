@@ -101,6 +101,8 @@ dependencies {
     implementation 'com.hypertrack:hyperlog:0.0.9'
 
     implementation "androidx.core:core-ktx:$androidx_version"
+    implementation "com.mikepenz:aboutlibraries:7.0.3"
+    implementation 'androidx.cardview:cardview:1.0.0'
 }
 
 apply plugin: 'jacoco'
