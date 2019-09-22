@@ -29,12 +29,12 @@ import android.content.pm.PackageManager
 import android.hardware.usb.*
 import android.os.Build
 import android.os.Bundle
-import android.support.annotation.LayoutRes
-import android.support.design.widget.FloatingActionButton
-import android.support.design.widget.Snackbar
-import android.support.v4.widget.SwipeRefreshLayout
-import android.support.v7.app.AppCompatActivity
-import android.support.v7.widget.Toolbar
+import androidx.annotation.LayoutRes
+import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.android.material.snackbar.Snackbar
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
@@ -49,28 +49,18 @@ import me.shadura.escposprint.L
 import java.util.HashSet
 
 import me.shadura.escposprint.R
-import java.lang.reflect.InvocationTargetException
 
 import me.shadura.escposprint.printservice.*
 
-fun BluetoothDevice.getNameOrAlias(default: String = "(unnamed)"): String {
-    return try {
-        (this.javaClass.getMethod("getAlias").invoke(this) as String?)
-    } catch (e: NoSuchMethodException) {
-        null
-    } catch (e: SecurityException) {
-        null
-    } catch (e: InvocationTargetException) {
-        null
-    } ?: this.name ?: default
-}
 
 class DeviceListActivity : AppCompatActivity() {
     private var bluetoothAdapter: BluetoothAdapter = getDefaultAdapter()
     private lateinit var discoveredDevicesArrayAdapter: BluetoothDevicesAdapter
-    private var snackbar: Snackbar? = null
     private var refreshLayout: SwipeRefreshLayout? = null
     private val discoveredDevices = HashSet<Any>()
+    private  val discoveredListView: ListView by lazy {
+        findViewById<View>(R.id.discovered_devices) as ListView
+    }
 
     private val discoveredDevicesClickListener = OnItemClickListener { _, _, position, _ ->
         bluetoothAdapter.cancelDiscovery()
@@ -127,7 +117,6 @@ class DeviceListActivity : AppCompatActivity() {
         setSupportActionBar(toolbar)
 
         discoveredDevicesArrayAdapter = BluetoothDevicesAdapter(this, R.layout.device_list_item)
-        val discoveredListView = findViewById<View>(R.id.discovered_devices) as ListView
         discoveredListView.adapter = discoveredDevicesArrayAdapter
         discoveredListView.onItemClickListener = discoveredDevicesClickListener
 
@@ -141,11 +130,6 @@ class DeviceListActivity : AppCompatActivity() {
 
         val refreshDevices = findViewById<FloatingActionButton>(R.id.refresh_devices)
 
-        snackbar = Snackbar.make(discoveredListView, "Searching for new Bluetooth devices", Snackbar.LENGTH_LONG)
-                .setAction("Cancel") {
-                    bluetoothAdapter.cancelDiscovery()
-                }
-
         refreshLayout = findViewById(R.id.discovered_refresh_layout)
         refreshLayout?.setOnRefreshListener { discoverDevices() }
 
@@ -157,7 +141,11 @@ class DeviceListActivity : AppCompatActivity() {
 
     private fun discoverDevices() {
         if (!bluetoothAdapter.isDiscovering) {
-            snackbar?.show()
+            discoveredListView.longSnackbar(R.string.searching) {
+                action(R.string.cancel) {
+                    bluetoothAdapter.cancelDiscovery()
+                }
+            }
             discoveredDevicesArrayAdapter.clear()
             addUsbDevices()
             addPairedDevices()

@@ -7,7 +7,7 @@
     android:layout_height="match_parent"
     tools:context="me.shadura.escposprint.app.ManageManualPrintersActivity">
 
-    <android.support.v7.widget.RecyclerView
+    <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/manage_printers_recycler"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -15,7 +15,7 @@
         android:layout_alignParentTop="true"
         android:contentDescription="@string/list_of_currently_configured_printers" />
 
-    <android.support.design.widget.FloatingActionButton
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/find_printers"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

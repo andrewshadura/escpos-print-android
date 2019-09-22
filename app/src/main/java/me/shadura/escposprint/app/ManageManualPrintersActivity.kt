@@ -25,13 +25,13 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.support.constraint.ConstraintLayout
-import android.support.design.widget.BottomSheetDialog
-import android.support.v4.app.ActivityCompat
-import android.support.v4.content.ContextCompat
-import android.support.v7.app.AppCompatActivity
-import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.RecyclerView
+import androidx.constraintlayout.widget.ConstraintLayout
+import com.google.android.material.bottomsheet.BottomSheetDialog
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.*
@@ -46,41 +46,8 @@ import me.shadura.escpos.PrinterModel
 import me.shadura.escposprint.detect.OpenDrawerSetting
 import me.shadura.escposprint.detect.PrinterRec
 import me.shadura.escposprint.printservice.*
-import org.jetbrains.anko.design.longSnackbar
-import org.jetbrains.anko.design.snackbar
 import java.util.*
 
-fun Spinner.setOnItemSelectedListener(l: (parent: AdapterView<*>, view: View?, position: Int, id: Long) -> Unit) {
-    this.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-        override fun onNothingSelected(parent: AdapterView<*>?) {
-
-        }
-
-        override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
-            l(parent, view, position, id)
-        }
-    }
-}
-
-fun SeekBar.setOnChangeListener(l: (seekBar: SeekBar?, progress: Int, fromUser: Boolean) -> Unit) {
-    this.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-        override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-            if (!fromUser) {
-                l(seekBar, progress, false)
-            }
-        }
-
-        override fun onStartTrackingTouch(seekBar: SeekBar?) {
-
-        }
-
-        override fun onStopTrackingTouch(seekBar: SeekBar?) {
-            seekBar?.run {
-                l(this, this.progress, true)
-            }
-        }
-    })
-}
 
 class ManageManualPrintersActivity : AppCompatActivity(), CoroutineScope by MainScope() {
     private var bluetoothAdapter: BluetoothAdapter? = null
@@ -253,7 +220,7 @@ class ManageManualPrintersActivity : AppCompatActivity(), CoroutineScope by Main
                 startActivityForResult(serverIntent, REQUEST_FIND_DEVICE)
             }
         } ?: {
-            longSnackbar(recyclerView, getString(R.string.no_bluetooth))
+            recyclerView.longSnackbar(R.string.no_bluetooth)
 
             val debug = false
             if (debug) {
@@ -288,7 +255,7 @@ class ManageManualPrintersActivity : AppCompatActivity(), CoroutineScope by Main
                         startActivityForResult(serverIntent, REQUEST_FIND_DEVICE)
                     }
                 } else {
-                    longSnackbar(recyclerView, getString(R.string.this_app_needs_bt))
+                    recyclerView.longSnackbar(R.string.this_app_needs_bt)
                 }
             }
             REQUEST_FIND_DEVICE -> {
@@ -317,7 +284,7 @@ class ManageManualPrintersActivity : AppCompatActivity(), CoroutineScope by Main
                                 commServiceActor(this@ManageManualPrintersActivity, address)
                             } catch (e: Exception) {
                                 L.e(getString(R.string.bluetooth_connection_failure), e)
-                                longSnackbar(recyclerView, R.string.bluetooth_connection_failure)
+                                recyclerView.longSnackbar(R.string.bluetooth_connection_failure)
                                 printerInfo.connecting = false
                                 viewAdapter.notifyDataSetChanged()
                                 return@launch
@@ -327,14 +294,14 @@ class ManageManualPrintersActivity : AppCompatActivity(), CoroutineScope by Main
                             val result = response.await()
                             when (result.state) {
                                 State.STATE_CONNECTED -> {
-                                    snackbar(recyclerView, R.string.printer_connected)
+                                    recyclerView.snackbar(R.string.printer_connected)
                                     printerInfo.connecting = false
                                     viewAdapter.notifyDataSetChanged()
                                     addPrinter(printerInfo)
                                 }
                                 State.STATE_FAILED,
                                 State.STATE_NONE -> {
-                                    longSnackbar(recyclerView, getString(R.string.connection_failure) + ": " + result.error)
+                                    recyclerView.longSnackbar(getString(R.string.connection_failure) + ": " + result.error)
                                     printerInfo.connecting = false
                                     printerInfo.enabled = false
                                     viewAdapter.notifyDataSetChanged()
@@ -344,7 +311,7 @@ class ManageManualPrintersActivity : AppCompatActivity(), CoroutineScope by Main
                         }
                     } else {
                         L.e("Not a valid Bluetooth address: $address")
-                        longSnackbar(recyclerView, getString(R.string.connection_failure))
+                        recyclerView.longSnackbar(R.string.connection_failure)
                     }
                 }
             }

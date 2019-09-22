@@ -1,8 +1,7 @@
 package me.shadura.escposprint;
 
 import android.content.Context;
-import android.support.multidex.MultiDexApplication;
-import android.util.Log;
+import androidx.multidex.MultiDexApplication;
 
 import com.hypertrack.hyperlog.HyperLog;
 

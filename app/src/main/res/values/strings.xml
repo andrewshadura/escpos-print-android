@@ -4,7 +4,7 @@
     <string name="app_name">Receipt printers</string>
     <string name="add_name">Printer Name</string>
     <string name="add_button">Add printer</string>
-    <string name="refresh" translatable="false">Refresh</string>
+    <string name="refresh">Refresh</string>
     <string name="activity_add_label">Add a receipt printer</string>
     <plurals name="printer_discovery_result">
         <item quantity="zero">Search didn\'t find any printer</item>
@@ -25,7 +25,7 @@
     <string name="err_job_exception">Couldn\'t handle job: %1$s (%2$s)</string>
     <string name="print_service_vendor">Generic ESC/POS client</string>
     <string name="title_activity_device_list">Available devices</string>
-    <string name="undo" translatable="false">Undo</string>
+    <string name="undo">Undo</string>
     <string name="printer_model">Model</string>
     <string name="printer_nickname">Name</string>
     <string name="printer_details">Printer Details</string>
@@ -47,5 +47,6 @@
     <string name="open_drawer_after">Open after printing</string>
     <string name="open_drawer_no">Don’t open</string>
     <string name="extra_feed">Extra feed</string>
+    <string name="searching">Searching for new Bluetooth devices</string>
 
 </resources>
