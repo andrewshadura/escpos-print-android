@@ -22,6 +22,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.os.Handler
 import android.print.PrintJobId
+import android.print.PrintJobInfo
 import android.printservice.PrintJob
 import android.printservice.PrintService
 import android.printservice.PrinterDiscoverySession
@@ -36,8 +37,6 @@ import me.shadura.escposprint.R
 import com.tom_roush.pdfbox.pdmodel.PDDocument
 import com.tom_roush.pdfbox.util.PDFBoxResourceLoader
 import kotlinx.coroutines.*
-import me.shadura.escpos.Dialect
-import me.shadura.escpos.PrinterModel
 import me.shadura.escpos.dialects
 import me.shadura.escposprint.detect.OpenDrawerSetting
 import org.jetbrains.anko.doAsync
@@ -53,7 +52,7 @@ class EscPosService : PrintService(), CoroutineScope by MainScope() {
 
     data class PrintJobTask(var state: JobStateEnum = JobStateEnum.PROCESSING, var task: Future<Unit>?)
 
-    private val mJobs = HashMap<PrintJobId, PrintJobTask>()
+    private val jobs = HashMap<PrintJobId, PrintJobTask>()
 
     private lateinit var prefs: SharedPreferences
 
@@ -67,7 +66,7 @@ class EscPosService : PrintService(), CoroutineScope by MainScope() {
     }
 
     override fun onRequestCancelPrintJob(printJob: PrintJob) {
-        mJobs[printJob.id]?.apply {
+        jobs[printJob.id]?.apply {
             state = JobStateEnum.CANCELED
             task?.cancel(true)
         }
@@ -81,7 +80,7 @@ class EscPosService : PrintService(), CoroutineScope by MainScope() {
      * @param printJob The print job
      */
     private fun onPrintJobCancelled(printJob: PrintJob) {
-        mJobs.remove(printJob.id)
+        jobs.remove(printJob.id)
         printJob.cancel()
     }
 
@@ -104,11 +103,12 @@ class EscPosService : PrintService(), CoroutineScope by MainScope() {
             }
             val fd = data.fileDescriptor
             val jobId = printJob.id
+            val jobInfo = printJob.info
 
             // Send print job
             val task = doAsync {
                 try {
-                    parseDocument(jobId, address, fd)
+                    parseDocument(jobId, address, fd, jobInfo)
                     uiThread {
                         onPrintJobSent(printJob)
                     }
@@ -119,7 +119,7 @@ class EscPosService : PrintService(), CoroutineScope by MainScope() {
                     }
                 }
             }
-            mJobs[jobId] = PrintJobTask(task = task)
+            jobs[jobId] = PrintJobTask(task = task)
         } catch (e: MalformedURLException) {
             L.e("Couldn't queue print job: $printJob", e)
         } catch (e: URISyntaxException) {
@@ -146,18 +146,18 @@ class EscPosService : PrintService(), CoroutineScope by MainScope() {
      */
     internal fun updateJobStatus(printJob: PrintJob): Boolean {
         // Check if the job is already gone
-        if (printJob.id !in mJobs) {
+        if (printJob.id !in jobs) {
             L.w("Tried to request a job status, but the job couldn't be found in the jobs list")
             return false
         }
 
         // Prepare job
-        mJobs[printJob.id]?.also { job ->
+        jobs[printJob.id]?.also { job ->
             onJobStateUpdate(printJob, job.state)
         }
 
         // We don’t want to be called again if the job has been removed from the map.
-        return printJob.id in mJobs
+        return printJob.id in jobs
     }
 
     /**
@@ -170,12 +170,12 @@ class EscPosService : PrintService(), CoroutineScope by MainScope() {
         // Couldn't check state -- don't do anything
         when (state) {
             JobStateEnum.CANCELED -> {
-                mJobs.remove(printJob.id)
+                jobs.remove(printJob.id)
                 printJob.cancel()
             }
             JobStateEnum.COMPLETED,
                 JobStateEnum.ABORTED -> {
-                mJobs.remove(printJob.id)
+                jobs.remove(printJob.id)
                 printJob.complete()
             }
         }
@@ -189,7 +189,7 @@ class EscPosService : PrintService(), CoroutineScope by MainScope() {
      * @param fd         The document to print, as a [FileDescriptor]
      */
     @Throws(Exception::class)
-    internal fun parseDocument(jobId: PrintJobId, address: String, fd: FileDescriptor) {
+    internal fun parseDocument(jobId: PrintJobId, address: String, fd: FileDescriptor, info: PrintJobInfo) {
         val config = Config.read(prefs)
         if (address !in config.configuredPrinters) {
             L.e("received a job for unconfigured printer $address, bailing out")
@@ -213,6 +213,9 @@ class EscPosService : PrintService(), CoroutineScope by MainScope() {
             listOf(byteArrayOf())
         }
         document.close()
+        val copies = if (info.copies > 1) {
+            info.copies
+        } else 1
 
         launch {
             when {
@@ -237,35 +240,40 @@ class EscPosService : PrintService(), CoroutineScope by MainScope() {
             when (result.state) {
                 State.STATE_CONNECTED -> {
                     L.i("sending text")
-                    bluetoothService.send(Write(byteArrayOf(0x1b, 0x40)))
-                    bluetoothService.send(Write(byteArrayOf(0x1c, 0x2e)))
+                    for (copy in 0 until copies) {
+                        if (copy > 0) {
+                            delay(1000)
+                        }
+                        bluetoothService.send(Write(byteArrayOf(0x1b, 0x40)))
+                        bluetoothService.send(Write(byteArrayOf(0x1c, 0x2e)))
 
-                    if (printerConfig.drawerSetting == OpenDrawerSetting.OpenBefore) {
-                        bluetoothService.send(Write(dialect.openDrawer()))
-                    }
+                        if (printerConfig.drawerSetting == OpenDrawerSetting.OpenBefore) {
+                            bluetoothService.send(Write(dialect.openDrawer()))
+                        }
 
-                    bytes.forEach {
-                        bluetoothService.send(Write(it))
-                        bluetoothService.send(Write("\n".toByteArray()))
-                    }
+                        bytes.forEach {
+                            bluetoothService.send(Write(it))
+                            bluetoothService.send(Write("\n".toByteArray()))
+                        }
 
-                    if (printerConfig.extraLines > 0) {
-                        bluetoothService.send(Write(ByteArray(printerConfig.extraLines) {
-                            0xa
-                        }))
-                    }
+                        if (printerConfig.extraLines > 0) {
+                            bluetoothService.send(Write(ByteArray(printerConfig.extraLines) {
+                                0xa
+                            }))
+                        }
 
-                    /* perform partial cut */
-                    bluetoothService.send(Write(byteArrayOf(0x1d, 0x56, 1)))
+                        /* perform partial cut */
+                        bluetoothService.send(Write(byteArrayOf(0x1d, 0x56, 1)))
 
-                    if (printerConfig.drawerSetting == OpenDrawerSetting.OpenAfter) {
-                        bluetoothService.send(Write(dialect.openDrawer()))
+                        if (printerConfig.drawerSetting == OpenDrawerSetting.OpenAfter) {
+                            bluetoothService.send(Write(dialect.openDrawer()))
+                        }
                     }
 
                     bluetoothService.close()
                     L.i("sent text")
 
-                    mJobs[jobId]?.state = JobStateEnum.COMPLETED
+                    jobs[jobId]?.state = JobStateEnum.COMPLETED
                     L.i("marked job as complete")
                 }
                 State.STATE_FAILED -> {
