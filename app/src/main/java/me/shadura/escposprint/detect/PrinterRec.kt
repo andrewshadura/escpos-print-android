@@ -69,8 +69,8 @@ data class PrinterRec(var name: String, val address: String, var enabled: Boolea
                 model = PrinterModel.Epson
             }
             address.startsWith("00:19:0") || address.startsWith("74:F0:7") -> {
-                L.i("Detected as unsupported Bixolon, fallin back to ZiJiang")
-                model = PrinterModel.ZiJiang
+                L.i("Detected as unsupported Bixolon, falling back to Epson")
+                model = PrinterModel.Epson
             }
             name == "InnerPrinter" && address == "00:11:22:33:44:55" ->
                 model = PrinterModel.Sunmi
