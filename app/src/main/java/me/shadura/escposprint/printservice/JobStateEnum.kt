@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2009 Harald Weyhing
+ * Copyright (C) 2019 Andrej Shadura
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free
@@ -19,30 +19,12 @@ package me.shadura.escposprint.printservice
 /**
  * State of print jobs
  */
-enum class JobStateEnum private constructor(val text: String) {
-    PENDING("pending"),
-    PENDING_HELD("pending-held"),
-    PROCESSING("processing"),
-    PROCESSING_STOPPED("processing-stopped"),
-    CANCELED("canceled"),
-    ABORTED("aborted"),
-    COMPLETED("completed");
-
-    override fun toString(): String {
-        return text
-    }
-
-    companion object {
-
-        fun fromString(value: String?): JobStateEnum? {
-            if (value != null) {
-                for (jobState in JobStateEnum.values()) {
-                    if (value.equals(jobState.text, ignoreCase = true)) {
-                        return jobState
-                    }
-                }
-            }
-            return null
-        }
-    }
+sealed class JobStateEnum {
+    data class FAILED(val errorMessage: String? = null) : JobStateEnum()
+    object CREATED : JobStateEnum()
+    object QUEUED : JobStateEnum()
+    object STARTED : JobStateEnum()
+    object BLOCKED : JobStateEnum()
+    object COMPLETED : JobStateEnum()
+    object CANCELED : JobStateEnum()
 }

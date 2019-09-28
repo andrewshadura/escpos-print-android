@@ -50,7 +50,7 @@ import java.util.concurrent.Future
  */
 class EscPosService : PrintService(), CoroutineScope by MainScope() {
 
-    data class PrintJobTask(var state: JobStateEnum = JobStateEnum.PROCESSING, var task: Future<Unit>?)
+    data class PrintJobTask(var state: JobStateEnum = JobStateEnum.STARTED, var task: Future<Unit>?)
 
     private val jobs = HashMap<PrintJobId, PrintJobTask>()
 
@@ -169,14 +169,17 @@ class EscPosService : PrintService(), CoroutineScope by MainScope() {
     private fun onJobStateUpdate(printJob: PrintJob, state: JobStateEnum) {
         // Couldn't check state -- don't do anything
         when (state) {
-            JobStateEnum.CANCELED -> {
+            is JobStateEnum.CANCELED -> {
                 jobs.remove(printJob.id)
                 printJob.cancel()
             }
-            JobStateEnum.COMPLETED,
-                JobStateEnum.ABORTED -> {
+            is JobStateEnum.COMPLETED -> {
                 jobs.remove(printJob.id)
                 printJob.complete()
+            }
+            is JobStateEnum.FAILED -> {
+                jobs.remove(printJob.id)
+                printJob.fail(state.errorMessage)
             }
         }
     }
@@ -277,6 +280,7 @@ class EscPosService : PrintService(), CoroutineScope by MainScope() {
                     L.i("marked job as complete")
                 }
                 State.STATE_FAILED -> {
+                    jobs[jobId]?.state = JobStateEnum.FAILED(result.error)
                     L.e(result.error)
                 }
             }
