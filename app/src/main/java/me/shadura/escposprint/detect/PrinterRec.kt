@@ -53,7 +53,17 @@ data class PrinterRec(var name: String, val address: String, var enabled: Boolea
         when {
             name.startsWith("Bluetooth Printer") ->
                 model = PrinterModel.ZiJiang
+            address == "1CBE:0003" ||
+                    address == "1CB0:0003" ||
+                    address == "0483:0483" ||
+                    address == "0416:5011" ||
+                    address == "0416:AABB" ||
+                    address == "1659:8965" ||
+                    address == "0483:5741" ->
+                model = PrinterModel.ZiJiang
             name.startsWith("MTP-") || name.startsWith("PT2") ->
+                model = PrinterModel.Goojprt
+            address == "067B:2305" || address == "0483:5720" ->
                 model = PrinterModel.Goojprt
             name.startsWith("PTP-II") -> {
                 lineWidth = if (name == "PTP-III") 48 else 32
@@ -65,9 +75,13 @@ data class PrinterRec(var name: String, val address: String, var enabled: Boolea
             }
             address.startsWith("98:D3:3") || name.startsWith("Printer00") ->
                 model = PrinterModel.Xprinter
+            address == "0483:070B" ->
+                model = PrinterModel.Xprinter
             address.startsWith("00:01:90") || name.startsWith("TM-P20_") -> {
                 model = PrinterModel.Epson
             }
+            address == "04B8:0E1C" ->
+                model = PrinterModel.Epson
             address.startsWith("00:19:0") || address.startsWith("74:F0:7") -> {
                 L.i("Detected as unsupported Bixolon, falling back to Epson")
                 model = PrinterModel.Epson
