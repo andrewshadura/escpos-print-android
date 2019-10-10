@@ -333,6 +333,8 @@ class ManageManualPrintersActivity : AppCompatActivity(), CoroutineScope by Main
                     }
                 }
             }
+            else ->
+                super.onActivityResult(requestCode, resultCode, data)
         }
     }
 
