@@ -199,6 +199,16 @@ class ManageManualPrintersActivity : AppCompatActivity(), CoroutineScope by Main
                 show()
             }
         }
+
+        intent?.data?.also { uri ->
+            when (intent.action) {
+                Intent.ACTION_VIEW -> {
+                    if (uri.path == "/add/random") {
+                        addRandomPrinter("BlueTooth Printer")
+                    }
+                }
+            }
+        }
     }
 
     override fun onPause() {
@@ -242,17 +252,22 @@ class ManageManualPrintersActivity : AppCompatActivity(), CoroutineScope by Main
 
             val debug = false
             if (debug) {
-                val bytes = byteArrayOf(0, 0, 0, 0, 0, 0)
-                Random().nextBytes(bytes)
-                val mac = bytes.joinToString(separator = ":") { String.format("%02x", it.toInt() and 0xff) }
-                val printerInfo = PrinterRec("Random device",
-                        "$mac", true, PrinterModel.ZiJiang)
-                printers.add(printerInfo)
-                addPrinter(printerInfo)
-                viewAdapter.notifyDataSetChanged()
+                addRandomPrinter()
             }
             null
         }()
+    }
+
+    private fun addRandomPrinter(name: String = "Random device") {
+        val bytes = byteArrayOf(0, 0, 0, 0, 0, 0)
+        Random().nextBytes(bytes)
+        val mac = bytes.joinToString(separator = ":") { String.format("%02X", it.toInt() and 0xff) }
+        val printerInfo = PrinterRec(name,
+                "$mac", true, PrinterModel.ZiJiang)
+        printerInfo.alias = name
+        printers.add(printerInfo)
+        addPrinter(printerInfo)
+        viewAdapter.notifyDataSetChanged()
     }
 
     public override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
