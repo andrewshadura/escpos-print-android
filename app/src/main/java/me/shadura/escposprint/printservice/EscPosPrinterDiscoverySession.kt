@@ -39,13 +39,12 @@ import me.shadura.escposprint.EscPosPrintApp
 import me.shadura.escposprint.L
 import me.shadura.escposprint.R
 import me.shadura.escposprint.detect.PrinterRec
+import kotlin.math.roundToInt
 
 /**
  * CUPS printer discovery class
  */
-internal class EscPosPrinterDiscoverySession(private val mPrintService: PrintService) : PrinterDiscoverySession() {
-
-    var mResponseCode: Int = 0
+internal class EscPosPrinterDiscoverySession(private val printService: PrintService) : PrinterDiscoverySession() {
 
     /**
      * Called when the framework wants to find/discover printers
@@ -74,12 +73,12 @@ internal class EscPosPrinterDiscoverySession(private val mPrintService: PrintSer
     fun onPrintersDiscovered(printers: Map<String, PrinterRec>) {
         val res = EscPosPrintApp.getInstance().resources
         val toast = res.getQuantityString(R.plurals.printer_discovery_result, printers.size, printers.size)
-        Toast.makeText(mPrintService, toast, Toast.LENGTH_SHORT).show()
+        Toast.makeText(printService, toast, Toast.LENGTH_SHORT).show()
         L.d("onPrintersDiscovered($printers)")
         val printersInfo = ArrayList<PrinterInfo>(printers.size)
         for ((address, printer) in printers) {
-            val printerId = mPrintService.generatePrinterId(address)
-            printersInfo.add(PrinterInfo.Builder(printerId, printer.name, PrinterInfo.STATUS_IDLE).build())
+            val printerId = printService.generatePrinterId(address)
+            printersInfo.add(PrinterInfo.Builder(printerId, printer.alias, PrinterInfo.STATUS_IDLE).build())
         }
 
         addPrinters(printersInfo)
@@ -93,18 +92,19 @@ internal class EscPosPrinterDiscoverySession(private val mPrintService: PrintSer
     @Throws(Exception::class)
     fun checkPrinter(address: String?, printerId: PrinterId): PrinterCapabilitiesInfo? {
         address?.let {
-            val builder = PrinterCapabilitiesInfo.Builder(printerId)
-            builder.addResolution(PrintAttributes.Resolution("default", "203×203 dpi", 203, 203), true)
-            builder.addMediaSize(PrintAttributes.MediaSize("58x105mm", "58x105mm",
-                    Math.round(58.0f / 25.4f * 1000f), Math.round(105.0f / 25.4f * 1000f)), true)
-            builder.addMediaSize(PrintAttributes.MediaSize("58x210mm", "58x210mm",
-                    Math.round(58.0f / 25.4f * 1000f), Math.round(210.0f / 25.4f * 1000f)), false)
-            builder.addMediaSize(PrintAttributes.MediaSize.ISO_A6, false)
-            builder.addMediaSize(PrintAttributes.MediaSize.ISO_A5, false)
-            builder.addMediaSize(PrintAttributes.MediaSize.ISO_A4, false)
-            builder.setColorModes(PrintAttributes.COLOR_MODE_MONOCHROME, PrintAttributes.COLOR_MODE_MONOCHROME)
-            builder.setMinMargins(PrintAttributes.Margins(0, 0, 0, 0))
-            return builder.build()
+            with (PrinterCapabilitiesInfo.Builder(printerId)) {
+                addResolution(PrintAttributes.Resolution("default", "203×203 dpi", 203, 203), true)
+                addMediaSize(PrintAttributes.MediaSize("58x105mm", "58x105mm",
+                        (58.0f / 25.4f * 1000f).roundToInt(), (105.0f / 25.4f * 1000f).roundToInt()), true)
+                addMediaSize(PrintAttributes.MediaSize("58x210mm", "58x210mm",
+                        (58.0f / 25.4f * 1000f).roundToInt(), (210.0f / 25.4f * 1000f).roundToInt()), false)
+                addMediaSize(PrintAttributes.MediaSize.ISO_A6, false)
+                addMediaSize(PrintAttributes.MediaSize.ISO_A5, false)
+                addMediaSize(PrintAttributes.MediaSize.ISO_A4, false)
+                setColorModes(PrintAttributes.COLOR_MODE_MONOCHROME, PrintAttributes.COLOR_MODE_MONOCHROME)
+                setMinMargins(PrintAttributes.Margins(0, 0, 0, 0))
+                return build()
+            }
         }
 
         return null
@@ -123,19 +123,20 @@ internal class EscPosPrinterDiscoverySession(private val mPrintService: PrintSer
             val printerIds = ArrayList<PrinterId>()
             printerIds.add(printerId)
             removePrinters(printerIds)
-            Toast.makeText(mPrintService, mPrintService.getString(R.string.printer_not_responding, printerId.localId), Toast.LENGTH_LONG).show()
+            Toast.makeText(printService, printService.getString(R.string.printer_not_responding, printerId.localId), Toast.LENGTH_LONG).show()
             L.d("onPrinterChecked: Printer has no cap, removing it from the list")
         } else {
             val printers = ArrayList<PrinterInfo>()
             for (printer in getPrinters()) {
-                if (printer.id == printerId) {
-                    val printerWithCaps = PrinterInfo.Builder(printerId, printer.name, PrinterInfo.STATUS_IDLE)
-                            .setCapabilities(printerCapabilitiesInfo)
-                            .build()
+                printers += if (printer.id == printerId) {
+                    val printerWithCaps = PrinterInfo.Builder(printerId, printer.name, PrinterInfo.STATUS_IDLE).run {
+                        setCapabilities(printerCapabilitiesInfo)
+                        build()
+                    }
                     L.d("onPrinterChecked: adding printer: $printerWithCaps")
-                    printers.add(printerWithCaps)
+                    printerWithCaps
                 } else {
-                    printers.add(printer)
+                    printer
                 }
             }
             L.d("onPrinterChecked: we had " + getPrinters().size + " printers, we now have " + printers.size)
@@ -154,7 +155,7 @@ internal class EscPosPrinterDiscoverySession(private val mPrintService: PrintSer
         /* TODO: Here, we can detect more printers */
 
         // Add the printers manually added
-        val prefs = mPrintService.getSharedPreferences(Config.SHARED_PREFS_PRINTERS, Context.MODE_PRIVATE)
+        val prefs = printService.getSharedPreferences(Config.SHARED_PREFS_PRINTERS, Context.MODE_PRIVATE)
         return Config.read(prefs).configuredPrinters.filterValues(PrinterRec::enabled)
     }
 
@@ -174,7 +175,7 @@ internal class EscPosPrinterDiscoverySession(private val mPrintService: PrintSer
     override fun onStartPrinterStateTracking(printerId: PrinterId) {
         L.d("onStartPrinterStateTracking: $printerId")
         object : AsyncTask<Void, Void, PrinterCapabilitiesInfo>() {
-            internal var mException: Exception? = null
+            var mException: Exception? = null
 
             override fun doInBackground(vararg voids: Void): PrinterCapabilitiesInfo? {
                 try {
@@ -188,7 +189,6 @@ internal class EscPosPrinterDiscoverySession(private val mPrintService: PrintSer
             }
 
             override fun onPostExecute(printerCapabilitiesInfo: PrinterCapabilitiesInfo?) {
-                L.v("HTTP response code: $mResponseCode")
                 mException?.let { exception: Exception ->
                     if (handlePrinterException(exception, printerId)) {
                         L.e("Couldn't start printer state tracking", exception)
@@ -215,13 +215,13 @@ internal class EscPosPrinterDiscoverySession(private val mPrintService: PrintSer
             exception is FileNotFoundException ->
                 return handleHttpError(exception, printerId)
             exception is SocketTimeoutException -> {
-                Toast.makeText(mPrintService, R.string.err_printer_socket_timeout, Toast.LENGTH_LONG).show()
+                Toast.makeText(printService, R.string.err_printer_socket_timeout, Toast.LENGTH_LONG).show()
             }
             exception is UnknownHostException -> {
-                Toast.makeText(mPrintService, R.string.err_printer_unknown_host, Toast.LENGTH_LONG).show()
+                Toast.makeText(printService, R.string.err_printer_unknown_host, Toast.LENGTH_LONG).show()
             }
             exception is ConnectException && exception.getLocalizedMessage().contains("ENETUNREACH") -> {
-                Toast.makeText(mPrintService, R.string.err_printer_network_unreachable, Toast.LENGTH_LONG).show()
+                Toast.makeText(printService, R.string.err_printer_network_unreachable, Toast.LENGTH_LONG).show()
             }
             else -> {
                 return handleHttpError(exception, printerId)
@@ -238,7 +238,7 @@ internal class EscPosPrinterDiscoverySession(private val mPrintService: PrintSer
      * @return true if the exception should be reported for a potential bug, false otherwise
      */
     private fun handleHttpError(exception: Exception, printerId: PrinterId): Boolean {
-        Toast.makeText(mPrintService, exception.localizedMessage, Toast.LENGTH_LONG).show()
+        Toast.makeText(printService, exception.localizedMessage ?: exception.message, Toast.LENGTH_LONG).show()
         return true
     }
 
