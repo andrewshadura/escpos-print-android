@@ -37,22 +37,26 @@ fun CoroutineScope.bluetoothServiceActor(device: BluetoothDevice) = actor<CommSe
     val adapter = BluetoothAdapter.getDefaultAdapter()
     var state: State
     var error: String = ""
-    val socket: BluetoothSocket = device.createRfcommSocketToServiceRecord(PRINTER_UUID)
+    lateinit var socket: BluetoothSocket
 
     process@ for (msg in channel) {
         when (msg) {
             is Connect -> {
-                adapter.cancelDiscovery()
-                L.i("connecting to $device")
-                socket.run {
-                    state = try {
+                state = try {
+                    if (adapter == null || adapter.isEnabled) {
+                        throw IOException("Bluetooth not enabled")
+                    }
+                    adapter.cancelDiscovery()
+                    socket = device.createRfcommSocketToServiceRecord(PRINTER_UUID)
+                    L.i("connecting to $device")
+                    socket.run {
                         connect()
                         State.STATE_CONNECTED
-                    } catch (e: IOException) {
-                        error = e.message ?: ""
-                        L.e("unable to connect", e)
-                        State.STATE_FAILED
                     }
+                } catch (e: IOException) {
+                    error = e.message ?: ""
+                    L.e("unable to connect", e)
+                    State.STATE_FAILED
                 }
                 msg.response.complete(Result(state, error))
             }
