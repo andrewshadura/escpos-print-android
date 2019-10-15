@@ -43,7 +43,7 @@ fun CoroutineScope.bluetoothServiceActor(device: BluetoothDevice) = actor<CommSe
         when (msg) {
             is Connect -> {
                 state = try {
-                    if (adapter == null || adapter.isEnabled) {
+                    if (adapter == null || !adapter.isEnabled) {
                         throw IOException("Bluetooth not enabled")
                     }
                     adapter.cancelDiscovery()
