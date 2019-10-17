@@ -236,53 +236,59 @@ class EscPosService : PrintService(), CoroutineScope by MainScope() {
                 }
             }
 
-            val bluetoothService = commServiceActor(this@EscPosService, address)
-            val response = CompletableDeferred<Result>()
-            bluetoothService.send(Connect(response))
-            var result = response.await()
-            when (result.state) {
-                State.STATE_CONNECTED -> {
-                    L.i("sending text")
-                    for (copy in 0 until copies) {
-                        if (copy > 0) {
-                            delay(1000)
-                        }
-                        bluetoothService.send(Write(byteArrayOf(0x1b, 0x40)))
-                        bluetoothService.send(Write(byteArrayOf(0x1c, 0x2e)))
+            try {
+                val bluetoothService = commServiceActor(this@EscPosService, address)
+                val response = CompletableDeferred<Result>()
+                bluetoothService.send(Connect(response))
+                var result = response.await()
+                when (result.state) {
+                    State.STATE_CONNECTED -> {
+                        L.i("sending text")
+                        for (copy in 0 until copies) {
+                            if (copy > 0) {
+                                delay(1000)
+                            }
+                            bluetoothService.send(Write(byteArrayOf(0x1b, 0x40)))
+                            bluetoothService.send(Write(byteArrayOf(0x1c, 0x2e)))
 
-                        if (printerConfig.drawerSetting == OpenDrawerSetting.OpenBefore) {
-                            bluetoothService.send(Write(dialect.openDrawer()))
+                            if (printerConfig.drawerSetting == OpenDrawerSetting.OpenBefore) {
+                                bluetoothService.send(Write(dialect.openDrawer()))
+                            }
+
+                            bytes.forEach {
+                                bluetoothService.send(Write(it))
+                                bluetoothService.send(Write("\n".toByteArray()))
+                            }
+
+                            if (printerConfig.extraLines > 0) {
+                                bluetoothService.send(Write(ByteArray(printerConfig.extraLines) {
+                                    0xa
+                                }))
+                            }
+
+                            /* perform partial cut */
+                            bluetoothService.send(Write(byteArrayOf(0x1d, 0x56, 1)))
+
+                            if (printerConfig.drawerSetting == OpenDrawerSetting.OpenAfter) {
+                                bluetoothService.send(Write(dialect.openDrawer()))
+                            }
                         }
 
-                        bytes.forEach {
-                            bluetoothService.send(Write(it))
-                            bluetoothService.send(Write("\n".toByteArray()))
-                        }
+                        bluetoothService.close()
+                        L.i("sent text")
 
-                        if (printerConfig.extraLines > 0) {
-                            bluetoothService.send(Write(ByteArray(printerConfig.extraLines) {
-                                0xa
-                            }))
-                        }
-
-                        /* perform partial cut */
-                        bluetoothService.send(Write(byteArrayOf(0x1d, 0x56, 1)))
-
-                        if (printerConfig.drawerSetting == OpenDrawerSetting.OpenAfter) {
-                            bluetoothService.send(Write(dialect.openDrawer()))
-                        }
+                        jobs[jobId]?.state = JobStateEnum.COMPLETED
+                        L.i("marked job as complete")
                     }
-
-                    bluetoothService.close()
-                    L.i("sent text")
-
-                    jobs[jobId]?.state = JobStateEnum.COMPLETED
-                    L.i("marked job as complete")
+                    State.STATE_FAILED -> {
+                        jobs[jobId]?.state = JobStateEnum.FAILED(result.error)
+                        L.e(result.error)
+                    }
                 }
-                State.STATE_FAILED -> {
-                    jobs[jobId]?.state = JobStateEnum.FAILED(result.error)
-                    L.e(result.error)
-                }
+            } catch (e: IOException) {
+                val error = e.localizedMessage ?: e.message ?: "Unknown error"
+                jobs[jobId]?.state = JobStateEnum.FAILED(error)
+                L.e(error)
             }
         }
     }

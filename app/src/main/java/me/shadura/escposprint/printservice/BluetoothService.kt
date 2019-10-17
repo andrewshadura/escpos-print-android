@@ -37,26 +37,22 @@ fun CoroutineScope.bluetoothServiceActor(device: BluetoothDevice) = actor<CommSe
     val adapter = BluetoothAdapter.getDefaultAdapter()
     var state: State
     var error: String = ""
-    lateinit var socket: BluetoothSocket
+    val socket: BluetoothSocket = device.createRfcommSocketToServiceRecord(PRINTER_UUID)
 
     process@ for (msg in channel) {
         when (msg) {
             is Connect -> {
-                state = try {
-                    if (adapter == null || !adapter.isEnabled) {
-                        throw IOException("Bluetooth not enabled")
-                    }
-                    adapter.cancelDiscovery()
-                    socket = device.createRfcommSocketToServiceRecord(PRINTER_UUID)
-                    L.i("connecting to $device")
-                    socket.run {
+                adapter.cancelDiscovery()
+                L.i("connecting to $device")
+                socket.run {
+                    state = try {
                         connect()
                         State.STATE_CONNECTED
+                    } catch (e: IOException) {
+                        error = e.message ?: ""
+                        L.e("unable to connect", e)
+                        State.STATE_FAILED
                     }
-                } catch (e: IOException) {
-                    error = e.message ?: ""
-                    L.e("unable to connect", e)
-                    State.STATE_FAILED
                 }
                 msg.response.complete(Result(state, error))
             }
@@ -76,8 +72,8 @@ fun CoroutineScope.bluetoothServiceActor(device: BluetoothDevice) = actor<CommSe
 
 fun CoroutineScope.bluetoothServiceActor(address: String): SendChannel<CommServiceMsg> {
     val adapter: BluetoothAdapter? = BluetoothAdapter.getDefaultAdapter()
-    if (adapter == null) {
-        throw Exception("Bluetooth is not available")
+    if (adapter == null || !adapter.isEnabled) {
+        throw IOException("Bluetooth is not available")
     } else {
         if (BluetoothAdapter.checkBluetoothAddress(address)) {
             val device = adapter.getRemoteDevice(address)

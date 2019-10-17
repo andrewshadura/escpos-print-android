@@ -60,7 +60,7 @@ object L {
     fun e(msg: String, t: Throwable?) {
         e(msg)
         if (t != null) {
-            e(t.localizedMessage ?: t.message ?: "<no message>")
+            e(t.localizedMessage ?: t.message ?: "Unknown error")
         }
     }
 
