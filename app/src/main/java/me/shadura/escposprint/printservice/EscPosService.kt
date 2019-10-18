@@ -224,8 +224,13 @@ class EscPosService : PrintService(), CoroutineScope by MainScope() {
             when {
                 address.isBluetoothAddress -> {
                     BluetoothAdapter.getDefaultAdapter()?.apply {
-                        if (!isEnabled) {
-                            enable()
+                        val retries = 1..5
+                        for (retry in retries) {
+                            if (!isEnabled) {
+                                L.i("[$retry/${retries.last}] Bluetooth is not up yet, trying to enable...")
+                                enable()
+                                delay(1000)
+                            }
                         }
                     }
                 }
