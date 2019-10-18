@@ -59,8 +59,12 @@ fun CoroutineScope.bluetoothServiceActor(device: BluetoothDevice) = actor<CommSe
             is Disconnect -> break@process
             is Write -> {
                 msg.data.asIterable().chunked(64).forEach {
-                    socket.outputStream.write(it.toByteArray())
-                    socket.outputStream.flush()
+                    try {
+                        socket.outputStream.write(it.toByteArray())
+                        socket.outputStream.flush()
+                    } catch (e: IOException) {
+                        L.e("I/O error occurred:", e)
+                    }
                     delay(15)
                 }
             }
