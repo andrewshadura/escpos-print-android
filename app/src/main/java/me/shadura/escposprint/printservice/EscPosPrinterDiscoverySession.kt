@@ -71,7 +71,7 @@ internal class EscPosPrinterDiscoverySession(private val printService: PrintServ
      * @param printers The list of printers found, as a map of URL=>name
      */
     fun onPrintersDiscovered(printers: Map<String, PrinterRec>) {
-        val res = EscPosPrintApp.getInstance().resources
+        val res = EscPosPrintApp.instance.resources
         val toast = res.getQuantityString(R.plurals.printer_discovery_result, printers.size, printers.size)
         Toast.makeText(printService, toast, Toast.LENGTH_SHORT).show()
         L.d("onPrintersDiscovered($printers)")
