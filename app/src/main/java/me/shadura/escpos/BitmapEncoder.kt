@@ -58,7 +58,7 @@ class BitmapEncoder(private val dialect: Dialect) {
                 } else {
                     255
                 }
-                if (BuildConfig.FLAVOR == "plus") {
+                if (BuildConfig.FLAVOR == "full") {
                     val error = grey - mono
                     errors[row][col + 1] += (7 * error) / 16
                     errors[row + 1][col - 1] += (3 * error) / 16
