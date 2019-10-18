@@ -240,7 +240,7 @@ class EscPosService : PrintService(), CoroutineScope by MainScope() {
                 val bluetoothService = commServiceActor(this@EscPosService, address)
                 val response = CompletableDeferred<Result>()
                 bluetoothService.send(Connect(response))
-                var result = response.await()
+                val result = response.await()
                 when (result.state) {
                     State.STATE_CONNECTED -> {
                         L.i("sending text")
@@ -298,7 +298,7 @@ class EscPosService : PrintService(), CoroutineScope by MainScope() {
      *
      * @param printJob The print job
      */
-    internal fun onPrintJobSent(printJob: PrintJob) {
+    private fun onPrintJobSent(printJob: PrintJob) {
         printJob.start()
     }
 
