@@ -30,6 +30,8 @@ enum class State {
     Failed
 }
 
+data class Result(var state: State, var error: String)
+
 sealed class CommServiceMsg
 class Connect(val response: CompletableDeferred<Result>) : CommServiceMsg()
 object Disconnect : CommServiceMsg()

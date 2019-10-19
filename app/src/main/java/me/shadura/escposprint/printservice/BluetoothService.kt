@@ -31,8 +31,6 @@ import kotlin.collections.chunked
 
 private val PRINTER_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")
 
-data class Result(var state: State, var error: String)
-
 fun CoroutineScope.bluetoothServiceActor(device: BluetoothDevice) = actor<CommServiceMsg>(Dispatchers.IO) {
     val adapter = BluetoothAdapter.getDefaultAdapter()
     var state: State
