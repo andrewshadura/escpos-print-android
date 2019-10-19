@@ -248,7 +248,7 @@ class EscPosService : PrintService(), CoroutineScope by MainScope() {
                 bluetoothService.send(Connect(response))
                 val result = response.await()
                 when (result.state) {
-                    State.STATE_CONNECTED -> {
+                    State.Connected -> {
                         L.i("sending text")
                         for (copy in 0 until copies) {
                             if (copy > 0) {
@@ -286,7 +286,7 @@ class EscPosService : PrintService(), CoroutineScope by MainScope() {
                         jobs[jobId]?.state = JobStateEnum.COMPLETED
                         L.i("marked job as complete")
                     }
-                    State.STATE_FAILED -> {
+                    State.Failed -> {
                         jobs[jobId]?.state = JobStateEnum.FAILED(result.error)
                         L.e(result.error)
                     }

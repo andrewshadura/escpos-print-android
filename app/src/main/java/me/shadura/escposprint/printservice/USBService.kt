@@ -93,7 +93,7 @@ fun CoroutineScope.usbServiceActor(context: Context, device: UsbDevice?) = actor
             is Connect -> {
                 state = device?.let { device ->
                     if (!manager.hasPermission(device)) {
-                        State.STATE_NEEDS_PERMISSION
+                        State.NeedsPermission
                     } else {
                         conn = manager.openDevice(device)
                         conn?.run {
@@ -101,10 +101,10 @@ fun CoroutineScope.usbServiceActor(context: Context, device: UsbDevice?) = actor
                                 claimInterface(it, true)
                                 ep = it.printerEndpoints
                             }
-                            State.STATE_CONNECTED
+                            State.Connected
                         }
                     }
-                } ?: State.STATE_FAILED
+                } ?: State.Failed
                 msg.response.complete(Result(state, error))
             }
             is Disconnect -> {

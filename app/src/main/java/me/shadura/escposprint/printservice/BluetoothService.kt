@@ -47,11 +47,11 @@ fun CoroutineScope.bluetoothServiceActor(device: BluetoothDevice) = actor<CommSe
                 socket.run {
                     state = try {
                         connect()
-                        State.STATE_CONNECTED
+                        State.Connected
                     } catch (e: IOException) {
                         error = e.message ?: ""
                         L.e("unable to connect", e)
-                        State.STATE_FAILED
+                        State.Failed
                     }
                 }
                 msg.response.complete(Result(state, error))

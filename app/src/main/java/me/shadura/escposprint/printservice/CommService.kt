@@ -23,11 +23,11 @@ import kotlinx.coroutines.channels.SendChannel
 
 // Constants that indicate the current connection state
 enum class State {
-    STATE_NONE, // we're doing nothing
-    STATE_CONNECTING, // now initiating an outgoing connection
-    STATE_NEEDS_PERMISSION,
-    STATE_CONNECTED,  // now connected to a remote device
-    STATE_FAILED
+    None, // we're doing nothing
+    Connecting, // now initiating an outgoing connection
+    NeedsPermission,
+    Connected,  // now connected to a remote device
+    Failed
 }
 
 sealed class CommServiceMsg
