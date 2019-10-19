@@ -47,7 +47,7 @@ import java.util.concurrent.ConcurrentHashMap
  */
 class EscPosService : PrintService(), CoroutineScope by MainScope() {
 
-    data class PrintJobTask(var state: JobStateEnum = JobStateEnum.STARTED, var task: Job?)
+    data class PrintJobTask(var state: JobStateEnum = JobStateEnum.QUEUED, var task: Job?)
 
     private val jobs = ConcurrentHashMap<PrintJobId, PrintJobTask>()
 
@@ -79,6 +79,20 @@ class EscPosService : PrintService(), CoroutineScope by MainScope() {
     private fun onPrintJobCancelled(printJob: PrintJob) {
         jobs.remove(printJob.id)
         printJob.cancel()
+        startNextJob()
+    }
+
+    private fun startNextJob() {
+        synchronized(jobs) {
+            if (jobs.filterValues { it.state == JobStateEnum.STARTED }.isEmpty()) {
+                jobs.values.firstOrNull {
+                    it.state == JobStateEnum.QUEUED
+                }?.also { job ->
+                    job.state = JobStateEnum.STARTED
+                    job.task?.start()
+                }
+            }
+        }
     }
 
     override fun onPrintJobQueued(printJob: PrintJob) {
@@ -105,10 +119,9 @@ class EscPosService : PrintService(), CoroutineScope by MainScope() {
                 return
             }
             val fd = data.fileDescriptor
-            val jobInfo = printJob.info
 
             // Send print job
-            val job = jobs.getOrPut(jobId) {
+            jobs.getOrPut(jobId) {
                 PrintJobTask(task = launch(start = CoroutineStart.LAZY) {
                     try {
                         parseDocument(jobId, address, fd, jobInfo)
@@ -119,7 +132,8 @@ class EscPosService : PrintService(), CoroutineScope by MainScope() {
                     }
                 })
             }
-            job.task?.start()
+            startNextJob()
+
         } catch (e: MalformedURLException) {
             L.e("Couldn't queue print job: $printJob", e)
         } catch (e: URISyntaxException) {
@@ -134,6 +148,7 @@ class EscPosService : PrintService(), CoroutineScope by MainScope() {
                 if (updateJobStatus(printJob)) {
                     Handler().postDelayed(this, JOB_CHECK_POLLING_INTERVAL.toLong())
                 }
+                startNextJob()
             }
         }, JOB_CHECK_POLLING_INTERVAL.toLong())
     }
@@ -310,7 +325,7 @@ class EscPosService : PrintService(), CoroutineScope by MainScope() {
         /**
          * When a print job is active, the app will poll the printer to retrieve the job status. This is the polling interval.
          */
-        const val JOB_CHECK_POLLING_INTERVAL = 5000
+        const val JOB_CHECK_POLLING_INTERVAL = 1000
     }
 }
 
