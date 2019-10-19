@@ -17,7 +17,6 @@
 package me.shadura.escposprint.printservice
 
 import android.content.Context
-import android.content.pm.PackageManager
 import android.hardware.usb.*
 import android.os.Build
 import kotlinx.coroutines.*

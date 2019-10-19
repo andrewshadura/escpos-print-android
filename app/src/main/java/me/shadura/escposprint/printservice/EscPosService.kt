@@ -30,7 +30,6 @@ import android.widget.Toast
 
 import java.net.MalformedURLException
 import java.net.URISyntaxException
-import java.util.HashMap
 
 import me.shadura.escposprint.L
 import me.shadura.escposprint.R
