@@ -39,19 +39,16 @@ import com.tom_roush.pdfbox.util.PDFBoxResourceLoader
 import kotlinx.coroutines.*
 import me.shadura.escpos.dialects
 import me.shadura.escposprint.detect.OpenDrawerSetting
-import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.toast
-import org.jetbrains.anko.uiThread
 import java.io.*
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.Future
 
 /**
  * CUPS print service
  */
 class EscPosService : PrintService(), CoroutineScope by MainScope() {
 
-    data class PrintJobTask(var state: JobStateEnum = JobStateEnum.STARTED, var task: Future<Unit>?)
+    data class PrintJobTask(var state: JobStateEnum = JobStateEnum.STARTED, var task: Job?)
 
     private val jobs = ConcurrentHashMap<PrintJobId, PrintJobTask>()
 
@@ -69,7 +66,7 @@ class EscPosService : PrintService(), CoroutineScope by MainScope() {
     override fun onRequestCancelPrintJob(printJob: PrintJob) {
         jobs[printJob.id]?.apply {
             state = JobStateEnum.CANCELED
-            task?.cancel(true)
+            task?.cancel()
         }
 
         onPrintJobCancelled(printJob)
@@ -112,20 +109,18 @@ class EscPosService : PrintService(), CoroutineScope by MainScope() {
             val jobInfo = printJob.info
 
             // Send print job
-            val task = doAsync {
-                try {
-                    parseDocument(jobId, address, fd, jobInfo)
-                    uiThread {
+            val job = jobs.getOrPut(jobId) {
+                PrintJobTask(task = launch(start = CoroutineStart.LAZY) {
+                    try {
+                        parseDocument(jobId, address, fd, jobInfo)
                         onPrintJobSent(printJob)
-                    }
-                } catch (e: Exception) {
-                    uiThread {
+                    } catch (e: Exception) {
                         toast(getString(R.string.err_job_exception, jobId.toString(), e.localizedMessage))
                         L.e("Couldn't query job $jobId", e)
                     }
-                }
+                })
             }
-            jobs[jobId] = PrintJobTask(task = task)
+            job.task?.start()
         } catch (e: MalformedURLException) {
             L.e("Couldn't queue print job: $printJob", e)
         } catch (e: URISyntaxException) {
