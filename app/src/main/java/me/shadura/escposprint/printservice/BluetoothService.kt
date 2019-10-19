@@ -25,11 +25,27 @@ import android.bluetooth.BluetoothSocket
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.channels.actor
+import me.shadura.escposprint.EscPosPrintApp
 import me.shadura.escposprint.L
+import me.shadura.escposprint.R
 import java.lang.Exception
 import kotlin.collections.chunked
 
 private val PRINTER_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")
+
+fun Exception.beautifyIOError(): String {
+    val message = this.message ?: "Unknown error"
+    return when {
+        "closed or timeout" in message -> {
+            EscPosPrintApp.context.getString(R.string.err_job_socket_timeout)
+        }
+        "Broken pipe" in message -> {
+            EscPosPrintApp.context.getString(R.string.err_job_econnreset)
+        }
+        else ->
+            message
+    }
+}
 
 fun CoroutineScope.bluetoothServiceActor(device: BluetoothDevice) = actor<CommServiceMsg>(Dispatchers.IO) {
     val adapter = BluetoothAdapter.getDefaultAdapter()
@@ -47,7 +63,7 @@ fun CoroutineScope.bluetoothServiceActor(device: BluetoothDevice) = actor<CommSe
                         State.Connected
                     } catch (e: IOException) {
                         L.e("unable to connect", e)
-                        State.Failed(e.message ?: "Unknown error")
+                        State.Failed(e.beautifyIOError())
                     }
                 }
                 msg.response.complete(state)
@@ -66,7 +82,7 @@ fun CoroutineScope.bluetoothServiceActor(device: BluetoothDevice) = actor<CommSe
                         socket.outputStream.flush()
                     } catch (e: IOException) {
                         L.e("I/O error occurred:", e)
-                        state = State.Failed(e.message ?: "Unknown error")
+                        state = State.Failed(e.beautifyIOError())
                     }
                     delay(15)
                 }

@@ -17,9 +17,7 @@
     <string name="err_printer_unknown_host">プリンターのステータスを問い合わできません: 不明なホスト。 ネットワーク接続を確認してください。</string>
     <string name="err_printer_network_unreachable">プリンターのステータスを問い合わせできません: ネットワークに到達できません。 ネットワーク接続を確認してください。</string>
     <string name="err_404">サーバーにプリンター名が見つかりませんでした (HTTP 404)。 名前を確認してください。</string>
-    <string name="err_job_econnreset">CUPS サーバーとの接続がリセットされたため、ジョブ #%1$d のステータスを確認できませんでした</string>
     <string name="err_job_not_found">ジョブ #%1$d が見つかりません。 すでに完了していませんか?</string>
-    <string name="err_job_socket_timeout">ドキュメントを印刷できません: ソケットタイムアウト。 ネットワーク接続を確認してください。</string>
     <string name="err_job_exception">ジョブを処理できません: %1$s (%2$s)</string>
     <string name="print_service_vendor">汎用 CUPS クライアント</string>
 

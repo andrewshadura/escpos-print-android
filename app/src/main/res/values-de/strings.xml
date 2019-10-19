@@ -12,10 +12,10 @@
     <string name="err_document_fd_null">Dokument konnte nicht gelesen werden</string>
     <string name="err_add_printer_empty_name">Der Druckername darf nicht leer sein</string>
     <string name="err_printer_null_when_printing">Drucker konnte nicht gefunden werden, ist er verfügbar?</string>
-    <string name="err_job_econnreset">Status des Auftrags #%1$d konnte nicht überprüft werden, da die Verbindung zum CUPS-Server zurückgesetzt wurde</string>
+    <string name="err_job_econnreset">Die Verbindung zum Drucker zurückgesetzt wurde</string>
     <string name="err_job_exception">Job konnte nicht verarbeitet werden:%1$s (%2$s)</string>
     <string name="err_job_not_found">Konnte den Job #%1$d nicht finden, ist er schon fertig?</string>
-    <string name="err_job_socket_timeout">Dokument konnte nicht gedruckt werden: Socket-Timeout. Überprüfen Sie die Netzwerkverbindung.</string>
+    <string name="err_job_socket_timeout">Dokument konnte nicht gedruckt werden: Socket-Timeout. Überprüfen Sie die Bluetoothverbindung.</string>
     <string name="err_printer_network_unreachable">Druckerstatus konnte nicht abgerufen werden: Netzwerk nicht erreichbar. Überprüfen Sie die Netzwerkverbindung.</string>
     <string name="err_printer_socket_timeout">Der Status des Druckers konnte nicht abgefragt werden: socket timeout. Überprüfen Sie die Netzwerkverbindung.</string>
     <string name="err_printer_unknown_host">Druckerstatus konnte nicht abgefragt werden: unbekannter Host. Überprüfen Sie die Netzwerkverbindung.</string>

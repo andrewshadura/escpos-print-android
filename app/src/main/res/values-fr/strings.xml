@@ -10,10 +10,10 @@
     <string name="err_document_fd_null">Impossible de lire le document à imprimer</string>
     <string name="err_add_printer_empty_name">Le nom de l\'imprimante ne peut être vide</string>
     <string name="err_printer_null_when_printing">Impossible de trouver l\'imprimante, est-elle disponible ?</string>
-    <string name="err_job_econnreset">Impossible de vérifier l\'état de la tâche d\'impression n°%1$d car la connexion au serveur CUPS a été interrompue</string>
+    <string name="err_job_econnreset">La connexion au imprimer a été interrompue</string>
     <string name="err_job_exception">Impossible de gérer l\'impression : %1$s (%2$s)</string>
     <string name="err_job_not_found">Impossible de trouver la tâche n°%1$d, est-elle déjà terminée ?</string>
-    <string name="err_job_socket_timeout">Impossible d\'imprimer le document : connexion expirée. Veuillez vérifier votre connexion au réseau.</string>
+    <string name="err_job_socket_timeout">Connexion expirée. Veuillez vérifier votre connexion au réseau.</string>
     <string name="err_printer_network_unreachable">Impossible d\'interroger l\'état de l\'imprimante : réseau injoignable. Veuillez vérifier votre connexion au réseau.</string>
     <string name="err_printer_socket_timeout">Impossible d\'interroger l\'état de l\'imprimante : connexion expirée. Veuillez vérifier votre connexion au réseau.</string>
     <string name="err_printer_unknown_host">Impossible d\'interroger l\'état de l\'imprimante : hôte inconnu. Veuillez vérifier votre connexion au réseau.</string>

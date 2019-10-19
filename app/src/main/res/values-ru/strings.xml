@@ -30,4 +30,6 @@
     <string name="this_app_needs_bt">Для этого приложения требуется Bluetooth</string>
     <string name="undo">Отменить</string>
     <string name="about_long">О приложении</string>
+    <string name="err_job_socket_timeout">Невозможно связаться с принтером. Проверьте, включён ли он.</string>
+    <string name="err_job_econnreset">Соединение с принтером потеряно</string>
 </resources>

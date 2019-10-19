@@ -29,4 +29,6 @@
     <string name="searching">Hľadajú sa Bluetooth zariadenia</string>
     <string name="about">O aplikácii</string>
     <string name="about_long">O aplikácii</string>
+    <string name="err_job_socket_timeout">Nepodarilo sa spojiť s tlačiarňou. Skontrolujte, či je zapnutá.</string>
+    <string name="err_job_econnreset">Spojenie s tlačiarňou bolo prerušené</string>
 </resources>
