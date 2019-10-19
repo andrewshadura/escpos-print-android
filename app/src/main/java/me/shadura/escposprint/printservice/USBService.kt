@@ -108,6 +108,7 @@ fun CoroutineScope.usbServiceActor(context: Context, device: UsbDevice?) = actor
             }
             is Disconnect -> {
                 conn?.close()
+                msg.response.complete(State.Disconnected)
                 break@process
             }
             is Write -> {

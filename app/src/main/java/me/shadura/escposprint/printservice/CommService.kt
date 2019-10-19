@@ -23,7 +23,7 @@ import kotlinx.coroutines.channels.SendChannel
 
 // Constants that indicate the current connection state
 sealed class State {
-    object None : State() // we're doing nothing
+    object Disconnected : State() // we're doing nothing
     object Connecting : State() // now initiating an outgoing connection
     object NeedsPermission : State()
     object Connected : State()  // now connected to a remote device
@@ -32,7 +32,7 @@ sealed class State {
 
 sealed class CommServiceMsg
 class Connect(val response: CompletableDeferred<State>) : CommServiceMsg()
-object Disconnect : CommServiceMsg()
+class Disconnect(val response: CompletableDeferred<State>) : CommServiceMsg()
 class Write(val data: ByteArray) : CommServiceMsg()
 
 val String.isBluetoothAddress: Boolean

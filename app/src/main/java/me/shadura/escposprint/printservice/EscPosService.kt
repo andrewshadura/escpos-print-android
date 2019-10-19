@@ -293,11 +293,19 @@ class EscPosService : PrintService(), CoroutineScope by MainScope() {
                             }
                         }
 
+                        val finalResponse = CompletableDeferred<State>()
+                        bluetoothService.send(Disconnect(finalResponse))
+                        when (val disconnectResult = finalResponse.await()) {
+                            is State.Failed -> {
+                                jobs[jobId]?.state = JobStateEnum.FAILED(disconnectResult.error)
+                                L.e(disconnectResult.error)
+                            }
+                            is State.Disconnected -> {
+                                jobs[jobId]?.state = JobStateEnum.COMPLETED
+                                L.i("marked job as complete")
+                            }
+                        }
                         bluetoothService.close()
-                        L.i("sent text")
-
-                        jobs[jobId]?.state = JobStateEnum.COMPLETED
-                        L.i("marked job as complete")
                     }
                     is State.Failed -> {
                         jobs[jobId]?.state = JobStateEnum.FAILED(result.error)

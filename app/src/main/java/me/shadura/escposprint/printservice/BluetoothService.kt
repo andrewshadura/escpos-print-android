@@ -33,7 +33,7 @@ private val PRINTER_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB
 
 fun CoroutineScope.bluetoothServiceActor(device: BluetoothDevice) = actor<CommServiceMsg>(Dispatchers.IO) {
     val adapter = BluetoothAdapter.getDefaultAdapter()
-    var state: State
+    var state: State = State.Disconnected
     val socket: BluetoothSocket = device.createRfcommSocketToServiceRecord(PRINTER_UUID)
 
     process@ for (msg in channel) {
@@ -52,7 +52,13 @@ fun CoroutineScope.bluetoothServiceActor(device: BluetoothDevice) = actor<CommSe
                 }
                 msg.response.complete(state)
             }
-            is Disconnect -> break@process
+            is Disconnect -> {
+                if (state !is State.Failed) {
+                    state = State.Disconnected
+                }
+                msg.response.complete(state)
+                break@process
+            }
             is Write -> {
                 msg.data.asIterable().chunked(64).forEach {
                     try {

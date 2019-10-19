@@ -338,7 +338,6 @@ class ManageManualPrintersActivity : AppCompatActivity(), CoroutineScope by Main
                                     viewAdapter.notifyDataSetChanged()
                                 }
                             }
-                            commService.send(Disconnect)
                             commService.close()
                         }
                     } else {
