@@ -43,6 +43,7 @@ import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.toast
 import org.jetbrains.anko.uiThread
 import java.io.*
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Future
 
 /**
@@ -52,7 +53,7 @@ class EscPosService : PrintService(), CoroutineScope by MainScope() {
 
     data class PrintJobTask(var state: JobStateEnum = JobStateEnum.STARTED, var task: Future<Unit>?)
 
-    private val jobs = HashMap<PrintJobId, PrintJobTask>()
+    private val jobs = ConcurrentHashMap<PrintJobId, PrintJobTask>()
 
     private lateinit var prefs: SharedPreferences
 
@@ -85,6 +86,12 @@ class EscPosService : PrintService(), CoroutineScope by MainScope() {
     }
 
     override fun onPrintJobQueued(printJob: PrintJob) {
+        val jobId = printJob.id
+
+        if (jobs.containsKey(jobId)) {
+            L.e("Job $jobId already queued")
+            return
+        }
         startPolling(printJob)
         val jobInfo = printJob.info
         val printerId = jobInfo.printerId
@@ -102,7 +109,6 @@ class EscPosService : PrintService(), CoroutineScope by MainScope() {
                 return
             }
             val fd = data.fileDescriptor
-            val jobId = printJob.id
             val jobInfo = printJob.info
 
             // Send print job
@@ -146,7 +152,7 @@ class EscPosService : PrintService(), CoroutineScope by MainScope() {
      */
     internal fun updateJobStatus(printJob: PrintJob): Boolean {
         // Check if the job is already gone
-        if (printJob.id !in jobs) {
+        if (!jobs.containsKey(printJob.id)) {
             L.w("Tried to request a job status, but the job couldn't be found in the jobs list")
             return false
         }
@@ -157,7 +163,7 @@ class EscPosService : PrintService(), CoroutineScope by MainScope() {
         }
 
         // We don’t want to be called again if the job has been removed from the map.
-        return printJob.id in jobs
+        return jobs.containsKey(printJob.id)
     }
 
     /**
