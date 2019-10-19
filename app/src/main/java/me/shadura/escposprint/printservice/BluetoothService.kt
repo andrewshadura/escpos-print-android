@@ -60,6 +60,7 @@ fun CoroutineScope.bluetoothServiceActor(device: BluetoothDevice) = actor<CommSe
                         socket.outputStream.flush()
                     } catch (e: IOException) {
                         L.e("I/O error occurred:", e)
+                        state = State.Failed(e.message ?: "Unknown error")
                     }
                     delay(15)
                 }
