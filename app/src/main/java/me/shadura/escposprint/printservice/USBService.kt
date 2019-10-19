@@ -104,8 +104,8 @@ fun CoroutineScope.usbServiceActor(context: Context, device: UsbDevice?) = actor
                             State.Connected
                         }
                     }
-                } ?: State.Failed
-                msg.response.complete(Result(state, error))
+                } ?: State.Failed("Cannot connect to the USB device")
+                msg.response.complete(state)
             }
             is Disconnect -> {
                 conn?.close()

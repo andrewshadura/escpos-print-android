@@ -322,24 +322,23 @@ class ManageManualPrintersActivity : AppCompatActivity(), CoroutineScope by Main
                                 viewAdapter.notifyDataSetChanged()
                                 return@launch
                             }
-                            val response = CompletableDeferred<Result>()
+                            val response = CompletableDeferred<State>()
                             commService.send(Connect(response))
-                            val result = response.await()
-                            when (result.state) {
-                                State.Connected -> {
+                            when (val result = response.await()) {
+                                is State.Connected -> {
                                     recyclerView.snackbar(R.string.printer_connected)
                                     printerInfo.connecting = false
                                     viewAdapter.notifyDataSetChanged()
                                     addPrinter(printerInfo)
                                 }
-                                State.Failed,
-                                State.None -> {
+                                is State.Failed -> {
                                     recyclerView.longSnackbar(getString(R.string.connection_failure) + ": " + result.error)
                                     printerInfo.connecting = false
                                     printerInfo.enabled = false
                                     viewAdapter.notifyDataSetChanged()
                                 }
                             }
+                            commService.send(Disconnect)
                             commService.close()
                         }
                     } else {

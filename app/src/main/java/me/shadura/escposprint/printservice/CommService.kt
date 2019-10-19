@@ -22,18 +22,16 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.SendChannel
 
 // Constants that indicate the current connection state
-enum class State {
-    None, // we're doing nothing
-    Connecting, // now initiating an outgoing connection
-    NeedsPermission,
-    Connected,  // now connected to a remote device
-    Failed
+sealed class State {
+    object None : State() // we're doing nothing
+    object Connecting : State() // now initiating an outgoing connection
+    object NeedsPermission : State()
+    object Connected : State()  // now connected to a remote device
+    data class Failed(val error: String) : State()
 }
 
-data class Result(var state: State, var error: String)
-
 sealed class CommServiceMsg
-class Connect(val response: CompletableDeferred<Result>) : CommServiceMsg()
+class Connect(val response: CompletableDeferred<State>) : CommServiceMsg()
 object Disconnect : CommServiceMsg()
 class Write(val data: ByteArray) : CommServiceMsg()
 

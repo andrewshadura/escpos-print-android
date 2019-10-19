@@ -244,11 +244,10 @@ class EscPosService : PrintService(), CoroutineScope by MainScope() {
 
             try {
                 val bluetoothService = commServiceActor(this@EscPosService, address)
-                val response = CompletableDeferred<Result>()
+                val response = CompletableDeferred<State>()
                 bluetoothService.send(Connect(response))
-                val result = response.await()
-                when (result.state) {
-                    State.Connected -> {
+                when (val result = response.await()) {
+                    is State.Connected -> {
                         L.i("sending text")
                         for (copy in 0 until copies) {
                             if (copy > 0) {
@@ -286,7 +285,7 @@ class EscPosService : PrintService(), CoroutineScope by MainScope() {
                         jobs[jobId]?.state = JobStateEnum.COMPLETED
                         L.i("marked job as complete")
                     }
-                    State.Failed -> {
+                    is State.Failed -> {
                         jobs[jobId]?.state = JobStateEnum.FAILED(result.error)
                         L.e(result.error)
                     }
