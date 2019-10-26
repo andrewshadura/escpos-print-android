@@ -73,6 +73,8 @@ data class PrinterRec(var name: String, val address: String, var enabled: Boolea
                 model = PrinterModel.Cashino
                 lineWidth = 48
             }
+            address.startsWith("DC:0D:3") && name.startsWith("Printer00") ->
+                model = PrinterModel.Gzqianji
             address.startsWith("98:D3:3") || name.startsWith("Printer00") ->
                 model = PrinterModel.Xprinter
             address == "0483:070B" ->
