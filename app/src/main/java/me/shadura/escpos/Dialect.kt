@@ -9,7 +9,8 @@ enum class PrinterModel {
     Xprinter,
     Cashino,
     Sunmi,
-    Gzqianji
+    Gzqianji,
+    Fixed1250
 }
 
 enum class LineWidth(val characters: Int) {
@@ -263,6 +264,12 @@ class SunmiDialect: Dialect() {
             byteArrayOf()
 }
 
+open class Fixed1250Dialect: Dialect() {
+    override val supportedCharsets = mapOf(
+            Codepage("cp1250") to 0
+    )
+}
+
 val dialects = mapOf(
         PrinterModel.ZiJiang to ZiJiangDialect::class,
         PrinterModel.Goojprt to GoojprtDialect::class,
@@ -272,5 +279,6 @@ val dialects = mapOf(
         PrinterModel.Epson to EpsonTMP20Dialect::class,
         PrinterModel.Sunmi to SunmiDialect::class,
         PrinterModel.Bixolon to Dialect::class,
+        PrinterModel.Fixed1250 to Fixed1250Dialect::class,
         PrinterModel.Generic to Dialect::class
 )
