@@ -267,8 +267,8 @@ class EscPosService : PrintService(), CoroutineScope by MainScope() {
                             if (copy > 0) {
                                 delay(1000)
                             }
-                            bluetoothService.send(Write(byteArrayOf(0x1b, 0x40)))
-                            bluetoothService.send(Write(byteArrayOf(0x1c, 0x2e)))
+                            bluetoothService.send(Write(dialect.initialise()))
+                            bluetoothService.send(Write(dialect.disableKanji()))
 
                             if (printerConfig.drawerSetting == OpenDrawerSetting.OpenBefore) {
                                 bluetoothService.send(Write(dialect.openDrawer()))

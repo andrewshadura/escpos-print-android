@@ -71,11 +71,11 @@ class BitmapEncoder(private val dialect: Dialect) {
 
         val bandHeight = 24
 
+        printerBuffer.write(dialect.setLineSpacing(bandHeight))
         // Bands of pixels are sent that are 8 pixels high.  Iterate through bitmap
         // 24 rows of pixels at a time, capturing bytes representing vertical slices 1 pixel wide.
         // Each bit indicates if the pixel at that position in the slice should be dark or not.
         for (row in 0 until height step bandHeight) {
-            printerBuffer.write(dialect.setLineSpacing(bandHeight))
 
             // Need to send these two sets of bytes at the beginning of each row.
             printerBuffer.write(dialect.selectBitImageMode(width))
@@ -124,6 +124,7 @@ class BitmapEncoder(private val dialect: Dialect) {
             }
             printerBuffer.write(dialect.bitImageAdvance())
         }
+        printerBuffer.write(dialect.setDefaultLineSpacing())
         return printerBuffer.toByteArray()
     }
 

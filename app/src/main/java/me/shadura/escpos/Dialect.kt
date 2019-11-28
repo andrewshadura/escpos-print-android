@@ -19,6 +19,7 @@ enum class LineWidth(val characters: Int) {
 }
 
 private val ESC: Byte = 0x1b
+private val FS: Byte = 0x1c
 private val GS: Byte = 0x1d
 private val LF: Byte = 0x0a
 
@@ -53,9 +54,9 @@ open class Dialect {
             Codepage("cp437") to 0
     )
 
-    fun initialise(): ByteArray {
-        return byteArrayOf(ESC, 0x40)
-    }
+    fun initialise(): ByteArray = byteArrayOf(ESC, 0x40)
+
+    fun disableKanji(): ByteArray = byteArrayOf(FS, 0x2e)
 
     open fun bitImageAdvance(): ByteArray = byteArrayOf(LF)
 
@@ -95,6 +96,9 @@ open class Dialect {
 
     open fun openDrawer(): ByteArray =
             byteArrayOf(ESC, 0x70, 0, 0x40, 0x50)
+
+    fun setDefaultLineSpacing(): ByteArray =
+            byteArrayOf(ESC, 0x32)
 
     fun setLineSpacing(px: Int): ByteArray =
             byteArrayOf(ESC, 0x33, px.toByte())
