@@ -1,0 +1,2 @@
+• Popisy k obrázkom sa presúvajú spolu s obrázkami
+• Úpravy pre kompatibilitu s VRP od 1.4.2019

@@ -1,0 +1,3 @@
+ • Podpora tlačiarne Xprinter XP-T58-K
+ • Možnosť zmeniť typ tlačiarne
+ • Podpora pre tlač vo viac jazykoch, vrátane jazykov s cyrilikou

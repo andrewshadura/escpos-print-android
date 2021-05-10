@@ -1,0 +1,3 @@
+• Znovu funguje podpora textu s viacerými stĺpčekmi, ktoré sa teraz správne zobrazujú na jednom riadku
+• Lepšia diagnostika pre chyby spojenia s tlačiarňou
+• Lepšia detekcia centrovaného textu

@@ -1,0 +1,5 @@
+• Support for 80 mm printers
+• Support for JP302-BT and Cashino PTP-III
+• Correctly show the device name for renamed printers
+• Improve communication reliability
+• Scale down images too big to print

@@ -1,0 +1,3 @@
+• Multiple columns detection works again and columns are shown on the same line when possible
+• Failed connection to the printer is diagnosed better, with a proper error message
+• The tolerance for centred text detection is now a bit lower, so more of your centred text will now render centred.

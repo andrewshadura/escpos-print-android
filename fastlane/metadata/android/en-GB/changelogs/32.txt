@@ -1,0 +1,1 @@
+• Limited support devices with pre-programmed Latin-2 codepage

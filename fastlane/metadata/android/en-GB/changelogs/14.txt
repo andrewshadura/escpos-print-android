@@ -1,0 +1,5 @@
+• Solved SumUp compatibility issue which caused extremely long receipts to be printed
+• Added initial support for Goojprt PT2x0 printers (also known as MTP-II)
+
+Known issues:
+• Make sure Bluetooth is enabled when print jobs start, since the driver isn’t yet able to handle that properly. This will be fixed in the next version.

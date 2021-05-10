@@ -1,0 +1,12 @@
+New in 1.5.0:
+ • Support for Xprinter XP-T58-K
+ • You can now change the printer type if your model has been detected incorrectly
+ • On supported printers, the app now supports both Western and Central European languages, as well as Cyrillic.
+ • Prevent a crash when printing with Bluetooth disabled — users still may need to restart a job
+
+New in 1.5.1:
+ • Support for Epson TM-P20
+ • Better support for Belarusian, Ukrainian and Romanian
+
+New in 1.5.2:
+ • Fix a crash with some printer models

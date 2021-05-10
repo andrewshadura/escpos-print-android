@@ -1,0 +1,9 @@
+Nové v 1.5.0:
+ • Podpora tlačiarne Xprinter XP-T58-K
+ • Možnosť zmeniť typ tlačiarne
+ • Podpora pre tlač vo viac jazykoch, vrátane jazykov s cyrilikou
+
+Nové v 1.5.1:
+ • Podpora tlačiarne Epson TM-P20
+ • Lepšia podpora cyriliky (písmená pre bieloruštinu a ukrajinčinu)
+ • Podpora rumunských písmen

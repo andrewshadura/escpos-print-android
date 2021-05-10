@@ -1,0 +1,2 @@
+• Better support for Goojprt PT210/PT200 models
+• Always show the detected printer model

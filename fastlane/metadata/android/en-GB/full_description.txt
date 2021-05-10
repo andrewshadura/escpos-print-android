@@ -1,0 +1,19 @@
+Have a portable 58mm/80mm Bluetooth/USB thermal printer? This app allows you to directly print to it from your Android device.
+
+This app just provides a Print Service to Android. This means that once it’s installed, you have to enable it from your ‘Print’ section of the settings app of you device.
+
+It is optimised and primarily aimed at printing receipts, but is generic enough to allow printing a wide range of text documents.
+
+Supported printers (using Bluetooth and USB):
+ • ZiJiang ZJ-5802/5805 and others
+ • Goojprt PT200 and MTP-II
+ • Xprinter XP-T58-K, XP58-IIN USB
+ • Bixolon SPP-R210
+ • Epson TM-P20
+ • Sunmi V2
+
+Other printers may also be partially supported, but international character support may vary.
+
+For more details, see https://escposprint.shadura.me/pages/escpos-receipt-printer-driver.html
+
+Recipients agree that this app is provided ‘as is’, without warranty of any kind, express or implied, including but not limited to the warranties of merchantability, fitness for a particular purpose, title and non-infringement. In no event shall the copyright holders or anyone distributing the software be liable for any damages or other liability, whether in contract, tort or otherwise, arising from, out of or in connection with the software or the use or other dealings in the software.

@@ -1,0 +1,4 @@
+• Podpora 80 mm tlačiarni
+• Podpora JP302-BT a Cashino PTP-III
+• Správne zobrazenie mena tlačiarne po premenovaní
+• Zvýšenie spoľahlivosti komunikácií

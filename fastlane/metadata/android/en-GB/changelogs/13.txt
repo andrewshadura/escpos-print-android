@@ -1,0 +1,4 @@
+• Captions under images are now detected properly and moved together with the images themselves
+
+Known issues:
+• Make sure Bluetooth is enabled when print jobs start, since the driver isn’t yet able to handle that properly. This will be fixed in the next version.

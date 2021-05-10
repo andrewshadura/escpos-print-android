@@ -1,0 +1,26 @@
+Máte prenosnú tlačiareň na bločky šírky 58 alebo 80 mm? Táto aplikácia vám umožní tlačiť priamo z vášho zariadenia Android, a to aj z Virtuálnej registračnej pokladne.
+
+Táto aplikácia poskytuje tlačovú službu pre systém Android. Po inštalácii je potrebné povoliť jej použitie v nastaveniach tlače.
+
+Tento softvér je optimalizovaný a primárne zameraný na tlač bločkov a podobných dokladov (vrátane daňových dokladov z VRP), ale umožňuje tlač aj iných textových dokumentov.
+
+Podporovaná je tlač klasických bločkov z VRP, ako aj potvrdení platobných operácií s kartami zo SumUp a podobných aplikácií.
+
+Podporované tlačiarne (cez Bluetooth a USB pripojenie):
+ • ZiJiang ZJ-5802/5805/5809/5890K/8001 a iné
+ • Goojprt PT200 a MTP-II
+ • Xprinter XP-T58-K, XP58-IIN USB
+ • Epson TM-P20
+ • Bixolon SPP-R210
+ • Sunmi V2
+ • KML-58, KML-79, KML-80
+ • ExVAN, ExVAN Plus
+ • elio
+
+Iné tlačiarne môžu byť čiastočne podporované, ale nie je zaručená 100% podpora slovenskej diakritiky.
+
+POZOR: Nie sú podporované tlačiarne Goojprt PT-210 a Milestone/Mprinter.
+
+Viac informácii nájdete na: https://escposprint.shadura.me/pages/ovladac-blockovych-tlaciarni-escpos.html
+
+Príjemcovia súhlasia s tým, že táto aplikácia je poskytovaná tak, ako je, bez akejkoľvek záruky, vrátane, ale nie výlučne, záruk obchodovateľnosti, vhodnosti na určitý účel atď. Vlastníci autorských práv alebo žiadni distribútori softvéru v žiadnom prípade nebudú zodpovední za žiadne škody alebo inú zodpovednosť, či už zmluvnú, občianskoprávnu alebo inú.

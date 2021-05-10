@@ -1,0 +1,2 @@
+• Vyriešená kompatibilita s SumUp
+• Základná podpora tlačiarní Goojprt PT2x0 (MTP-II)
