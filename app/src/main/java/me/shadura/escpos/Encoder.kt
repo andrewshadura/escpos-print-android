@@ -33,9 +33,9 @@ class Encoder(val dialect: Dialect) {
     val codepages = LinkedList(dialect.supportedCharsets.keys)
 
     fun encodeToPairs(s: String): List<Pair<Codepage, ByteArray>> {
-        var out = mutableListOf<Pair<Codepage, ByteArray>>()
+        val out = mutableListOf<Pair<Codepage, ByteArray>>()
         var curcp: Codepage? = null
-        var acc = mutableListOf<Byte>()
+        val acc = mutableListOf<Byte>()
         val mapped = s.fold("") { r, c ->
             r + (replacements[c] ?: c)
         }
