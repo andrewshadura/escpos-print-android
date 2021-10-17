@@ -3,6 +3,32 @@ package me.shadura.escpos
 import java.io.ByteArrayOutputStream
 import java.util.*
 
+val replacements = mapOf(
+    'ș' to "ş",
+    'ț' to "ţ",
+    'Ș' to "Ş",
+    'Ț' to "Ţ",
+    'ﬁ' to "fi",
+    'ﬂ' to "fl",
+    'ﬀ' to "ff",
+    'ﬃ' to "ffi",
+    'ﬄ' to "ffl",
+    'ĳ' to "ij",
+    'Ĳ' to "IJ",
+    'Ǳ' to "DZ",
+    'ǲ' to "Dz",
+    'ǳ' to "dz",
+    'Ǆ' to "DŽ",
+    'ǅ' to "Dž",
+    'ǆ' to "dž",
+    'Ǉ' to "LJ",
+    'ǈ' to "Lj",
+    'ǉ' to "lj",
+    'Ǌ' to "NJ",
+    'ǋ' to "Nj",
+    'ǌ' to "nj"
+)
+
 class Encoder(val dialect: Dialect) {
     val codepages = LinkedList(dialect.supportedCharsets.keys)
 
@@ -10,19 +36,10 @@ class Encoder(val dialect: Dialect) {
         var out = mutableListOf<Pair<Codepage, ByteArray>>()
         var curcp: Codepage? = null
         var acc = mutableListOf<Byte>()
-        for (char in s) {
-            val c = when (char) {
-                'ș' ->
-                    'ş'
-                'ț' ->
-                    'ţ'
-                'Ș' ->
-                    'Ş'
-                'Ț' ->
-                    'Ţ'
-                else ->
-                    char
-            }
+        val mapped = s.fold("") { r, c ->
+            r + (replacements[c] ?: c)
+        }
+        for (c in mapped) {
             for (cp in codepages) {
                 if (cp.canEncode(c)) {
                     curcp = cp
