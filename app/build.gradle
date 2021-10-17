@@ -36,10 +36,10 @@ android {
     defaultConfig {
         applicationId "me.shadura.escposprint"
         minSdkVersion 19
-        targetSdkVersion 28
+        targetSdkVersion 29
         multiDexEnabled true
-        versionCode 33
-        versionName "1.7.6"
+        versionCode 34
+        versionName "1.7.7"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
     }

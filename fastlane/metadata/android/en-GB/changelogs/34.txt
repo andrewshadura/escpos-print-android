@@ -1,0 +1,1 @@
+• Better support for letter ligatures (ﬁ, ﬃ, ﬂ and so on), including Dutch and Slavic digraphs. When possible, these are converted into regular letters.

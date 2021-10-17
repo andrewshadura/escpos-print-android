@@ -1,0 +1,1 @@
+• Podpora pre ligatúry (ﬁ, ﬃ, ﬂ atď), vrátane holandských a juhoslovanských digrafov. Vždy, keď sa dá, tieto znaky sa nahradzujú obyčajnými písmenami.
